@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net7.0;net6.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Version>1.1.0-alpha</Version>
+		<Company>SoftwareOne</Company>
+		<Product>SoftwareOne.Rql.Linq</Product>
+		<Copyright>SoftwareOne © 2023</Copyright>
+		<Description>RQL implementation for .Net. Linq approach.</Description>
+		<RepositoryUrl>https://dev.azure.com/softwareone-pc/PyraCloud/_git/poc-common-api</RepositoryUrl>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="ErrorOr" Version="1.2.1" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\SoftwareOne.Rql.Parsers.Linear\SoftwareOne.Rql.Parsers.Linear.csproj" />
+	</ItemGroup>
+
+</Project>

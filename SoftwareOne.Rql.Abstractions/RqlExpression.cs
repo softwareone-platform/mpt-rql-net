@@ -1,0 +1,89 @@
+﻿using SoftwareOne.Rql.Abstractions.Binary;
+using SoftwareOne.Rql.Abstractions.Constant;
+using SoftwareOne.Rql.Abstractions.Group;
+using SoftwareOne.Rql.Abstractions.Unary;
+
+namespace SoftwareOne.Rql.Abstractions
+{
+    public abstract class RqlExpression
+    {
+        #region Group
+
+        public static RqlAnd And(params RqlExpression[] expressions)
+            => And((IEnumerable<RqlExpression>)expressions);
+
+        public static RqlAnd And(IEnumerable<RqlExpression> expressions)
+            => new RqlAnd(expressions);
+
+        public static RqlOr Or(params RqlExpression[] expressions)
+            => Or((IEnumerable<RqlExpression>)expressions);
+
+        public static RqlOr Or(IEnumerable<RqlExpression> expressions)
+            => new RqlOr(expressions);
+
+        public static RqlGenericGroup Group(string name, params RqlExpression[] expressions)
+            => Group(name, (IEnumerable<RqlExpression>)expressions);
+
+        public static RqlGenericGroup Group(string name, IEnumerable<RqlExpression> expressions)
+            => new RqlGenericGroup(name, expressions);
+
+        #endregion
+
+        #region Binary
+
+        public static RqlEqual Equal(RqlExpression left, RqlExpression right)
+            => new RqlEqual(left, right);
+
+        public static RqlNotEqual NotEqual(RqlExpression left, RqlExpression right)
+            => new RqlNotEqual(left, right);
+
+        public static RqlGreaterThan GreaterThan(RqlExpression left, RqlExpression right)
+            => new RqlGreaterThan(left, right);
+
+        public static RqlGreaterThanOrEqual GreaterThanOrEqual(RqlExpression left, RqlExpression right)
+            => new RqlGreaterThanOrEqual(left, right);
+
+        public static RqlLessThan LessThan(RqlExpression left, RqlExpression right)
+            => new RqlLessThan(left, right);
+
+        public static RqlLessThanOrEqual LessThanOrEqual(RqlExpression left, RqlExpression right)
+            => new RqlLessThanOrEqual(left, right);
+
+        public static RqlLike Like(RqlExpression left, RqlExpression right)
+            => new RqlLike(left, right);
+
+        public static RqlLikeInsensitive LikeInsensitive(RqlExpression left, RqlExpression right)
+            => new RqlLikeInsensitive(left, right);
+
+        public static RqlListIn ListIn(RqlExpression left, RqlExpression right)
+            => new RqlListIn(left, right);
+
+        public static RqlListOut ListOut(RqlExpression left, RqlExpression right)
+            => new RqlListOut(left, right);
+
+        #endregion
+
+        #region Unary
+
+        public static RqlNot Not(RqlExpression expression)
+            => new RqlNot(expression);
+
+        public static RqlIsNull IsNull(RqlExpression expression)
+            => new RqlIsNull(expression);
+
+        #endregion
+
+        #region Arguments
+
+        public static RqlConstant Constant(string value)
+            => new(value);
+
+        public static RqlNull Null()
+            => new();
+
+        public static RqlEmpty Empty()
+            => new();
+
+        #endregion
+    }
+}
