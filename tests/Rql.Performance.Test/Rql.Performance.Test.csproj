@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SoftwareOne.Rql.Extensions\SoftwareOne.Rql.Extensions.csproj" />
+    <ProjectReference Include="..\..\src\SoftwareOne.Rql.Extensions\SoftwareOne.Rql.Extensions.csproj" />
   </ItemGroup>
 
 </Project>
