@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SoftwareOne.Rql.Abstractions\SoftwareOne.Rql.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\SoftwareOne.Rql.Abstractions\SoftwareOne.Rql.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>
