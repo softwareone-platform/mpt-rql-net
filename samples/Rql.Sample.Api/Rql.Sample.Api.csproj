@@ -15,7 +15,7 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\SoftwareOne.Rql.Extensions\SoftwareOne.Rql.Extensions.csproj" />
+    <ProjectReference Include="..\..\src\SoftwareOne.Rql.Extensions\SoftwareOne.Rql.Extensions.csproj" />
     <ProjectReference Include="..\Rql.Sample.Application\Rql.Sample.Application.csproj" />
     <ProjectReference Include="..\Rql.Sample.Contracts\Rql.Sample.Contracts.csproj" />
     <ProjectReference Include="..\Rql.Sample.Infrastructure\Rql.Sample.Infrastructure.csproj" />
