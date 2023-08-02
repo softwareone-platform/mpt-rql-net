@@ -1,4 +1,4 @@
-﻿namespace Rql.Performance.Test
+﻿namespace Rql.Tests.Performance
 {
     internal class Program
     {

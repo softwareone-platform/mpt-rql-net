@@ -1,7 +1,7 @@
 ﻿using Rql.Sample.Contracts.InMemory;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Rql.IntegrationTests.Core
+namespace Rql.Tests.Integration.Core
 {
     internal class ProductVewEqualityComparer : IEqualityComparer<SampleEntityView>
     {
