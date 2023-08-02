@@ -45,26 +45,26 @@ namespace SoftwareOne.Rql.Parsers.Linear
             {
                 c = querySpan[x];
                 if (c == '=')
-                    word.Delimeters.Add(x);
+                    word.Delimiters.Add(x);
 
-                // end of delimeter
+                // end of delimiter
                 if (word.WrapSymbol != null)
                 {
                     if (c == word.WrapSymbol)
                         word.WrapEnd = x;
 
-                    word.WordLenght++;
+                    word.WordLength++;
                 }
-                // start of delimeter
+                // start of delimiter
                 else if (_textDelimiters.Contains(c))
                 {
                     word.WrapSymbol = c;
                     word.WrapStart = x;
-                    word.WordLenght++;
+                    word.WordLength++;
                 }
                 else if (_operatorToType.TryGetValue(c, out var nextType))
                 {
-                    if (word.WordLenght > 0)
+                    if (word.WordLength > 0)
                     {
                         var exp = WordToExpression(word);
                         expressions.Add(new ExpressionPair(word.GroupType, exp));
@@ -79,7 +79,7 @@ namespace SoftwareOne.Rql.Parsers.Linear
                     if (querySpan[x + 1] == ')')
                     {
                         x += 2;
-                        word.WordLenght += 2;
+                        word.WordLength += 2;
                         continue;
                     }
 
@@ -96,13 +96,13 @@ namespace SoftwareOne.Rql.Parsers.Linear
                     break;
                 }
                 else
-                    word.WordLenght++;
+                    word.WordLength++;
 
                 x++;
             };
 
 
-            if (word.WordLenght > 0)
+            if (word.WordLength > 0)
                 expressions.Add(new ExpressionPair(word.GroupType, WordToExpression(word)));
 
             return expressions;
@@ -110,12 +110,12 @@ namespace SoftwareOne.Rql.Parsers.Linear
 
         private static RqlExpression WordToExpression(Word word)
         {
-            var endIndex = word.WordStart + word.WordLenght;
+            var endIndex = word.WordStart + word.WordLength;
             // prop=operator=value
-            if (word.Delimeters.Count == 2)
+            if (word.Delimiters.Count == 2)
             {
-                var d1 = word.Delimeters[0];
-                var d2 = word.Delimeters[1];
+                var d1 = word.Delimiters[0];
+                var d2 = word.Delimiters[1];
 
                 var exp = ParseNode(word.Text[(d1 + 1)..d2].ToString(),
                     new List<ExpressionPair>()
@@ -126,9 +126,9 @@ namespace SoftwareOne.Rql.Parsers.Linear
                 return exp;
             }
             // prop=value
-            else if (word.Delimeters.Count == 1)
+            else if (word.Delimiters.Count == 1)
             {
-                var d1 = word.Delimeters[0];
+                var d1 = word.Delimiters[0];
 
                 var exp = ParseNode("eq", new List<ExpressionPair>()
                     {
