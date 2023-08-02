@@ -13,10 +13,10 @@ namespace Rql.Sample.Api.Controllers
     [Route("ef")]
     public class EfController : ControllerBase
     {
-        private readonly ILogger<InMemoryController> _logger;
+        private readonly ILogger<EfController> _logger;
         private readonly ISender _mediator;
 
-        public EfController(ILogger<InMemoryController> logger, ISender mediator)
+        public EfController(ILogger<EfController> logger, ISender mediator)
         {
             _logger = logger;
             _mediator = mediator;
