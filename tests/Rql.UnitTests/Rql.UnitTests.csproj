@@ -23,7 +23,6 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\src\SoftwareOne.Rql.Abstractions\SoftwareOne.Rql.Abstractions.csproj" />
-	  <ProjectReference Include="..\..\src\SoftwareOne.Rql.Parsers.Declarative\SoftwareOne.Rql.Parsers.Declarative.fsproj" />
 	  <ProjectReference Include="..\..\src\SoftwareOne.Rql.Parsers.Linear\SoftwareOne.Rql.Parsers.Linear.csproj" />
 	</ItemGroup>
 
