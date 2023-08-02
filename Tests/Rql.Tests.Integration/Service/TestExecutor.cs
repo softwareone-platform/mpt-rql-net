@@ -1,21 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
-using Rql.Sample.Contracts.InMemory;
-using Rql.Tests.Integration.Factory;
+﻿using Rql.Sample.Contracts.InMemory;
+using Rql.Tests.Integration.Fixtures;
 using Rql.Tests.Integration.Mock;
-using Rql.Tests.Integration.Service;
 using Xunit;
 
-namespace Rql.Tests.Integration;
+namespace Rql.Tests.Integration.Service;
 
-public class TestExecutor : IDisposable
+public class TestExecutor
 {
-    private readonly RqlTestWebApplicationFactory _factory;
     private readonly HttpClient _client;
 
-    public TestExecutor()
+    public TestExecutor(SampleApiInstanceFixture fixture)
     {
-        _factory = new RqlTestWebApplicationFactory();
-        _client = _factory.CreateClient();
+        _client = fixture.Client;
+        _client = fixture.Client;
     }
 
     public Task Execute(
@@ -41,11 +38,5 @@ public class TestExecutor : IDisposable
 
         Assert.True(isHappyFlow == false || respData.Any());
         Assert.Equal(isHappyFlow, respData.SequenceEqual(toCompare, new ProductViewEqualityComparer()));
-    }
-
-    public void Dispose()
-    {
-        _client.Dispose();
-        _factory.Dispose();
     }
 }
