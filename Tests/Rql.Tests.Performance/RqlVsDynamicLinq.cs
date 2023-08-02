@@ -5,7 +5,7 @@ using SoftwareOne.Rql;
 using SoftwareOne.Rql.Linq;
 using System.Linq.Dynamic.Core;
 
-namespace Rql.Performance.Test
+namespace Rql.Tests.Performance
 {
     [MemoryDiagnoser]
     [ReturnValueValidator(failOnError: true)]

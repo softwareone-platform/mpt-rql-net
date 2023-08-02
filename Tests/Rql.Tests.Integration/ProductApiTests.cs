@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
-using Rql.IntegrationTests.Core;
+using Xunit;
 using Rql.Sample.Contracts.InMemory;
+using Rql.Tests.Integration.Core;
 
-namespace Rql.IntegrationTests
+namespace Rql.Tests.Integration
 {
 
     public class ProductApiTests : IClassFixture<WebApplicationFactory<Sample.Api.Program>>, IDisposable

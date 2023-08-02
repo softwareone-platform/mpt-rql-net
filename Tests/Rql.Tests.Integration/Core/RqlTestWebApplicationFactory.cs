@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.TestHost;
 using Rql.Sample.Application.Common.Interfaces.Persistence.InMemory;
 
-namespace Rql.IntegrationTests.Core
+namespace Rql.Tests.Integration.Core
 {
     public class RqlTestWebApplicationFactory : WebApplicationFactory<Rql.Sample.Api.Program>
     {

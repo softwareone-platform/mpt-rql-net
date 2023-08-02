@@ -1,9 +1,10 @@
+using Xunit;
 using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Binary;
 using SoftwareOne.Rql.Abstractions.Constant;
 using SoftwareOne.Rql.Abstractions.Group;
 
-namespace Rql.UnitTests
+namespace Rql.Tests.Unit
 {
     public abstract class ParserTest
     {

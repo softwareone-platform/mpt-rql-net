@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 	<ItemGroup>
-		<InternalsVisibleTo Include="Rql.IntegrationTests" />
+		<InternalsVisibleTo Include="Rql.Tests.Integration" />
 	</ItemGroup>
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.0.123" />
