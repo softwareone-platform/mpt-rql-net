@@ -9,8 +9,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{00A06D9F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rql.UnitTests", "tests\Rql.UnitTests\Rql.UnitTests.csproj", "{9B05DE05-D654-41EC-802E-59A47EF95725}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "SoftwareOne.Rql.Parsers.Declarative.UnitTests", "tests\SoftwareOne.Rql.Parsers.Declarative.UnitTests\SoftwareOne.Rql.Parsers.Declarative.UnitTests.fsproj", "{6C4FECC9-CE0B-4CB2-A011-93744DCBD977}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rql.Performance.Test", "tests\Rql.Performance.Test\Rql.Performance.Test.csproj", "{D64ED9E0-B9DF-4C74-A8C8-C5FB736997CF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SoftwareOne.Rql.Abstractions", "src\SoftwareOne.Rql.Abstractions\SoftwareOne.Rql.Abstractions.csproj", "{016FB5A6-46F2-4617-A990-B20B73E1F3E1}"
@@ -18,8 +16,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SoftwareOne.Rql.Extensions", "src\SoftwareOne.Rql.Extensions\SoftwareOne.Rql.Extensions.csproj", "{DC26CD43-9F7B-42AE-8D5E-66B701E4EC58}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SoftwareOne.Rql.Linq", "src\SoftwareOne.Rql.Linq\SoftwareOne.Rql.Linq.csproj", "{E5EA0BD4-D41C-46CA-849B-3C0444D5540D}"
-EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "SoftwareOne.Rql.Parsers.Declarative", "src\SoftwareOne.Rql.Parsers.Declarative\SoftwareOne.Rql.Parsers.Declarative.fsproj", "{445D0086-949A-4B5C-AE72-73E9259C2FFE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SoftwareOne.Rql.Parsers.Linear", "src\SoftwareOne.Rql.Parsers.Linear\SoftwareOne.Rql.Parsers.Linear.csproj", "{F88AC7F7-A8E6-4AD2-AE17-DAEB6ACAA094}"
 EndProject
@@ -49,10 +45,6 @@ Global
 		{9B05DE05-D654-41EC-802E-59A47EF95725}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B05DE05-D654-41EC-802E-59A47EF95725}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9B05DE05-D654-41EC-802E-59A47EF95725}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6C4FECC9-CE0B-4CB2-A011-93744DCBD977}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6C4FECC9-CE0B-4CB2-A011-93744DCBD977}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6C4FECC9-CE0B-4CB2-A011-93744DCBD977}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6C4FECC9-CE0B-4CB2-A011-93744DCBD977}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D64ED9E0-B9DF-4C74-A8C8-C5FB736997CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D64ED9E0-B9DF-4C74-A8C8-C5FB736997CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D64ED9E0-B9DF-4C74-A8C8-C5FB736997CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -69,10 +61,6 @@ Global
 		{E5EA0BD4-D41C-46CA-849B-3C0444D5540D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E5EA0BD4-D41C-46CA-849B-3C0444D5540D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E5EA0BD4-D41C-46CA-849B-3C0444D5540D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{445D0086-949A-4B5C-AE72-73E9259C2FFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{445D0086-949A-4B5C-AE72-73E9259C2FFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{445D0086-949A-4B5C-AE72-73E9259C2FFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{445D0086-949A-4B5C-AE72-73E9259C2FFE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F88AC7F7-A8E6-4AD2-AE17-DAEB6ACAA094}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F88AC7F7-A8E6-4AD2-AE17-DAEB6ACAA094}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F88AC7F7-A8E6-4AD2-AE17-DAEB6ACAA094}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -104,7 +92,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{AAF3E6D7-1DBE-490E-988C-1B270C3379EE} = {00A06D9F-810C-4CD7-A71F-108C64964294}
 		{9B05DE05-D654-41EC-802E-59A47EF95725} = {00A06D9F-810C-4CD7-A71F-108C64964294}
-		{6C4FECC9-CE0B-4CB2-A011-93744DCBD977} = {00A06D9F-810C-4CD7-A71F-108C64964294}
 		{D64ED9E0-B9DF-4C74-A8C8-C5FB736997CF} = {00A06D9F-810C-4CD7-A71F-108C64964294}
 		{FADE2C50-6847-4F88-99AA-8D8E2C289C44} = {57D37A0D-1591-40C7-83D3-8D0A423AA85E}
 		{84D07375-0C45-4840-B29C-618B9B696C34} = {57D37A0D-1591-40C7-83D3-8D0A423AA85E}
