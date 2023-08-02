@@ -1,4 +1,5 @@
-﻿using ErrorOr;
+﻿using System.Globalization;
+using ErrorOr;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators
 {
@@ -8,7 +9,7 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators
         {
             try
             {
-                return Convert.ChangeType(value, type);
+                return Convert.ChangeType(value, type, CultureInfo.InvariantCulture);
             }
             catch (FormatException)
             {
@@ -19,6 +20,5 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators
                 return Error.Validation(description: $"Error converting constant.");
             }
         }
-
     }
 }
