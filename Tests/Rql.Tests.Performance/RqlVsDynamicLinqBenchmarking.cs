@@ -23,9 +23,9 @@ public class RqlVsDynamicLinqBenchmarking
         _host = Host.CreateDefaultBuilder()
             .ConfigureServices(services =>
             {
-                services.AddSoftwareOneRql(t =>
+                services.AddSoftwareOneRql(rqlOptions =>
                 {
-                    t.ScanForMappings(typeof(RqlVsDynamicLinqBenchmarking).Assembly);
+                    rqlOptions.ScanForMappings(typeof(RqlVsDynamicLinqBenchmarking).Assembly);
                 });
             })
             .Build();

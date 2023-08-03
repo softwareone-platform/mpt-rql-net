@@ -18,15 +18,21 @@ public class TestExecutor : IDisposable
         _client = _factory.CreateClient();
     }
 
-    public Task Execute(Func<SampleEntityView, bool> filter,
-        string? query = null, string? order = null, string? select = null,
+    public Task Execute(
+        Func<SampleEntityView, bool> filter,
+        string? query = null,
+        string? order = null,
+        string? select = null,
         bool isHappyFlow = true)
     {
         return Execute(MockProductRepository.View.Where(filter), query, order, select, isHappyFlow);
     }
 
-    public async Task Execute(IEnumerable<SampleEntityView> toCompare,
-        string? query = null, string? order = null, string? select = null,
+    public async Task Execute(
+        IEnumerable<SampleEntityView> toCompare,
+        string? query = null,
+        string? order = null,
+        string? select = null,
         bool isHappyFlow = true)
     {
         var response = await _client.GetAsync($"/memory/sample?query={query}&order={order}&select={select}");

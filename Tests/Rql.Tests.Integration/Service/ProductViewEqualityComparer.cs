@@ -5,13 +5,13 @@ namespace Rql.Tests.Integration.Service;
 
 internal class ProductViewEqualityComparer : IEqualityComparer<SampleEntityView>
 {
-    public bool Equals(SampleEntityView? x, SampleEntityView? y)
+    public bool Equals(SampleEntityView? left, SampleEntityView? right)
     {
-        return x != null && y != null && x.Id == y.Id;
+        return left != null && right != null && left.Id == right.Id;
     }
 
-    public int GetHashCode([DisallowNull] SampleEntityView obj)
+    public int GetHashCode([DisallowNull] SampleEntityView subject)
     {
-        return obj.Id.GetHashCode();
+        return subject.Id.GetHashCode();
     }
 }
