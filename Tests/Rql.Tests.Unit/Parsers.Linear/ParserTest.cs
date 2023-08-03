@@ -272,5 +272,4 @@ public class ParserTest
         Assert.Equal(prop, itemMember.Value);
         Assert.Equal(value, itemConst.Value);
     }
-
 }
