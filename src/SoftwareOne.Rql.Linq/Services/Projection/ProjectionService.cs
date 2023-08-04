@@ -1,5 +1,6 @@
 ﻿using ErrorOr;
 using SoftwareOne.Rql.Abstractions;
+using SoftwareOne.Rql.Linq.Configuration;
 using SoftwareOne.Rql.Linq.Core;
 using SoftwareOne.Rql.Linq.Core.Metadata;
 using System.Linq.Expressions;
@@ -10,11 +11,13 @@ namespace SoftwareOne.Rql.Linq.Services.Projection
 
     internal class ProjectionService<TView> : RqlService, IProjectionService<TView>
     {
+        private readonly IRqlSettings _settings;
         private readonly ITypeMetadataProvider _typeNameMaper;
         private readonly IRqlParser _parser;
 
-        public ProjectionService(ITypeMetadataProvider typeNameMaper, IRqlParser parser) : base(typeNameMaper)
+        public ProjectionService(IRqlSettings settings, ITypeMetadataProvider typeNameMaper, IRqlParser parser) : base(typeNameMaper)
         {
+            _settings = settings;
             _typeNameMaper = typeNameMaper;
             _parser = parser;
         }
@@ -45,10 +48,6 @@ namespace SoftwareOne.Rql.Linq.Services.Projection
 
         private ErrorOr<MemberInitExpression> GetSelector(Expression param, ProjectionNode node, int depth)
         {
-            if (node.Type == ProjectionNodeType.Value)
-                return Error.Validation(MakeErrorCode(node.Value.ToString()), 
-                    $"Simple property was not expected. Are you missing select statement? Example: {node.Value}(*).");
-
             var properties = _typeNameMaper.ListProperties(param.Type);
             var bindings = new List<MemberBinding>(properties.Count);
 
@@ -63,7 +62,7 @@ namespace SoftwareOne.Rql.Linq.Services.Projection
                 if (node.Children != null && node.Children.TryGetValue(item.Key, out propertyNode))
                 {
                     // property subtracted explicitly
-                    if (!propertyNode!.Sign)
+                    if (!propertyNode!.Sign && propertyNode.Value)
                         continue;
                 }
                 else
@@ -148,6 +147,6 @@ namespace SoftwareOne.Rql.Linq.Services.Projection
             return Expression.Call(null, functions.GetToList(), selectCall);
         }
 
-        private static ProjectionNode MakeDefaultProjectionNode() => new() { Type = ProjectionNodeType.Defaults };
+        private static ProjectionNode MakeDefaultProjectionNode() => new();
     }
 }

@@ -1,4 +1,4 @@
-﻿using SoftwareOne.Rql.Linq.Core.Configuration;
+﻿using SoftwareOne.Rql.Linq.Configuration;
 using System.Collections;
 using System.Reflection;
 

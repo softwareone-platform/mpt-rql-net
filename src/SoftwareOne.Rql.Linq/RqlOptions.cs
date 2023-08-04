@@ -1,4 +1,4 @@
-﻿using SoftwareOne.Rql.Linq.Core.Configuration;
+﻿using SoftwareOne.Rql.Linq.Configuration;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.List;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search;
@@ -14,7 +14,12 @@ namespace SoftwareOne.Rql
             OperatorOverrides = new Dictionary<Type, Type>();
             Settings = new RqlSettings
             {
-                DefaultMemberFlags = MemberFlag.All
+                DefaultMemberFlags = MemberFlag.All,
+                Select = new RqlSelectSettings
+                {
+                    ObjectMode = SelectMode.All,
+                    ReferenceMode = SelectMode.None
+                }
             };
         }
 
@@ -34,12 +39,6 @@ namespace SoftwareOne.Rql
         public RqlOptions OverrideListOperator<TOperator, TImplementation>() where TOperator : IListOperator where TImplementation : TOperator
             => OverrideOperatorInternal<TOperator, TImplementation>();
 
-        public RqlOptions SetDefaultMemberFlags(MemberFlag flags)
-        {
-            Settings.DefaultMemberFlags = flags;
-            return this;
-        }
-
         private RqlOptions OverrideOperatorInternal<TExpression, TImplementation>()
         {
             OperatorOverrides[typeof(TExpression)] = typeof(TImplementation);
@@ -55,6 +54,12 @@ namespace SoftwareOne.Rql
         public RqlOptions ScanForMappings(Assembly assembly)
         {
             ViewMappersAssembly = assembly;
+            return this;
+        }
+
+        public RqlOptions Configure(Action<IRqlSettings> configure)
+        {
+            configure(Settings);
             return this;
         }
     }
