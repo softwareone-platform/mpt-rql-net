@@ -1,11 +1,10 @@
-﻿namespace Rql.Tests.Performance
+﻿namespace Rql.Tests.Performance;
+
+internal class Program
 {
-    internal class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
-        {
-            BenchmarkDotNet.Running.BenchmarkRunner.Run<RqlVsDynamicLinq>();
-            Console.ReadKey();
-        }
+        BenchmarkDotNet.Running.BenchmarkRunner.Run<RqlVsDynamicLinqBenchmarking>();
+        Console.ReadKey();
     }
 }
