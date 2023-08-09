@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
 using Rql.Tests.Common;
+using Rql.Tests.Integration.Service;
 using Xunit;
 
 namespace Rql.Tests.Integration;

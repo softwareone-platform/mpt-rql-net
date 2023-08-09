@@ -1,12 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
-using Rql.Sample.Contracts.InMemory;
+﻿using Rql.Sample.Contracts.InMemory;
 using Rql.Tests.Common;
 using Rql.Tests.Integration.Factory;
-using Rql.Tests.Integration.Mock;
-using Rql.Tests.Integration.Service;
 using Xunit;
 
-namespace Rql.Tests.Integration;
+namespace Rql.Tests.Integration.Service;
 
 public class TestExecutor : IDisposable
 {
