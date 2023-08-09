@@ -12,10 +12,11 @@ namespace SoftwareOne.Rql.Linq.Core.Metadata
             _settings = settings;
         }
 
-        public RqlPropertyInfo MakeRqlPropertyInfo(PropertyInfo property, RqlMemberAttribute? typeAttribute)
+        public RqlPropertyInfo MakeRqlPropertyInfo(string name, PropertyInfo property, RqlMemberAttribute? typeAttribute)
         {
             var pi = new RqlPropertyInfo
             {
+                Name = name,
                 Property = property,
                 Type = GetRqlPropertyType(property),
                 Flags = _settings.DefaultMemberFlags

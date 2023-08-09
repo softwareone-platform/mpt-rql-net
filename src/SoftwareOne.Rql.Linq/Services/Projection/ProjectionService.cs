@@ -12,13 +12,13 @@ namespace SoftwareOne.Rql.Linq.Services.Projection
     internal class ProjectionService<TView> : RqlService, IProjectionService<TView>
     {
         private readonly IRqlSettings _settings;
-        private readonly ITypeMetadataProvider _typeNameMaper;
+        private readonly ITypeMetadataProvider _typeMetadataProvider;
         private readonly IRqlParser _parser;
 
-        public ProjectionService(IRqlSettings settings, ITypeMetadataProvider typeNameMaper, IRqlParser parser) : base(typeNameMaper)
+        public ProjectionService(IRqlSettings settings, ITypeMetadataProvider typeMetadataProvider, IRqlParser parser) : base(typeMetadataProvider)
         {
             _settings = settings;
-            _typeNameMaper = typeNameMaper;
+            _typeMetadataProvider = typeMetadataProvider;
             _parser = parser;
         }
 
@@ -48,53 +48,31 @@ namespace SoftwareOne.Rql.Linq.Services.Projection
 
         private ErrorOr<MemberInitExpression> GetSelector(Expression param, ProjectionNode node, int depth)
         {
-            var properties = _typeNameMaper.ListProperties(param.Type);
-            var bindings = new List<MemberBinding>(properties.Count);
+            var properties = _typeMetadataProvider.GetProperties(param.Type);
+            var bindings = new List<MemberBinding>(properties.Count());
 
             var errors = new List<Error>();
 
-            foreach (var item in properties)
+            foreach (var rqlPropery in properties)
             {
-                var propertyWrapper = item.Value;
-                var property = propertyWrapper.Property;
-
-                ProjectionNode? propertyNode = null;
-                if (node.Children != null && node.Children.TryGetValue(item.Key, out propertyNode))
+                var propertyInit = rqlPropery.Type switch
                 {
-                    // property subtracted explicitly
-                    if (!propertyNode!.Sign && propertyNode.Value)
-                        continue;
-                }
-                else
-                {
-                    // current node is non default
-                    if (node.Type == ProjectionNodeType.None)
-                        continue;
-
-                    // or else property is not a default
-                    else if (!item.Value.Flags.HasFlag(MemberFlag.IsDefault))
-                        continue;
-                }
-
-                var memberAccess = Expression.MakeMemberAccess(param, property);
-
-                var eoPropertyInit = propertyWrapper.Type switch
-                {
-                    RqlPropertyType.Primitive => memberAccess,
-                    RqlPropertyType.Binary => memberAccess,
-                    RqlPropertyType.Reference => ProcessComplexProperty(memberAccess, propertyNode, depth, ProcessReferenceProperty),
-                    RqlPropertyType.Collection => ProcessComplexProperty(memberAccess, propertyNode, depth, ProcessCollectionProperty),
+                    RqlPropertyType.Primitive => ProcessPrimitiveProperty(param, node, rqlPropery, depth),
+                    RqlPropertyType.Binary => ProcessPrimitiveProperty(param, node, rqlPropery, depth),
+                    RqlPropertyType.Reference => ProcessComplexProperty(param, node, rqlPropery, depth, ProcessReferenceProperty),
+                    RqlPropertyType.Collection => ProcessComplexProperty(param, node, rqlPropery, depth, ProcessCollectionProperty),
                     _ => throw new NotImplementedException("Unknown RQL property type"),
                 };
 
 
-                if (eoPropertyInit.IsError)
-                    errors.AddRange(eoPropertyInit.Errors);
-
-                if (eoPropertyInit.Value == null)
+                if (propertyInit.IsError)
+                {
+                    errors.AddRange(propertyInit.Errors);
                     continue;
+                }
 
-                bindings.Add(Expression.Bind(property, eoPropertyInit.Value));
+                if (propertyInit.Value != null)
+                    bindings.Add(Expression.Bind(rqlPropery.Property, propertyInit.Value));
             }
 
             if (errors.Any())
@@ -103,16 +81,27 @@ namespace SoftwareOne.Rql.Linq.Services.Projection
             return Expression.MemberInit(Expression.New(param.Type.GetConstructor(Type.EmptyTypes)!), bindings);
         }
 
-        protected static ErrorOr<Expression?> ProcessComplexProperty(MemberExpression memberAccess, ProjectionNode? propertyNode, int depth,
+        protected static ErrorOr<Expression?> ProcessPrimitiveProperty(Expression param, ProjectionNode parentNode, RqlPropertyInfo propertyInfo, int depth)
+        {
+            if (!parentNode.Sign || depth > 0 && !propertyInfo.Flags.HasFlag(MemberFlag.IsDefault))
+                return (Expression?)null;
+
+            return Expression.MakeMemberAccess(param, propertyInfo.Property);
+        }
+
+        protected ErrorOr<Expression?> ProcessComplexProperty(Expression param, ProjectionNode parentNode, RqlPropertyInfo propertyInfo, int depth,
             ComplexPropertyProcessor processor)
         {
-            if (propertyNode == null)
+            if (parentNode.Children != null && parentNode.Children.TryGetValue(propertyInfo...Key, out propertyNode))
             {
-                if (depth == 0)
-                    propertyNode = MakeDefaultProjectionNode();
-                else
-                    return (Expression?)null;
+                // property subtracted explicitly
+                if (!propertyNode!.Sign && propertyNode.Value)
+                    continue;
             }
+
+
+            if (propertyNode == null || depth >= _settings.Select.MaxSelectDepth)
+                return (Expression?)null;
 
             return processor(memberAccess, propertyNode, depth);
         }
@@ -147,6 +136,6 @@ namespace SoftwareOne.Rql.Linq.Services.Projection
             return Expression.Call(null, functions.GetToList(), selectCall);
         }
 
-        private static ProjectionNode MakeDefaultProjectionNode() => new();
+        private static ProjectionNode MakeDefaultProjectionNode() => new() { Sign = true };
     }
 }

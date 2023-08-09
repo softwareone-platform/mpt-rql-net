@@ -24,14 +24,13 @@ namespace SoftwareOne.Rql.Linq.Services
                     if (current.IsError)
                         return current;
 
-                    var propInfo = _typeNameMaper.GetPropertyByDisplayName(current.Value.Expression.Type, segment);
                     var prevLenght = current.Value.Path.Length;
                     var cumulPath = current.Value.FullPath.AsMemory(0, (prevLenght > 0 ? prevLenght + 1 : prevLenght) + segment.Length);
 
-                    if (propInfo == null)
+                    if (!_typeNameMaper.TryGetPropertyByDisplayName(current.Value.Expression.Type, segment, out var propInfo))
                         return Error.Validation(MakeErrorCode(cumulPath.ToString()), "Invalid property path.");
 
-                    var expression = (Expression)Expression.MakeMemberAccess(current.Value!.Expression, propInfo.Property);
+                    var expression = (Expression)Expression.MakeMemberAccess(current.Value!.Expression, propInfo!.Property);
                     var pInfo = new MemberPathInfo(current.Value.FullPath, cumulPath, propInfo, expression);
 
                     if (pathHandler != null)
