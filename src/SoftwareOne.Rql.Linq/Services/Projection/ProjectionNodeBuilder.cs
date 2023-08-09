@@ -13,10 +13,10 @@ namespace SoftwareOne.Rql.Linq.Services.Projection
 
             // named generic groups are complex properties
             if (srcNode is RqlGenericGroup genGrp && !string.IsNullOrEmpty(genGrp.Name))
-                wrap.MergeChild(BuildFromRqlExpression(srcNode));
+                wrap.AddChild(BuildFromRqlExpression(srcNode));
             else if (srcNode.Items != null)
                 foreach (var child in srcNode.Items)
-                    wrap.MergeChild(BuildFromRqlExpression(child));
+                    wrap.AddChild(BuildFromRqlExpression(child));
 
             return wrap;
         }
@@ -32,13 +32,13 @@ namespace SoftwareOne.Rql.Linq.Services.Projection
                         var result = new ProjectionNode
                         {
                             Value = path,
-                            Sign = transientSign ?? sign
+                            Mode = SignToMode(sign)
                         };
 
                         if (grp.Items != null)
                             foreach (var child in grp.Items)
                             {
-                                result.MergeChild(BuildFromRqlExpression(child));
+                                result.AddChild(BuildFromRqlExpression(child));
                             }
                         return result;
                     }
@@ -48,7 +48,7 @@ namespace SoftwareOne.Rql.Linq.Services.Projection
                         return new ProjectionNode
                         {
                             Value = path,
-                            Sign = sign
+                            Mode = SignToMode(sign)
                         };
                     }
                 default:
@@ -56,7 +56,7 @@ namespace SoftwareOne.Rql.Linq.Services.Projection
             };
         }
 
-        private static void MergeChild(this ProjectionNode parent, ProjectionNode child)
+        private static void AddChild(this ProjectionNode parent, ProjectionNode child)
         {
             parent.Children ??= new Dictionary<string, ProjectionNode>(StringComparer.OrdinalIgnoreCase);
             var path = child.Value.ToString();
@@ -65,17 +65,14 @@ namespace SoftwareOne.Rql.Linq.Services.Projection
             {
                 if (child.Children != null)
                     foreach (var item in child.Children)
-                        existing.MergeChild(item.Value);
-
-                if (child.Sign)
-                    existing.Sign = child.Sign;
+                        existing.AddChild(item.Value);
             }
             else
             {
                 parent.Children[path] = child;
-                if (child.Sign)
-                    parent.Sign = child.Sign;
             }
         }
+
+        private static ProjectionNode.NodeMode SignToMode(bool sign) => sign ? ProjectionNode.NodeMode.Add : ProjectionNode.NodeMode.Subtract;
     }
 }

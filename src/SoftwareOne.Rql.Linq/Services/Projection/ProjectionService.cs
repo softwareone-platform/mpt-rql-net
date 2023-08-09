@@ -55,15 +55,20 @@ namespace SoftwareOne.Rql.Linq.Services.Projection
 
             foreach (var rqlPropery in properties)
             {
+                if (node.Mode == ProjectionNode.NodeMode.Default && !rqlPropery.Flags.HasFlag(MemberFlag.IsDefault))
+                    continue;
+
+                if (node.TryGetChild(rqlPropery.Name, out var propertyNode) && propertyNode!.Mode == ProjectionNode.NodeMode.Subtract)
+                    continue;
+
                 var propertyInit = rqlPropery.Type switch
                 {
-                    RqlPropertyType.Primitive => ProcessPrimitiveProperty(param, node, rqlPropery, depth),
-                    RqlPropertyType.Binary => ProcessPrimitiveProperty(param, node, rqlPropery, depth),
-                    RqlPropertyType.Reference => ProcessComplexProperty(param, node, rqlPropery, depth, ProcessReferenceProperty),
-                    RqlPropertyType.Collection => ProcessComplexProperty(param, node, rqlPropery, depth, ProcessCollectionProperty),
+                    RqlPropertyType.Primitive => Expression.MakeMemberAccess(param, rqlPropery.Property),
+                    RqlPropertyType.Binary => Expression.MakeMemberAccess(param, rqlPropery.Property),
+                    RqlPropertyType.Reference => ProcessComplexProperty(param, propertyNode, rqlPropery, depth, ProcessReferenceProperty),
+                    RqlPropertyType.Collection => ProcessComplexProperty(param, propertyNode, rqlPropery, depth, ProcessCollectionProperty),
                     _ => throw new NotImplementedException("Unknown RQL property type"),
                 };
-
 
                 if (propertyInit.IsError)
                 {
@@ -81,29 +86,16 @@ namespace SoftwareOne.Rql.Linq.Services.Projection
             return Expression.MemberInit(Expression.New(param.Type.GetConstructor(Type.EmptyTypes)!), bindings);
         }
 
-        protected static ErrorOr<Expression?> ProcessPrimitiveProperty(Expression param, ProjectionNode parentNode, RqlPropertyInfo propertyInfo, int depth)
-        {
-            if (!parentNode.Sign || depth > 0 && !propertyInfo.Flags.HasFlag(MemberFlag.IsDefault))
-                return (Expression?)null;
-
-            return Expression.MakeMemberAccess(param, propertyInfo.Property);
-        }
-
-        protected ErrorOr<Expression?> ProcessComplexProperty(Expression param, ProjectionNode parentNode, RqlPropertyInfo propertyInfo, int depth,
+        protected ErrorOr<Expression?> ProcessComplexProperty(Expression param, ProjectionNode? propertyNode, RqlPropertyInfo propertyInfo, int depth,
             ComplexPropertyProcessor processor)
         {
-            if (parentNode.Children != null && parentNode.Children.TryGetValue(propertyInfo...Key, out propertyNode))
-            {
-                // property subtracted explicitly
-                if (!propertyNode!.Sign && propertyNode.Value)
-                    continue;
-            }
-
-
-            if (propertyNode == null || depth >= _settings.Select.MaxSelectDepth)
+            if (depth >= _settings.Select.MaxSelectDepth)
                 return (Expression?)null;
 
-            return processor(memberAccess, propertyNode, depth);
+            propertyNode ??= new ProjectionNode { Value = propertyInfo.Name.AsMemory(), Mode = ProjectionNode.NodeMode.Default };
+
+            var memberAccess = Expression.MakeMemberAccess(param, propertyInfo.Property);
+            return processor(memberAccess, propertyNode!, depth);
         }
 
         protected ErrorOr<Expression?> ProcessReferenceProperty(MemberExpression memberAccess, ProjectionNode propertyNode, int depth)
@@ -136,6 +128,6 @@ namespace SoftwareOne.Rql.Linq.Services.Projection
             return Expression.Call(null, functions.GetToList(), selectCall);
         }
 
-        private static ProjectionNode MakeDefaultProjectionNode() => new() { Sign = true };
+        private static ProjectionNode MakeDefaultProjectionNode() => new() { Mode = ProjectionNode.NodeMode.Add };
     }
 }

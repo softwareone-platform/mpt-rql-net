@@ -12,7 +12,7 @@ namespace SoftwareOne.Rql.Linq.Core.Metadata
 
         public TypeMetadataProvider(IPropertyNameProvider propertyNameProvider, IPropertyMetadataProvider propertyMetadataProvider)
         {
-            _cache = new ConcurrentDictionary<Type, Dictionary<string, RqlPropertyInfo>();
+            _cache = new ConcurrentDictionary<Type, Dictionary<string, RqlPropertyInfo>>();
             _propertyNameProvider = propertyNameProvider;
             _propertyMetadataProvider = propertyMetadataProvider;
         }
