@@ -3,12 +3,11 @@
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Docker.DotNet" Version="3.125.15" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.19" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
 		<PackageReference Include="xunit" Version="2.4.2" />
