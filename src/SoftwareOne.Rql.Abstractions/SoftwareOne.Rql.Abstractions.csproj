@@ -4,7 +4,6 @@
 		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Product>SoftwareOne.Rql.Linq</Product>
-		<Copyright>SoftwareOne © 2023</Copyright>
 		<Description>RQL abstraction definitions. Not to be referenced directly.</Description>
 		<RepositoryUrl>https://dev.azure.com/softwareone-pc/PyraCloud/_git/one-lib-rql-extensions</RepositoryUrl>
 	</PropertyGroup>
