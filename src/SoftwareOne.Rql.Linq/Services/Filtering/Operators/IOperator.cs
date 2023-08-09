@@ -1,6 +1,5 @@
-﻿namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators
+﻿namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators;
+
+public interface IOperator
 {
-    public interface IOperator
-    {
-    }
 }

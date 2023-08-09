@@ -3,7 +3,7 @@ using Rql.Sample.Application.Common.Interfaces.Persistence.InMemory;
 using Rql.Sample.Contracts.InMemory;
 using Rql.Sample.Domain.InMemory;
 
-namespace Rql.Tests.Integration.Mock;
+namespace Rql.Tests.Common;
 
 public class MockProductRepository : ISampleRepository
 {

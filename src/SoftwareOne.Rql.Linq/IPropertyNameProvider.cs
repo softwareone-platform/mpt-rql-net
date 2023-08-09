@@ -1,10 +1,9 @@
 ﻿using System.Reflection;
 
 #pragma warning disable IDE0130
-namespace SoftwareOne.Rql
+namespace SoftwareOne.Rql;
+
+public interface IPropertyNameProvider
 {
-    public interface IPropertyNameProvider
-    {
-        string GetName(PropertyInfo property);
-    }
+    string GetName(PropertyInfo property);
 }

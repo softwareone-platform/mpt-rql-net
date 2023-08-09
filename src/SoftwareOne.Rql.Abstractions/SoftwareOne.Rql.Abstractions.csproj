@@ -8,7 +8,13 @@
 		<Company>SoftwareOne</Company>
 		<Product>SoftwareOne.Rql.Linq</Product>
 		<Copyright>SoftwareOne © 2023</Copyright>
-		<Description>RQL core classes. Not to be referred directly.</Description>
-		<RepositoryUrl>https://dev.azure.com/softwareone-pc/PyraCloud/_git/poc-common-api</RepositoryUrl>
+		<Description>RQL abstraction definitions. Not to be referenced directly.</Description>
+		<RepositoryUrl>https://dev.azure.com/softwareone-pc/PyraCloud/_git/one-lib-rql-extensions</RepositoryUrl>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+			<_Parameter1>Rql.Tests.Unit</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
 </Project>

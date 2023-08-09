@@ -9,7 +9,7 @@
 		<Product>SoftwareOne.Rql.Linq</Product>
 		<Copyright>SoftwareOne © 2023</Copyright>
 		<Description>RQL implementation for .Net. Linq approach.</Description>
-		<RepositoryUrl>https://dev.azure.com/softwareone-pc/PyraCloud/_git/poc-common-api</RepositoryUrl>
+		<RepositoryUrl>https://dev.azure.com/softwareone-pc/PyraCloud/_git/one-lib-rql-extensions</RepositoryUrl>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -19,6 +19,12 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\SoftwareOne.Rql.Parsers.Linear\SoftwareOne.Rql.Parsers.Linear.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+			<_Parameter1>Rql.Tests.Unit</_Parameter1>
+		</AssemblyAttribute>
 	</ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 ﻿namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators
 {
-    internal class OperatorHandlerMapper : IOperatorHandlerMaper
+    internal class OperatorHandlerMapper : IOperatorHandlerMapper
     {
         private readonly Dictionary<Type, Type> _mapping;
 

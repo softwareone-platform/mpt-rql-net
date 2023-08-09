@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
 using Rql.Sample.Contracts.InMemory;
+using Rql.Tests.Common;
 using Rql.Tests.Integration.Factory;
-using Rql.Tests.Integration.Mock;
 using Rql.Tests.Integration.Service;
 using Xunit;
 

@@ -1,13 +1,10 @@
-﻿using System.Reflection;
+﻿namespace SoftwareOne.Rql.Linq.Core.Metadata;
 
-namespace SoftwareOne.Rql.Linq.Core.Metadata
+internal interface ITypeMetadataProvider
 {
-    internal interface ITypeMetadataProvider
-    {
-        string GetDisplayName(Type type, string propertyName);
+    string GetDisplayName(Type type, string propertyName);
 
-        RqlPropertyInfo? GetPropertyByDisplayName(Type type, string displayName);
+    RqlPropertyInfo? GetPropertyByDisplayName(Type type, string displayName);
 
-        Dictionary<string, RqlPropertyInfo> ListProperties(Type type);
-    }
+    Dictionary<string, RqlPropertyInfo> ListProperties(Type type);
 }

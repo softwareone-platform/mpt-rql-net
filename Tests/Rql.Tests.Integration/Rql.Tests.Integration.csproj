@@ -24,6 +24,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\samples\Rql.Sample.Api\Rql.Sample.Api.csproj" />
+		<ProjectReference Include="..\Rql.Tests.Common\Rql.Tests.Common.csproj" />
 	</ItemGroup>
 
 </Project>
