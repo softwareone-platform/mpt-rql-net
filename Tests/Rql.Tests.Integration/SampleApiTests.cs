@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
 using Rql.Tests.Common;
+using Rql.Tests.Integration.Fixtures;
 using Rql.Tests.Integration.Service;
 using Xunit;
 
 namespace Rql.Tests.Integration;
 
-public class SampleApiTests : IClassFixture<WebApplicationFactory<Sample.Api.Program>>, IDisposable
+public class SampleApiTests : IClassFixture<SampleApiInstanceFixture>
 {
     private readonly TestExecutor _testExecutor;
 
@@ -153,6 +154,4 @@ public class SampleApiTests : IClassFixture<WebApplicationFactory<Sample.Api.Pro
     [InlineData("or(eq(id,3),eq(id,5),eq(name,Jewelry Widget))", false)]
     public Task Or_Id_Name_Equals(string query, bool isHappyFlow = true)
        => _testExecutor.Execute(t => t.Id == 1 || t.Id == 2 || t.Name == "Jewelry Widget", query, isHappyFlow: isHappyFlow);
-
-    public void Dispose() => _testExecutor.Dispose();
 }
