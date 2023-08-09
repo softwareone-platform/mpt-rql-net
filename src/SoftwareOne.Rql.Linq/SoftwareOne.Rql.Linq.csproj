@@ -3,12 +3,9 @@
 	<PropertyGroup>
 		<TargetFrameworks>net7.0;net6.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<Version>1.1.0-alpha</Version>
-		<Company>SoftwareOne</Company>
 		<Product>SoftwareOne.Rql.Linq</Product>
-		<Copyright>SoftwareOne © 2023</Copyright>
 		<Description>RQL implementation for .Net. Linq approach.</Description>
+		<IsPackable>true</IsPackable>
 		<RepositoryUrl>https://dev.azure.com/softwareone-pc/PyraCloud/_git/one-lib-rql-extensions</RepositoryUrl>
 	</PropertyGroup>
 

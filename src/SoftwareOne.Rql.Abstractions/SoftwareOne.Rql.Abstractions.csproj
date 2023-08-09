@@ -3,9 +3,6 @@
 	<PropertyGroup>
 		<TargetFrameworks>net7.0;net6.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<Version>1.1.0-alpha</Version>
-		<Company>SoftwareOne</Company>
 		<Product>SoftwareOne.Rql.Linq</Product>
 		<Copyright>SoftwareOne © 2023</Copyright>
 		<Description>RQL abstraction definitions. Not to be referenced directly.</Description>
