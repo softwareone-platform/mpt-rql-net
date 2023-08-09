@@ -3,7 +3,6 @@ using System.Reflection;
 
 namespace SoftwareOne.Rql.Linq.Core.Metadata;
 
-
 internal class TypeMetadataProvider : ITypeMetadataProvider
 {
     private readonly IPropertyNameProvider _propertyNameProvider;
@@ -19,7 +18,7 @@ internal class TypeMetadataProvider : ITypeMetadataProvider
 
     public string GetDisplayName(Type type, string name)
     {
-        return GetCache(type).DisplayNameByName.TryGetValue(name, out string? displayName) ? displayName : name;
+        return GetCache(type).DisplayNameByName.TryGetValue(name, out var displayName) ? displayName : name;
     }
 
     public Dictionary<string, RqlPropertyInfo> ListProperties(Type type)
@@ -29,9 +28,7 @@ internal class TypeMetadataProvider : ITypeMetadataProvider
 
     public RqlPropertyInfo? GetPropertyByDisplayName(Type type, string displayName)
     {
-        if (GetCache(type).PropertyByDisplayName.TryGetValue(displayName, out RqlPropertyInfo? property))
-            return property;
-        return null;
+        return GetCache(type).PropertyByDisplayName.TryGetValue(displayName, out var property) ? property : null;
     }
 
     private (Dictionary<string, RqlPropertyInfo> PropertyByDisplayName, Dictionary<string, string> DisplayNameByName) GetCache(Type type)
