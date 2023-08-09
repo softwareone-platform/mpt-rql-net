@@ -60,7 +60,7 @@ public static class RqlExtensions
             if (expMapping.ContainsKey(attribute.Key))
                 throw new Exception($"Expression key '{attribute.Key}' is used more than once.");
 
-            var implementation = options.OperatorOverrides.TryGetValue(type, out var ovr) ? ovr : attribute.Implementation;
+            var implementation = options.OperatorOverrides.TryGetValue(type, out var typeValue) ? typeValue : attribute.Implementation;
 
             services.AddSingleton(type, implementation);
             expMapping.Add(attribute.Key, type);
