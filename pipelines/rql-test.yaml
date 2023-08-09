@@ -1,0 +1,93 @@
+name: $(TeamProject)_$(Build.DefinitionName)_$(Build.BuildId)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  branches:
+    include:
+      - main
+        
+variables:
+  isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+
+pool:
+  name: Standard-Linux
+
+stages:
+  - stage: build
+    displayName: Build
+    jobs:
+      - job: Build
+        steps:
+          - template: templates/use_dotnet_steps.yaml
+          - task: PowerShell@2
+            inputs:
+              filePath: ./pipelines/build.ps1
+              arguments: ./artifacts
+    
+          - script: |
+              cp ./artifacts/* $(Build.ArtifactStagingDirectory)
+            displayName: Copy packages to artifacts
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              artifactName: packages
+
+  - stage: test
+    displayName: Test
+    jobs:
+      - job: runUnitTests
+        displayName: Run Unit Tests
+        steps:
+          - template: templates/use_dotnet_steps.yaml
+          - script: |
+              dotnet test --results-directory test_artifacts --filter Unit -c Release --logger trx
+            displayName: Run tests
+          - task: PublishTestResults@2
+            condition: always()
+            displayName: "Publish tests results"
+            inputs:
+              testRunner: "VSTest"
+              testResultsFiles: "test_artifacts/*.trx"
+              failTaskOnFailedTests: true
+              publishTestResults: true
+
+      - job: runIntegrationTests
+        displayName: Run Integration Tests
+        steps:
+          - template: templates/use_dotnet_steps.yaml
+          - script: |
+              dotnet test --results-directory test_artifacts --filter Integration -c Release --logger trx
+            displayName: Run tests
+          - task: PublishTestResults@2
+            condition: always()
+            displayName: "Publish tests results"
+            inputs:
+              testRunner: "VSTest"
+              testResultsFiles: "test_artifacts/*.trx"
+              failTaskOnFailedTests: true
+              publishTestResults: true
+
+  - stage: deploy
+    displayName: "Deploy nuget package"
+    condition: and(succeeded(), eq(variables.isMain, true))
+    jobs:
+      - job:
+        displayName: Deploy to nuget
+        steps:
+          - task: UseDotNet@2
+            continueOnError: true
+            inputs:
+              version: 6.x
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              artifactName: 'packages'
+              targetPath: '$(System.ArtifactsDirectory)'
+            displayName: 'Download Pipeline Artifact'
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: 'push'
+              packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+              nuGetFeedType: 'internal'
+              publishVstsFeed: '18b4703c-2fe6-4542-8437-ce8f3c5bc01b'
+              arguments: --skip-duplicate
+            displayName: Push package to NuGet feed
