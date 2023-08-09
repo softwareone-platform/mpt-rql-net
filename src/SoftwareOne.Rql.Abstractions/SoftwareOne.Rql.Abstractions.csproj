@@ -6,6 +6,7 @@
 		<Product>SoftwareOne.Rql.Linq</Product>
 		<Description>RQL abstraction definitions. Not to be referenced directly.</Description>
 		<RepositoryUrl>https://dev.azure.com/softwareone-pc/PyraCloud/_git/one-lib-rql-extensions</RepositoryUrl>
+		<IsPackable>true</IsPackable>
 	</PropertyGroup>
 
 	<ItemGroup>
