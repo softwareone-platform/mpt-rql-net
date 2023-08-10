@@ -1,10 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net7.0;net6.0</TargetFrameworks>
+		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Product>SoftwareOne.Rql.Linq</Product>
-		<Description>RQL core classes. Not to be referred directly.</Description>
-		<RepositoryUrl>https://dev.azure.com/softwareone-pc/PyraCloud/_git/poc-common-api</RepositoryUrl>
+		<Description>RQL abstraction definitions. Not to be referenced directly.</Description>
+		<RepositoryUrl>https://dev.azure.com/softwareone-pc/PyraCloud/_git/one-lib-rql-extensions</RepositoryUrl>
+		<IsPackable>true</IsPackable>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="Rql.Tests.Unit" />
+	</ItemGroup>
+
 </Project>

@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net7.0;net6.0</TargetFrameworks>
+		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Product>SoftwareOne.Rql.Linq</Product>
 		<Description>RQL implementation for .Net. Linq approach.</Description>
-		<RepositoryUrl>https://dev.azure.com/softwareone-pc/PyraCloud/_git/poc-common-api</RepositoryUrl>
 		<IsPackable>true</IsPackable>
+		<RepositoryUrl>https://dev.azure.com/softwareone-pc/PyraCloud/_git/one-lib-rql-extensions</RepositoryUrl>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -16,6 +16,10 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\SoftwareOne.Rql.Parsers.Linear\SoftwareOne.Rql.Parsers.Linear.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="Rql.Tests.Unit" />
 	</ItemGroup>
 
 </Project>

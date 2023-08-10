@@ -1,10 +1,9 @@
-﻿namespace SoftwareOne.Rql.Linq.Core
+﻿namespace SoftwareOne.Rql.Linq.Core;
+
+internal enum RqlPropertyType
 {
-    internal enum RqlPropertyType
-    {
-        Primitive,
-        Binary,
-        Reference,
-        Collection
-    }
+    Primitive,
+    Binary,
+    Reference,
+    Collection
 }

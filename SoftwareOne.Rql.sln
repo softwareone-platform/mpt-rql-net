@@ -31,6 +31,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rql.Tests.Unit", "Tests\Rql
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rql.Tests.Performance", "Tests\Rql.Tests.Performance\Rql.Tests.Performance.csproj", "{56361218-C94B-4E76-BE6E-A67A2708CA63}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rql.Tests.Common", "Tests\Rql.Tests.Common\Rql.Tests.Common.csproj", "{B7800BEF-1848-4AFE-8281-5E098B1A43FE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +87,10 @@ Global
 		{56361218-C94B-4E76-BE6E-A67A2708CA63}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{56361218-C94B-4E76-BE6E-A67A2708CA63}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{56361218-C94B-4E76-BE6E-A67A2708CA63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7800BEF-1848-4AFE-8281-5E098B1A43FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7800BEF-1848-4AFE-8281-5E098B1A43FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7800BEF-1848-4AFE-8281-5E098B1A43FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7800BEF-1848-4AFE-8281-5E098B1A43FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -98,6 +104,7 @@ Global
 		{AB988B84-E6BF-4D16-9942-7079CF5A2125} = {00A06D9F-810C-4CD7-A71F-108C64964294}
 		{8C7605D7-D88B-4FFB-8B2E-89B83204B6D0} = {00A06D9F-810C-4CD7-A71F-108C64964294}
 		{56361218-C94B-4E76-BE6E-A67A2708CA63} = {00A06D9F-810C-4CD7-A71F-108C64964294}
+		{B7800BEF-1848-4AFE-8281-5E098B1A43FE} = {00A06D9F-810C-4CD7-A71F-108C64964294}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A3AD745F-6707-49CB-8A5B-301F8D55333A}

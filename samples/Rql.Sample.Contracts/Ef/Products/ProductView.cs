@@ -24,7 +24,7 @@ namespace Rql.Sample.Contracts.Ef.Products
         [RqlMember(MemberFlag.RegularAndReference)]
         public int Id { get; set; }
         [RqlMember(MemberFlag.RegularAndReference)]
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
         public Guid RowGuid { get; set; }
         public ProductCategoryView Parent { get; set; }
     }
@@ -34,7 +34,7 @@ namespace Rql.Sample.Contracts.Ef.Products
         [RqlMember(MemberFlag.RegularAndReference)]
         public int Id { get; set; }
         [RqlMember(MemberFlag.RegularAndReference)]
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
         public DateTime ModifiedDate { get; set; }
     }
 

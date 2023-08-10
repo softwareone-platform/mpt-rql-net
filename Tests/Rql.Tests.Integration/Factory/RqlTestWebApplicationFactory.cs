@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Rql.Sample.Application.Common.Interfaces.Persistence.InMemory;
-using Rql.Tests.Integration.Mock;
+using Rql.Tests.Common;
 
 namespace Rql.Tests.Integration.Factory;
 

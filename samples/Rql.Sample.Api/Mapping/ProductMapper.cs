@@ -19,7 +19,7 @@ namespace Rql.Sample.Api.Mapping
               Date = t.SellStartDate,
               Category = new ProductCategoryView
               {
-                  Id = t.ProductCategory.ProductCategoryId,
+                  Id = t.ProductCategory!.ProductCategoryId,
                   Name = t.ProductCategory.Name,
                   RowGuid = t.ProductCategory.Rowguid,
                   Parent = new ProductCategoryView
@@ -31,7 +31,7 @@ namespace Rql.Sample.Api.Mapping
               },
               Model = new ProductModelView
               {
-                  Id = t.ProductModel.ProductModelId,
+                  Id = t.ProductModel!.ProductModelId,
                   Name = t.ProductModel.Name,
                   ModifiedDate = t.ProductModel.ModifiedDate,
               },
@@ -40,7 +40,7 @@ namespace Rql.Sample.Api.Mapping
                   OrderQty = s.OrderQty,
                   SalesOrderDetailId = s.SalesOrderDetailId,
                   SalesOrderId = s.SalesOrderId,
-                  AddressLine1 = s.SalesOrder.BillToAddress.AddressLine1,
+                  AddressLine1 = s.SalesOrder.BillToAddress!.AddressLine1,
                   City = s.SalesOrder.BillToAddress.City
               })
           };

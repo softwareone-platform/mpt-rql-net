@@ -1,7 +1,7 @@
-﻿namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators
+﻿namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators;
+
+public interface IOperatorHandlerProvider
 {
-    internal interface IOperatorHandlerProvider
-    {
-        IOperator GetOperatorHandler(Type expression);
-    }
+    IOperator GetOperatorHandler(Type expression);
 }
+

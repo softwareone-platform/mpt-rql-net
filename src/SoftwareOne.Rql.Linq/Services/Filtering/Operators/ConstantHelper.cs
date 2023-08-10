@@ -1,21 +1,19 @@
-﻿using System.ComponentModel;
+﻿using ErrorOr;
+using System.ComponentModel;
 using System.Globalization;
-using ErrorOr;
 
-namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators
+namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators;
+internal static class ConstantHelper
 {
-    internal static class ConstantHelper
+    public static ErrorOr<object> ChangeType(string value, Type type)
     {
-        public static ErrorOr<object> ChangeType(string value, Type type)
+        try
         {
-            try
-            {
-                return TypeDescriptor.GetConverter(type).ConvertFrom(null, CultureInfo.InvariantCulture, value)!;
-            }
-            catch
-            {
-                return Error.Validation(description: $"Cannot convert value: '{value}'.");
-            }
+            return TypeDescriptor.GetConverter(type).ConvertFrom(null, CultureInfo.InvariantCulture, value)!;
+        }
+        catch
+        {
+            return Error.Validation(description: $"Cannot convert value: '{value}'.");
         }
     }
 }

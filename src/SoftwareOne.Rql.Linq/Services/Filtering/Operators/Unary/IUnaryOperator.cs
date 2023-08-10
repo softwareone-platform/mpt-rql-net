@@ -1,10 +1,9 @@
 ﻿using ErrorOr;
 using System.Linq.Expressions;
 
-namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Unary
+namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Unary;
+
+public interface IUnaryOperator : IOperator
 {
-    public interface IUnaryOperator : IOperator
-    {
-        ErrorOr<Expression> MakeExpression(Expression expression);
-    }
+    ErrorOr<Expression> MakeExpression(Expression expression);
 }
