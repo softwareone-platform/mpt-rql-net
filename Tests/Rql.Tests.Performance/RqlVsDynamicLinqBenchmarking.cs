@@ -14,8 +14,8 @@ namespace Rql.Tests.Performance;
 [MaxColumn]
 public class RqlVsDynamicLinqBenchmarking
 {
-    private IHost _host;
-    private IQueryable<SampleEntity> _query;
+    private IHost _host = null!;
+    private IQueryable<SampleEntity> _query = null!;
 
     [GlobalSetup]
     public void Setup()

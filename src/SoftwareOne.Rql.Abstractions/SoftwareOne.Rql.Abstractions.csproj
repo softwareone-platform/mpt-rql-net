@@ -10,8 +10,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-			<_Parameter1>Rql.Tests.Unit</_Parameter1>
-		</AssemblyAttribute>
+		<InternalsVisibleTo Include="Rql.Tests.Unit" />
 	</ItemGroup>
+
 </Project>

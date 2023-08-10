@@ -22,9 +22,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-			<_Parameter1>Rql.Tests.Common</_Parameter1>
-		</AssemblyAttribute>
+		<InternalsVisibleTo Include="Rql.Tests.Common" />
 	</ItemGroup>
+
 
 </Project>
