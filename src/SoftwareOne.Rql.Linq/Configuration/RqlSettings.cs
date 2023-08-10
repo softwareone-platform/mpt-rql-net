@@ -7,14 +7,14 @@
             Select = new RqlSelectSettings();
         }
 
-        public MemberFlag DefaultMemberFlags { get; set; }
+        public MemberFlag DefaultFlags { get; set; }
         public IRqlSelectSettings Select { get; init; }
     }
 
     internal class RqlSelectSettings : IRqlSelectSettings
     {
-        public SelectMode ObjectMode { get; set; }
+        public SelectMode Mode { get; set; }
         public SelectMode ReferenceMode { get; set; }
-        public int? MaxSelectDepth { get; set; }
+        public int? MaxDepth { get; set; }
     }
 }

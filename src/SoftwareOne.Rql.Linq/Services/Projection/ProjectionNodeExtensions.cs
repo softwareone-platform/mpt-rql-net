@@ -5,9 +5,9 @@ using SoftwareOne.Rql.Linq.Core;
 
 namespace SoftwareOne.Rql.Linq.Services.Projection
 {
-    internal static class ProjectionNodeBuilder
+    internal static class ProjectionNodeExtensions
     {
-        public static ProjectionNode Build(RqlGroup srcNode)
+        public static ProjectionNode ToProjection(this RqlGroup srcNode)
         {
             var wrap = new ProjectionNode();
 
@@ -32,7 +32,7 @@ namespace SoftwareOne.Rql.Linq.Services.Projection
                         var result = new ProjectionNode
                         {
                             Value = path,
-                            Mode = SignToMode(sign)
+                            Mode = SignToSelectMode(sign)
                         };
 
                         if (grp.Items != null)
@@ -48,7 +48,7 @@ namespace SoftwareOne.Rql.Linq.Services.Projection
                         return new ProjectionNode
                         {
                             Value = path,
-                            Mode = SignToMode(sign)
+                            Mode = SignToSelectMode(sign)
                         };
                     }
                 default:
@@ -73,6 +73,6 @@ namespace SoftwareOne.Rql.Linq.Services.Projection
             }
         }
 
-        private static ProjectionNode.NodeMode SignToMode(bool sign) => sign ? ProjectionNode.NodeMode.Add : ProjectionNode.NodeMode.Subtract;
+        private static SelectMode SignToSelectMode(bool sign) => sign ? SelectMode.All : SelectMode.None;
     }
 }

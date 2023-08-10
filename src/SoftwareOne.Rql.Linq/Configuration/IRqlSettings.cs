@@ -4,14 +4,13 @@ namespace SoftwareOne.Rql.Linq.Configuration
 {
     public interface IRqlSettings
     {
-        MemberFlag DefaultMemberFlags { get; set; }
+        MemberFlag DefaultFlags { get; set; }
         IRqlSelectSettings Select { get; }
     }
 
     public interface IRqlSelectSettings
     {
-        SelectMode ObjectMode { get; set; }
-        SelectMode ReferenceMode { get; set; }
-        int? MaxSelectDepth { get; set; }
+        SelectMode Mode { get; set; }
+        int? MaxDepth { get; set; }
     }
 }

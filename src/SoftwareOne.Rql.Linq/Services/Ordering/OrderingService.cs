@@ -41,7 +41,7 @@ namespace SoftwareOne.Rql.Linq.Services.Ordering
 
                 var eoMemberAccess = MakeMemberAccess(param, path.ToString(), path =>
                 {
-                    if (!path.PropertyInfo.Flags.HasFlag(MemberFlag.AllowOrder))
+                    if (!path.PropertyInfo.Flags.HasFlag(MemberFlag.Orderable))
                         return Error.Validation(MakeErrorCode(path.Path.ToString()), "Ordering is not permitted.");
                     return Result.Success;
                 });

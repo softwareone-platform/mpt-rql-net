@@ -19,7 +19,7 @@ namespace SoftwareOne.Rql.Linq.Core.Metadata
                 Name = name,
                 Property = property,
                 Type = GetRqlPropertyType(property),
-                Flags = _settings.DefaultMemberFlags
+                Flags = _settings.DefaultFlags
             };
 
             TryApplyAttributeData(pi, typeAttribute);

@@ -5,10 +5,12 @@ namespace SoftwareOne.Rql
     public enum MemberFlag
     {
         None = 0,
-        IsDefault = 1 << 0,
-        AllowFilter = 1 << 1,
-        AllowOrder = 1 << 2,
+        Reference = 1 << 0,
+        Selectable = 1 << 1,
+        Filterable = 1 << 2,
+        Orderable = 1 << 3,
 
-        All = ~0
+        Regular = Selectable | Filterable | Orderable,
+        RegularAndReference = Regular | Reference
     }
 }

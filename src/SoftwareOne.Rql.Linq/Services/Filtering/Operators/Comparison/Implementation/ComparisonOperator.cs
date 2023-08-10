@@ -16,11 +16,11 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implement
                 return method(member, Expression.Constant(null, member.Type));
             }
 
-            var eoT = ConstantHelper.ChangeType(value, member.Type);
-            if (eoT.IsError)
-                return eoT.Errors;
+            var converted = ConstantHelper.ChangeType(value, member.Type);
+            if (converted.IsError)
+                return converted.Errors;
 
-            ConstantExpression constant = Expression.Constant(eoT.Value, member.Type);
+            ConstantExpression constant = Expression.Constant(converted.Value, member.Type);
 
             return method(member, constant);
         }

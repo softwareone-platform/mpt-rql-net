@@ -106,7 +106,7 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering
 
             var member = MakeMemberAccess(pe, memberConstant.Value, static path =>
             {
-                if (!path.PropertyInfo.Flags.HasFlag(MemberFlag.AllowFilter))
+                if (!path.PropertyInfo.Flags.HasFlag(MemberFlag.Filterable))
                     return Error.Validation(description: "Filtering is not permitted");
                 return Result.Success;
             });

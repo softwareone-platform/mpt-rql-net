@@ -11,7 +11,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static IServiceCollection AddSoftwareOneRql(this IServiceCollection services, Action<RqlOptions>? configure)
         {
-
             services.AddScoped<IErrorResultProvider, ErrorResultProvider>();
             services.AddScoped(typeof(IRqlRequest<>), typeof(RqlRequest<>));
             services.AddScoped(typeof(IRqlRequest<,>), typeof(RqlRequest<,>));
@@ -19,6 +18,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return SoftwareOne.Rql.Linq.RqlExtensions.AddRql(services, t =>
             {
+                t.Configure(s =>
+                {
+                    s.DefaultFlags = MemberFlag.Regular;
+                    s.Select.MaxDepth = 1;
+                    s.Select.Mode = SelectMode.All;
+                });
                 configure?.Invoke(t);
             });
         }

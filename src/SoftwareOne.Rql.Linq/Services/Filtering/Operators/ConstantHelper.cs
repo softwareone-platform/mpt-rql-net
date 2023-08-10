@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.ComponentModel;
+using System.Globalization;
 using ErrorOr;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators
@@ -9,15 +10,11 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators
         {
             try
             {
-                return Convert.ChangeType(value, type, CultureInfo.InvariantCulture);
-            }
-            catch (FormatException)
-            {
-                return Error.Validation(description: $"Incorrect input format: '{value}'.");
+                return TypeDescriptor.GetConverter(type).ConvertFrom(null, CultureInfo.InvariantCulture, value)!;
             }
             catch
             {
-                return Error.Validation(description: $"Error converting constant.");
+                return Error.Validation(description: $"Cannot convert value: '{value}'.");
             }
         }
     }

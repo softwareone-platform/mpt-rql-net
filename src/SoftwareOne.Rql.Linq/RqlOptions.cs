@@ -14,10 +14,10 @@ namespace SoftwareOne.Rql
             OperatorOverrides = new Dictionary<Type, Type>();
             Settings = new RqlSettings
             {
-                DefaultMemberFlags = MemberFlag.All,
+                DefaultFlags = MemberFlag.RegularAndReference,
                 Select = new RqlSelectSettings
                 {
-                    ObjectMode = SelectMode.All,
+                    Mode = SelectMode.All,
                     ReferenceMode = SelectMode.None
                 }
             };
