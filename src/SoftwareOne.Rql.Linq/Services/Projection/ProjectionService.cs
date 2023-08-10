@@ -93,7 +93,7 @@ internal class ProjectionService<TView> : RqlService, IProjectionService<TView>
 
         // produce null for non zero depth
         if (!bindings.Any() && depth != 0)
-            return (MemberInitExpression?)null;
+            return default(MemberInitExpression);
 
         return Expression.MemberInit(Expression.New(param.Type.GetConstructor(Type.EmptyTypes)!), bindings);
     }
@@ -119,7 +119,7 @@ internal class ProjectionService<TView> : RqlService, IProjectionService<TView>
             return selector.Errors;
 
         if (selector.Value == null)
-            return (Expression?)null;
+            return default(Expression);
 
         return Expression.Condition(
             Expression.NotEqual(memberAccess, Expression.Constant(null, memberAccess.Type)),
@@ -137,7 +137,7 @@ internal class ProjectionService<TView> : RqlService, IProjectionService<TView>
             return selector.Errors;
 
         if (selector.Value == null)
-            return (Expression?)null;
+            return default(Expression);
 
         var selectLambda = Expression.Lambda(selector.Value, param);
 
