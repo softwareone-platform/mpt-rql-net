@@ -26,7 +26,7 @@ namespace Rql.Sample.Contracts.Ef.Products
         [RqlMember(MemberFlag.RegularAndReference)]
         public string Name { get; set; } = null!;
         public Guid RowGuid { get; set; }
-        public ProductCategoryView Parent { get; set; }
+        public ProductCategoryView Parent { get; set; } = null!;
     }
 
     public class ProductModelView
