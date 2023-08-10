@@ -23,8 +23,8 @@ internal abstract class RqlService
                 if (current.IsError)
                     return current;
 
-                var prevLenght = current.Value.Path.Length;
-                var cumulativePath = current.Value.FullPath.AsMemory(0, (prevLenght > 0 ? prevLenght + 1 : prevLenght) + segment.Length);
+                var previousLength = current.Value.Path.Length;
+                var cumulativePath = current.Value.FullPath.AsMemory(0, (previousLength > 0 ? previousLength + 1 : previousLength) + segment.Length);
 
                 if (!_typeNameMaper.TryGetPropertyByDisplayName(current.Value.Expression.Type, segment, out var propInfo))
                     return Error.Validation(MakeErrorCode(cumulativePath.ToString()), "Invalid property path.");

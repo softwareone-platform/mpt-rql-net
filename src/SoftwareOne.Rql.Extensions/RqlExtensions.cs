@@ -16,15 +16,15 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped(typeof(IRqlRequest<,>), typeof(RqlRequest<,>));
             services.AddHttpContextAccessor();
 
-            return SoftwareOne.Rql.Linq.RqlExtensions.AddRql(services, t =>
+            return SoftwareOne.Rql.Linq.RqlExtensions.AddRql(services, options =>
             {
-                t.Configure(s =>
+                options.Configure(rqlSettings =>
                 {
-                    s.DefaultFlags = MemberFlag.Regular;
-                    s.Select.MaxDepth = 1;
-                    s.Select.Mode = SelectMode.All;
+                    rqlSettings.DefaultFlags = MemberFlag.Regular;
+                    rqlSettings.Select.MaxDepth = 1;
+                    rqlSettings.Select.Mode = SelectMode.All;
                 });
-                configure?.Invoke(t);
+                configure?.Invoke(options);
             });
         }
 
