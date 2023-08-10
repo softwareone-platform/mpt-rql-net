@@ -3,10 +3,16 @@
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+	<IsPackable>true</IsPackable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SoftwareOne.Rql.Abstractions\SoftwareOne.Rql.Abstractions.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\SoftwareOne.Rql.Abstractions\SoftwareOne.Rql.Abstractions.csproj" />
+	</ItemGroup>
+
+	
+	<ItemGroup>
+		<InternalsVisibleTo Include="Rql.Tests.Unit" />
+	</ItemGroup>
 
 </Project>

@@ -7,9 +7,9 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators
     internal class OperatorHandlerProvider : IOperatorHandlerProvider
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly IOperatorHandlerMaper _mapper;
+        private readonly IOperatorHandlerMapper _mapper;
 
-        public OperatorHandlerProvider(IServiceProvider serviceProvider, IOperatorHandlerMaper mapper)
+        public OperatorHandlerProvider(IServiceProvider serviceProvider, IOperatorHandlerMapper mapper)
         {
             _serviceProvider = serviceProvider;
             _mapper = mapper;

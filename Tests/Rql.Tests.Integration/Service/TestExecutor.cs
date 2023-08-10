@@ -1,18 +1,19 @@
 ﻿using Rql.Sample.Contracts.InMemory;
-using Rql.Tests.Integration.Fixtures;
-using Rql.Tests.Integration.Mock;
+using Rql.Tests.Common;
+using Rql.Tests.Integration.Factory;
 using Xunit;
 
 namespace Rql.Tests.Integration.Service;
 
-public class TestExecutor
+public class TestExecutor : IDisposable
 {
+    private readonly RqlTestWebApplicationFactory _factory;
     private readonly HttpClient _client;
 
-    public TestExecutor(SampleApiInstanceFixture fixture)
+    public TestExecutor()
     {
-        _client = fixture.Client;
-        _client = fixture.Client;
+        _factory = new RqlTestWebApplicationFactory();
+        _client = _factory.CreateClient();
     }
 
     public Task Execute(
@@ -38,5 +39,11 @@ public class TestExecutor
 
         Assert.True(isHappyFlow == false || respData.Any());
         Assert.Equal(isHappyFlow, respData.SequenceEqual(toCompare, new ProductViewEqualityComparer()));
+    }
+
+    public void Dispose()
+    {
+        _client.Dispose();
+        _factory.Dispose();
     }
 }

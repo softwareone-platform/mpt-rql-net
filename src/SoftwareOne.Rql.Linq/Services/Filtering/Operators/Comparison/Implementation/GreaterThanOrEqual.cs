@@ -1,11 +1,10 @@
 ﻿using ErrorOr;
 using System.Linq.Expressions;
 
-namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation
+namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation;
+
+internal class GreaterThanOrEqual : ComparisonOperator, IGreaterThanOrEqual
 {
-    internal class GreaterThanOrEqual : ComparisonOperator, IGreaterThanOrEqual
-    {
-        public ErrorOr<Expression> MakeExpression(MemberExpression member, string? value)
-            => MakeBinaryExpression(member, value, Expression.GreaterThanOrEqual);
-    }
+    public ErrorOr<Expression> MakeExpression(MemberExpression member, string? value)
+        => MakeBinaryExpression(member, value, Expression.GreaterThanOrEqual);
 }

@@ -2,61 +2,54 @@
 using System.Collections;
 using System.Reflection;
 
-namespace SoftwareOne.Rql.Linq.Core.Metadata
+namespace SoftwareOne.Rql.Linq.Core.Metadata;
+
+internal class PropertyMetadataProvider : IPropertyMetadataProvider
 {
-    internal class PropertyMetadataProvider : IPropertyMetadataProvider
+    private readonly IRqlSettings _settings;
+    public PropertyMetadataProvider(IRqlSettings settings)
     {
-        private readonly IRqlSettings _settings;
-        public PropertyMetadataProvider(IRqlSettings settings)
+        _settings = settings;
+    }
+
+    public RqlPropertyInfo MakeRqlPropertyInfo(PropertyInfo property, RqlMemberAttribute? typeAttribute)
+    {
+        var pi = new RqlPropertyInfo
         {
-            _settings = settings;
-        }
+            Property = property,
+            Type = GetRqlPropertyType(property),
+            Flags = _settings.DefaultMemberFlags
+        };
 
-        public RqlPropertyInfo MakeRqlPropertyInfo(PropertyInfo property, RqlMemberAttribute? typeAttribute)
+        TryApplyAttributeData(pi, typeAttribute);
+        TryApplyAttributeData(pi, property.GetCustomAttributes<RqlMemberAttribute>(true).FirstOrDefault());
+
+        return pi;
+
+        static void TryApplyAttributeData(RqlPropertyInfo property, RqlMemberAttribute? attribute)
         {
-            var pi = new RqlPropertyInfo
+            if (attribute != null)
             {
-                Property = property,
-                Type = GetRqlPropertyType(property),
-                Flags = _settings.DefaultMemberFlags
-            };
-
-            TryApplyAttributeData(pi, typeAttribute);
-            TryApplyAttributeData(pi, property.GetCustomAttributes<RqlMemberAttribute>(true).FirstOrDefault());
-
-            return pi;
-
-            static void TryApplyAttributeData(RqlPropertyInfo property, RqlMemberAttribute? attribute)
-            {
-                if (attribute != null)
-                {
-                    property.Flags = attribute.Flags;
-                }
+                property.Flags = attribute.Flags;
             }
         }
+    }
 
-        private static RqlPropertyType GetRqlPropertyType(PropertyInfo property)
+    private static RqlPropertyType GetRqlPropertyType(PropertyInfo property)
+    {
+        if (IsUserComplexType(property.PropertyType))
         {
-            if (IsUserComplexType(property.PropertyType))
-            {
-                if (typeof(IEnumerable).IsAssignableFrom(property.PropertyType))
-                    return RqlPropertyType.Collection;
-                return RqlPropertyType.Reference;
-            }
-            else
-            {
-                if (property.PropertyType == typeof(byte[]))
-                    return RqlPropertyType.Binary;
-                return RqlPropertyType.Primitive;
-            }
+            return typeof(IEnumerable).IsAssignableFrom(property.PropertyType) ? RqlPropertyType.Collection : RqlPropertyType.Reference;
         }
 
-        private static bool IsUserComplexType(Type type)
-        {
-            return
-                type.IsClass
-                && !type.FullName!.StartsWith("System.")
-                || typeof(IEnumerable).IsAssignableFrom(type) && type.IsGenericType && IsUserComplexType(type.GetGenericArguments()[0]);
-        }
+        return property.PropertyType == typeof(byte[]) ? RqlPropertyType.Binary : RqlPropertyType.Primitive;
+    }
+
+    private static bool IsUserComplexType(Type type)
+    {
+        return
+            type.IsClass
+            && !type.FullName!.StartsWith("System.")
+            || typeof(IEnumerable).IsAssignableFrom(type) && type.IsGenericType && IsUserComplexType(type.GetGenericArguments()[0]);
     }
 }

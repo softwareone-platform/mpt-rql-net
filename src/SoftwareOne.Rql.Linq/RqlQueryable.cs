@@ -47,15 +47,12 @@ namespace SoftwareOne.Rql.Linq
         {
             var errors = new List<Error>();
 
-            IQueryable<TView> query = _mapping.Apply(source);
+            var query = _mapping.Apply(source);
             _filter.Apply(query, request.Filter).Switch(q => query = q, errors.AddRange);
             _order.Apply(query, request.Order).Switch(q => query = q, errors.AddRange);
             _projection.Apply(query, request.Select).Switch(q => query = q, errors.AddRange);
 
-            if (errors.Any())
-                return errors;
-
-            return ErrorOrFactory.From(query);
+            return errors.Any() ? errors : ErrorOrFactory.From(query);
         }
     }
 }

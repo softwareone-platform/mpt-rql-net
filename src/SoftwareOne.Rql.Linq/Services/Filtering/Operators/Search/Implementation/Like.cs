@@ -1,43 +1,41 @@
 ﻿using ErrorOr;
-using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search.Implementation
+namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search.Implementation;
+
+internal class Like : ILike
 {
-    internal class Like : ILike
+    private static readonly MethodInfo _methodStartsWith;
+    private static readonly MethodInfo _methodEndsWith;
+    private static readonly MethodInfo _methodContains;
+    private static readonly MethodInfo _methodEquals;
+    private static readonly char _wildcard;
+
+    static Like()
     {
-        private static readonly MethodInfo _methodStartsWith;
-        private static readonly MethodInfo _methodEndsWith;
-        private static readonly MethodInfo _methodContains;
-        private static readonly MethodInfo _methodEquals;
-        private static readonly char _wildcard;
+        var stringType = typeof(string);
+        var args = new[] { stringType };
 
-        static Like()
-        {
-            var stringType = typeof(string);
-            var args = new Type[] { stringType };
-
-            _methodStartsWith = stringType.GetMethod(nameof(string.StartsWith), args)!;
-            _methodEndsWith = stringType.GetMethod(nameof(string.EndsWith), args)!;
-            _methodContains = stringType.GetMethod(nameof(string.Contains), args)!;
-            _methodEquals = stringType.GetMethod(nameof(string.Equals), args)!;
-            _wildcard = '*';
-        }
-
-        public ErrorOr<Expression> MakeExpression(MemberExpression member, string pattern)
-        {
-            MethodInfo? mi = pattern switch
-            {
-                var s when s.StartsWith(_wildcard) && s.EndsWith(_wildcard) => _methodContains,
-                var s when s.StartsWith(_wildcard) => _methodEndsWith,
-                var s when s.EndsWith(_wildcard) => _methodStartsWith,
-                _ => _methodEquals
-            };
-
-            return Expression.Call(member, mi, Expression.Constant(pattern.Trim(_wildcard)));
-        }
-
-        protected virtual bool IsInsensitive => false;
+        _methodStartsWith = stringType.GetMethod(nameof(string.StartsWith), args)!;
+        _methodEndsWith = stringType.GetMethod(nameof(string.EndsWith), args)!;
+        _methodContains = stringType.GetMethod(nameof(string.Contains), args)!;
+        _methodEquals = stringType.GetMethod(nameof(string.Equals), args)!;
+        _wildcard = '*';
     }
+
+    public ErrorOr<Expression> MakeExpression(MemberExpression member, string pattern)
+    {
+        var methodInfo = pattern switch
+        {
+            var s when s.StartsWith(_wildcard) && s.EndsWith(_wildcard) => _methodContains,
+            var s when s.StartsWith(_wildcard) => _methodEndsWith,
+            var s when s.EndsWith(_wildcard) => _methodStartsWith,
+            _ => _methodEquals
+        };
+
+        return Expression.Call(member, methodInfo, Expression.Constant(pattern.Trim(_wildcard)));
+    }
+
+    protected virtual bool IsInsensitive => false;
 }

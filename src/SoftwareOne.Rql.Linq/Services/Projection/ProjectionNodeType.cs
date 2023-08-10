@@ -1,9 +1,8 @@
-﻿namespace SoftwareOne.Rql.Linq.Services.Projection
+﻿namespace SoftwareOne.Rql.Linq.Services.Projection;
+
+internal enum ProjectionNodeType
 {
-    internal enum ProjectionNodeType
-    {
-        None,
-        Defaults,
-        Value
-    }
+    None,
+    Defaults,
+    Value
 }

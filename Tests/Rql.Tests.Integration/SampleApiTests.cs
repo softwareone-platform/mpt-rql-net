@@ -1,7 +1,8 @@
-﻿using Xunit;
+﻿using Microsoft.AspNetCore.Mvc.Testing;
+using Rql.Tests.Common;
 using Rql.Tests.Integration.Fixtures;
-using Rql.Tests.Integration.Mock;
 using Rql.Tests.Integration.Service;
+using Xunit;
 
 namespace Rql.Tests.Integration;
 
@@ -9,9 +10,9 @@ public class SampleApiTests : IClassFixture<SampleApiInstanceFixture>
 {
     private readonly TestExecutor _testExecutor;
 
-    public SampleApiTests(SampleApiInstanceFixture fixture)
+    public SampleApiTests()
     {
-        _testExecutor = new TestExecutor(fixture);
+        _testExecutor = new TestExecutor();
     }
 
     [Fact]
@@ -121,7 +122,7 @@ public class SampleApiTests : IClassFixture<SampleApiInstanceFixture>
     [InlineData("desc=null()")]
     [InlineData("not(eq(desc,null()))", false)]
     public Task Null_Desc_DescriptionIsNull(string query, bool isHappyFlow = true)
-        => _testExecutor.Execute(t => t.Desc == null, query, isHappyFlow: isHappyFlow);
+       => _testExecutor.Execute(t => t.Desc == null, query, isHappyFlow: isHappyFlow);
 
     [Theory]
     [InlineData("eq(price,null())", false)]
@@ -136,8 +137,7 @@ public class SampleApiTests : IClassFixture<SampleApiInstanceFixture>
     [InlineData("category,-name")]
     [InlineData("-category,-name", false)]
     public Task Ordering_CategotyAsc_NameDesc(string order, bool isHappyFlow = true)
-        => _testExecutor.Execute(MockProductRepository.View.OrderBy(o => o.Category).ThenByDescending(o => o.Name),
-            order: order, isHappyFlow: isHappyFlow);
+       => _testExecutor.Execute(MockProductRepository.View.OrderBy(o => o.Category).ThenByDescending(o => o.Name), order: order, isHappyFlow: isHappyFlow);
 
     [Theory]
     [InlineData("and(eq(id,1),eq(name,Jewelry Widget))")]
@@ -145,7 +145,7 @@ public class SampleApiTests : IClassFixture<SampleApiInstanceFixture>
     [InlineData("and(id=eq=1,name=eq=Jewelry Widget)")]
     [InlineData("and(eq(id,1),eq(id,2),eq(name,Jewelry Widget))", false)]
     public Task And_Id_Name_Equals(string query, bool isHappyFlow = true)
-        => _testExecutor.Execute(t => t.Id == 1 && t.Name == "Jewelry Widget", query, isHappyFlow: isHappyFlow);
+       => _testExecutor.Execute(t => t.Id == 1 && t.Name == "Jewelry Widget", query, isHappyFlow: isHappyFlow);
 
     [Theory]
     [InlineData("or(eq(id,1),eq(id,2),eq(name,Jewelry Widget))")]
@@ -153,6 +153,5 @@ public class SampleApiTests : IClassFixture<SampleApiInstanceFixture>
     [InlineData("or(id=eq=1,id=eq=2,name=eq=Jewelry Widget)")]
     [InlineData("or(eq(id,3),eq(id,5),eq(name,Jewelry Widget))", false)]
     public Task Or_Id_Name_Equals(string query, bool isHappyFlow = true)
-        => _testExecutor.Execute(t => t.Id == 1 || t.Id == 2 || t.Name == "Jewelry Widget", query,
-            isHappyFlow: isHappyFlow);
+       => _testExecutor.Execute(t => t.Id == 1 || t.Id == 2 || t.Name == "Jewelry Widget", query, isHappyFlow: isHappyFlow);
 }
