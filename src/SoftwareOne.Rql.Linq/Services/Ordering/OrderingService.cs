@@ -39,12 +39,12 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
         {
             var (path, isAsc) = StringHelper.ExtractSign(op.Value);
 
-            var eoMemberAccess = MakeMemberAccess(param, path.ToString(), path =>
-            {
-                if (!path.PropertyInfo.Flags.HasFlag(MemberFlag.AllowOrder))
-                    return Error.Validation(MakeErrorCode(path.Path.ToString()), "Ordering is not permitted.");
-                return Result.Success;
-            });
+                var eoMemberAccess = MakeMemberAccess(param, path.ToString(), path =>
+                {
+                    if (!path.PropertyInfo.Flags.HasFlag(MemberFlag.Orderable))
+                        return Error.Validation(MakeErrorCode(path.Path.ToString()), "Ordering is not permitted.");
+                    return Result.Success;
+                });
 
             if (eoMemberAccess.IsError)
             {

@@ -7,36 +7,26 @@ internal class TypeMetadataProvider : ITypeMetadataProvider
 {
     private readonly IPropertyNameProvider _propertyNameProvider;
     private readonly IPropertyMetadataProvider _propertyMetadataProvider;
-    private readonly ConcurrentDictionary<Type, (Dictionary<string, RqlPropertyInfo>, Dictionary<string, string>)> _cache;
+    private readonly ConcurrentDictionary<Type, Dictionary<string, RqlPropertyInfo>> _cache;
 
     public TypeMetadataProvider(IPropertyNameProvider propertyNameProvider, IPropertyMetadataProvider propertyMetadataProvider)
     {
-        _cache = new ConcurrentDictionary<Type, (Dictionary<string, RqlPropertyInfo>, Dictionary<string, string>)>();
+        _cache = new ConcurrentDictionary<Type, Dictionary<string, RqlPropertyInfo>>();
         _propertyNameProvider = propertyNameProvider;
         _propertyMetadataProvider = propertyMetadataProvider;
     }
 
-    public string GetDisplayName(Type type, string name)
-    {
-        return GetCache(type).DisplayNameByName.TryGetValue(name, out var displayName) ? displayName : name;
-    }
+    public IEnumerable<RqlPropertyInfo> GetProperties(Type type)
+        => GetCache(type).Values;
 
-    public Dictionary<string, RqlPropertyInfo> ListProperties(Type type)
-    {
-        return GetCache(type).PropertyByDisplayName;
-    }
+    public bool TryGetPropertyByDisplayName(Type type, string propertyName, out RqlPropertyInfo? rqlProperty)
+        => GetCache(type).TryGetValue(propertyName, out rqlProperty);
 
-    public RqlPropertyInfo? GetPropertyByDisplayName(Type type, string displayName)
-    {
-        return GetCache(type).PropertyByDisplayName.TryGetValue(displayName, out var property) ? property : null;
-    }
-
-    private (Dictionary<string, RqlPropertyInfo> PropertyByDisplayName, Dictionary<string, string> DisplayNameByName) GetCache(Type type)
+    private Dictionary<string, RqlPropertyInfo> GetCache(Type type)
     {
         return _cache.GetOrAdd(type, t =>
         {
             var props = new Dictionary<string, RqlPropertyInfo>(StringComparer.InvariantCultureIgnoreCase);
-            var disp = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
             var properties = t.GetProperties().Where(a => a.MemberType.Equals(MemberTypes.Property));
 
             var member = t.GetCustomAttributes<RqlMemberAttribute>(true).FirstOrDefault();
@@ -44,10 +34,9 @@ internal class TypeMetadataProvider : ITypeMetadataProvider
             foreach (var property in properties)
             {
                 var name = _propertyNameProvider.GetName(property);
-                props.Add(name, _propertyMetadataProvider.MakeRqlPropertyInfo(property, member));
-                disp.Add(property.Name, name);
+                props.Add(name, _propertyMetadataProvider.MakeRqlPropertyInfo(name, property, member));
             }
-            return (props, disp);
+            return props;
         });
     }
 }

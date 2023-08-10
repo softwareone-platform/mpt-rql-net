@@ -1,23 +1,19 @@
-﻿using System.Globalization;
-using ErrorOr;
+﻿using ErrorOr;
+using System.ComponentModel;
+using System.Globalization;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators;
-
 internal static class ConstantHelper
 {
     public static ErrorOr<object> ChangeType(string value, Type type)
     {
         try
         {
-            return Convert.ChangeType(value, type, CultureInfo.InvariantCulture);
-        }
-        catch (FormatException)
-        {
-            return Error.Validation(description: $"Incorrect input format: '{value}'.");
+            return TypeDescriptor.GetConverter(type).ConvertFrom(null, CultureInfo.InvariantCulture, value)!;
         }
         catch
         {
-            return Error.Validation(description: $"Error converting constant.");
+            return Error.Validation(description: $"Cannot convert value: '{value}'.");
         }
     }
 }

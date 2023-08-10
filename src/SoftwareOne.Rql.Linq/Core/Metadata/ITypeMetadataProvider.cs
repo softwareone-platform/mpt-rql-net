@@ -2,9 +2,7 @@
 
 internal interface ITypeMetadataProvider
 {
-    string GetDisplayName(Type type, string propertyName);
+    bool TryGetPropertyByDisplayName(Type type, string propertyName, out RqlPropertyInfo? rqlProperty);
 
-    RqlPropertyInfo? GetPropertyByDisplayName(Type type, string displayName);
-
-    Dictionary<string, RqlPropertyInfo> ListProperties(Type type);
+    IEnumerable<RqlPropertyInfo> GetProperties(Type type);
 }

@@ -1,4 +1,4 @@
-﻿using SoftwareOne.Rql.Linq.Core.Configuration;
+﻿using SoftwareOne.Rql.Linq.Configuration;
 using System.Collections;
 using System.Reflection;
 
@@ -12,14 +12,15 @@ internal class PropertyMetadataProvider : IPropertyMetadataProvider
         _settings = settings;
     }
 
-    public RqlPropertyInfo MakeRqlPropertyInfo(PropertyInfo property, RqlMemberAttribute? typeAttribute)
-    {
-        var pi = new RqlPropertyInfo
+        public RqlPropertyInfo MakeRqlPropertyInfo(string name, PropertyInfo property, RqlMemberAttribute? typeAttribute)
         {
-            Property = property,
-            Type = GetRqlPropertyType(property),
-            Flags = _settings.DefaultMemberFlags
-        };
+            var pi = new RqlPropertyInfo
+            {
+                Name = name,
+                Property = property,
+                Type = GetRqlPropertyType(property),
+                Flags = _settings.DefaultFlags
+            };
 
         TryApplyAttributeData(pi, typeAttribute);
         TryApplyAttributeData(pi, property.GetCustomAttributes<RqlMemberAttribute>(true).FirstOrDefault());

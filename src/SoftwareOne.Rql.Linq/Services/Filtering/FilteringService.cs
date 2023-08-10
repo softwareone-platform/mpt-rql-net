@@ -104,12 +104,12 @@ internal sealed class FilteringService<TView> : RqlService, IFilteringService<TV
         if (node.Left is not RqlConstant memberConstant)
             return Error.Validation(MakeErrorCode("unknown"), "Unknown property were used for binary expression.");
 
-        var member = MakeMemberAccess(pe, memberConstant.Value, static path =>
-        {
-            if (!path.PropertyInfo.Flags.HasFlag(MemberFlag.AllowFilter))
-                return Error.Validation(description: "Filtering is not permitted");
-            return Result.Success;
-        });
+            var member = MakeMemberAccess(pe, memberConstant.Value, static path =>
+            {
+                if (!path.PropertyInfo.Flags.HasFlag(MemberFlag.Filterable))
+                    return Error.Validation(description: "Filtering is not permitted");
+                return Result.Success;
+            });
 
         if (member.IsError)
             return AssignErrorCode(member.Errors, MakeErrorCode(memberConstant.Value));

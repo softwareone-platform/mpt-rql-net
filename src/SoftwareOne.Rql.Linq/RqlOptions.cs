@@ -1,4 +1,4 @@
-﻿using SoftwareOne.Rql.Linq.Core.Configuration;
+﻿using SoftwareOne.Rql.Linq.Configuration;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.List;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search;
@@ -6,7 +6,6 @@ using System.Reflection;
 
 #pragma warning disable IDE0130
 namespace SoftwareOne.Rql;
-
 public class RqlOptions
 {
     public RqlOptions()
@@ -14,10 +13,14 @@ public class RqlOptions
         OperatorOverrides = new Dictionary<Type, Type>();
         Settings = new RqlSettings
         {
-            DefaultMemberFlags = MemberFlag.All
+            DefaultFlags = MemberFlag.RegularAndReference,
+            Select = new RqlSelectSettings
+            {
+                Mode = SelectMode.All,
+                ReferenceMode = SelectMode.None
+            }
         };
     }
-
 
     internal Assembly? ViewMappersAssembly { get; private set; }
     internal Type? PropertyMapperType { get; private set; }
@@ -34,12 +37,6 @@ public class RqlOptions
     public RqlOptions OverrideListOperator<TOperator, TImplementation>() where TOperator : IListOperator where TImplementation : TOperator
         => OverrideOperatorInternal<TOperator, TImplementation>();
 
-    public RqlOptions SetDefaultMemberFlags(MemberFlag flags)
-    {
-        Settings.DefaultMemberFlags = flags;
-        return this;
-    }
-
     private RqlOptions OverrideOperatorInternal<TExpression, TImplementation>()
     {
         OperatorOverrides[typeof(TExpression)] = typeof(TImplementation);
@@ -55,6 +52,12 @@ public class RqlOptions
     public RqlOptions ScanForMappings(Assembly assembly)
     {
         ViewMappersAssembly = assembly;
+        return this;
+    }
+
+    public RqlOptions Configure(Action<IRqlSettings> configure)
+    {
+        configure(Settings);
         return this;
     }
 }
