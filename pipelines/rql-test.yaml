@@ -4,7 +4,7 @@ trigger:
   branches:
     include:
       - main
-        
+
 variables:
   isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
 
@@ -83,11 +83,10 @@ stages:
               artifactName: 'packages'
               targetPath: '$(System.ArtifactsDirectory)'
             displayName: 'Download Pipeline Artifact'
+          - task: NuGetAuthenticate@1
           - task: DotNetCoreCLI@2
             inputs:
-              command: 'push'
-              packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-              nuGetFeedType: 'internal'
-              publishVstsFeed: '18b4703c-2fe6-4542-8437-ce8f3c5bc01b'
-              arguments: --skip-duplicate
+              command: custom
+              custom: nuget
+              arguments: 'push $(Build.ArtifactStagingDirectory)/*.nupkg -s  https://softwareone-pc.pkgs.visualstudio.com/_packaging/4242bb21-0c81-7ac9-a046-de09f6923e18/nuget/v3/index.json --api-key VSTS --skip-duplicate'
             displayName: Push package to NuGet feed
