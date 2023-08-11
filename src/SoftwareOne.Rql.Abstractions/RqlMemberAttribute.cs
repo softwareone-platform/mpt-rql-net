@@ -4,11 +4,32 @@ namespace SoftwareOne.Rql
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
     public class RqlMemberAttribute : Attribute
     {
-        public RqlMemberAttribute(MemberFlag flags)
+        private RqlAction? _actions;
+
+        public RqlMemberAttribute()
         {
-            Flags = flags;
         }
 
-        public MemberFlag Flags { get; set; }
+        public RqlMemberAttribute(RqlAction flags)
+        {
+            Actions = flags;
+        }
+
+        public RqlAction Actions
+        {
+            get
+            {
+                return _actions ?? RqlAction.None;
+            }
+            set
+            {
+                _actions = value;
+                ActionsSet = true;
+            }
+        }
+
+        public bool ActionsSet { get; private set; }
+
+        public bool IsDefault { get; set; }
     }
 }

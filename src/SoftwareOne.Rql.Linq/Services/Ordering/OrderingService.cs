@@ -41,7 +41,7 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
 
                 var eoMemberAccess = MakeMemberAccess(param, path.ToString(), path =>
                 {
-                    if (!path.PropertyInfo.Flags.HasFlag(MemberFlag.Orderable))
+                    if (!path.PropertyInfo.Actions.HasFlag(RqlAction.Order))
                         return Error.Validation(MakeErrorCode(path.Path.ToString()), "Ordering is not permitted.");
                     return Result.Success;
                 });

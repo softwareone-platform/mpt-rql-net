@@ -13,11 +13,10 @@ public class RqlOptions
         OperatorOverrides = new Dictionary<Type, Type>();
         Settings = new RqlSettings
         {
-            DefaultFlags = MemberFlag.RegularAndReference,
+            DefaultActions = RqlAction.All,
             Select = new RqlSelectSettings
             {
-                Mode = SelectMode.All,
-                ReferenceMode = SelectMode.None
+                Mode = SelectMode.All
             }
         };
     }

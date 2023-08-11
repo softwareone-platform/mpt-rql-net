@@ -20,7 +20,6 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 options.Configure(rqlSettings =>
                 {
-                    rqlSettings.DefaultFlags = MemberFlag.Regular;
                     rqlSettings.Select.MaxDepth = 1;
                     rqlSettings.Select.Mode = SelectMode.All;
                 });

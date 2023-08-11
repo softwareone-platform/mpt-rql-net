@@ -68,9 +68,6 @@ namespace SoftwareOne.Rql.Abstractions
         public static RqlNot Not(RqlExpression expression)
             => new RqlNot(expression);
 
-        public static RqlIsNull IsNull(RqlExpression expression)
-            => new RqlIsNull(expression);
-
         #endregion
 
         #region Arguments

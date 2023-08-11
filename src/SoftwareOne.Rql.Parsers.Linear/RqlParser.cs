@@ -254,7 +254,6 @@ namespace SoftwareOne.Rql.Parsers.Linear
                 "like" => MakeBinary(RqlExpression.Like, inner),
                 "ilike" => MakeBinary(RqlExpression.LikeInsensitive, inner),
                 "not" => MakeUnary(RqlExpression.Not, inner),
-                "isnull" => MakeUnary(RqlExpression.IsNull, inner),
                 var any => RqlExpression.Group(any, PairToExpressions(inner))
             };
 

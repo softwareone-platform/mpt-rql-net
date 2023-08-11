@@ -29,7 +29,7 @@ internal abstract class RqlService
                 if (!_typeNameMaper.TryGetPropertyByDisplayName(current.Value.Expression.Type, segment, out var propInfo))
                     return Error.Validation(MakeErrorCode(cumulativePath.ToString()), "Invalid property path.");
 
-                var expression = (Expression)Expression.MakeMemberAccess(current.Value!.Expression, propInfo.Property);
+                var expression = (Expression)Expression.MakeMemberAccess(current.Value!.Expression, propInfo!.Property);
                 var pathInfo = new MemberPathInfo(current.Value.FullPath, cumulativePath, propInfo, expression);
 
                 if (pathHandler != null)

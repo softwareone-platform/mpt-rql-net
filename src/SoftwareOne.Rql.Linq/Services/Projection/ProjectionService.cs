@@ -50,7 +50,7 @@ internal class ProjectionService<TView> : RqlService, IProjectionService<TView>
 
         foreach (var rqlPropery in properties)
         {
-            if (!rqlPropery.Flags.HasFlag(MemberFlag.Selectable))
+            if (!rqlPropery.Actions.HasFlag(RqlAction.Select))
                 continue;
 
             if (node.TryGetChild(rqlPropery.Name, out var propertyNode))
@@ -66,7 +66,7 @@ internal class ProjectionService<TView> : RqlService, IProjectionService<TView>
             }
 
             // if parent in defaults mode skip all non reference props
-            if (node.Mode == SelectMode.Defaults && !rqlPropery.Flags.HasFlag(MemberFlag.Reference) && (propertyNode == null || propertyNode.Mode != SelectMode.All))
+            if (node.Mode == SelectMode.Defaults && !rqlPropery.IsDefault && (propertyNode == null || propertyNode.Mode != SelectMode.All))
                 continue;
 
             var propertyInit = rqlPropery.Type switch
