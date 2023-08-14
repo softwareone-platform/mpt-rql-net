@@ -106,7 +106,7 @@ internal sealed class FilteringService<TView> : RqlService, IFilteringService<TV
 
             var member = MakeMemberAccess(pe, memberConstant.Value, static path =>
             {
-                if (!path.PropertyInfo.Flags.HasFlag(MemberFlag.Filterable))
+                if (!path.PropertyInfo.Actions.HasFlag(RqlAction.Filter))
                     return Error.Validation(description: "Filtering is not permitted");
                 return Result.Success;
             });

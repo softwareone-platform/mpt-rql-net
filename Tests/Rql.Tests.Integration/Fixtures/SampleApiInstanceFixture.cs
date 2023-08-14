@@ -39,12 +39,13 @@ public class SampleApiInstanceFixture : IAsyncLifetime
         };
     }
 
-    public async Task DisposeAsync()
+    public Task DisposeAsync()
     {
         _client?.Dispose();
         _apiProcess?.Kill();
         _apiProcess?.Close();
         _apiProcess?.Dispose();
+        return Task.CompletedTask;
     }
 
     private static Process RunApi()

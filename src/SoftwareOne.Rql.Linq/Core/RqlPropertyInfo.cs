@@ -6,5 +6,6 @@ internal class RqlPropertyInfo
     public string Name { get; internal set; } = null!;
     public PropertyInfo Property { get; internal set; } = null!;
     public RqlPropertyType Type { get; internal set; }
-    public MemberFlag Flags { get; internal set; }
+    public bool IsDefault { get; internal set; }
+    public RqlAction Actions { get; internal set; }
 }

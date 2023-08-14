@@ -7,7 +7,7 @@
             Select = new RqlSelectSettings();
         }
 
-        public MemberFlag DefaultFlags { get; set; }
+        public RqlAction DefaultActions { get; set; }
         public IRqlSelectSettings Select { get; init; }
     }
 }
