@@ -15,11 +15,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\SoftwareOne.Rql.Parsers.Linear\SoftwareOne.Rql.Parsers.Linear.csproj" />
+		<InternalsVisibleTo Include="Rql.Tests.Unit" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<InternalsVisibleTo Include="Rql.Tests.Unit" />
+	  <ProjectReference Include="..\SoftwareOne.Rql.Abstractions\SoftwareOne.Rql.Abstractions.csproj" />
+	  <ProjectReference Include="..\SoftwareOne.Rql.Parsers.Linear\SoftwareOne.Rql.Parsers.Linear.csproj" />
 	</ItemGroup>
 
 </Project>
