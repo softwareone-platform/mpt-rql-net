@@ -66,7 +66,7 @@ internal class ProjectionService<TView> : RqlService, IProjectionService<TView>
             }
 
             // if parent in defaults mode skip all non reference props
-            if (node.Mode == SelectMode.Defaults && !rqlPropery.IsDefault && (propertyNode == null || propertyNode.Mode != SelectMode.All))
+            if (node.Mode == SelectMode.Core && !rqlPropery.IsDefault && (propertyNode == null || propertyNode.Mode != SelectMode.All))
                 continue;
 
             var propertyInit = rqlPropery.Type switch
@@ -101,11 +101,11 @@ internal class ProjectionService<TView> : RqlService, IProjectionService<TView>
     protected ErrorOr<Expression?> ProcessComplexProperty(Expression param, ProjectionNode? propertyNode, RqlPropertyInfo propertyInfo, int depth,
     ComplexPropertyProcessor processor)
     {
-        propertyNode ??= new ProjectionNode { Value = propertyInfo.Name.AsMemory(), Mode = SelectMode.Defaults };
+        propertyNode ??= new ProjectionNode { Value = propertyInfo.Name.AsMemory(), Mode = SelectMode.Core };
 
         // treat every complex property deeper than max select depth as a default reference
         if (depth >= _settings.Select.MaxDepth)
-            propertyNode.Mode = SelectMode.Defaults;
+            propertyNode.Mode = SelectMode.Core;
 
         var memberAccess = Expression.MakeMemberAccess(param, propertyInfo.Property);
         return processor(memberAccess, propertyNode!, depth);
