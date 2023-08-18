@@ -12,7 +12,7 @@ internal class PropertyMetadataProvider : IPropertyMetadataProvider
         _settings = settings;
     }
 
-    public RqlPropertyInfo MakeRqlPropertyInfo(string name, PropertyInfo property, RqlMemberAttribute? typeAttribute)
+    public RqlPropertyInfo MakeRqlPropertyInfo(string name, PropertyInfo property)
     {
         var pi = new RqlPropertyInfo
         {
@@ -22,16 +22,15 @@ internal class PropertyMetadataProvider : IPropertyMetadataProvider
             Actions = _settings.DefaultActions
         };
 
-        TryApplyAttributeData(pi, typeAttribute);
-        TryApplyAttributeData(pi, property.GetCustomAttributes<RqlMemberAttribute>(true).FirstOrDefault());
+        TryApplyAttributeData(pi, property.GetCustomAttributes<RqlPropertyAttribute>(true).FirstOrDefault());
 
         return pi;
 
-        static void TryApplyAttributeData(RqlPropertyInfo property, RqlMemberAttribute? attribute)
+        static void TryApplyAttributeData(RqlPropertyInfo property, RqlPropertyAttribute? attribute)
         {
             if (attribute != null)
             {
-                property.IsDefault = attribute.IsDefault;
+                property.IsDefault = attribute.IsCore;
 
                 if (attribute.ActionsSet)
                     property.Actions = attribute.Actions;

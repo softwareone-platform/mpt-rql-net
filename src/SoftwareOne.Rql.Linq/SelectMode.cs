@@ -5,6 +5,6 @@ namespace SoftwareOne.Rql
     {
         None,
         All,
-        Defaults
+        Core
     }
 }

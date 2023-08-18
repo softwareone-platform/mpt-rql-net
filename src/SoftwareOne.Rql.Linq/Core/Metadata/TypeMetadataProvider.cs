@@ -29,12 +29,10 @@ internal class TypeMetadataProvider : ITypeMetadataProvider
             var props = new Dictionary<string, RqlPropertyInfo>(StringComparer.InvariantCultureIgnoreCase);
             var properties = t.GetProperties().Where(a => a.MemberType.Equals(MemberTypes.Property));
 
-            var member = t.GetCustomAttributes<RqlMemberAttribute>(true).FirstOrDefault();
-
             foreach (var property in properties)
             {
                 var name = _propertyNameProvider.GetName(property);
-                props.Add(name, _propertyMetadataProvider.MakeRqlPropertyInfo(name, property, member));
+                props.Add(name, _propertyMetadataProvider.MakeRqlPropertyInfo(name, property));
             }
             return props;
         });
