@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using System.Globalization;
+using Moq;
 using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Binary;
 using SoftwareOne.Rql.Abstractions.Constant;
@@ -23,28 +24,32 @@ internal static class RqlParserFactory
 
     internal static IRqlParser RqlGreaterThan(decimal value)
     {
-        var rqlExpression = new RqlGreaterThan(new RqlConstant("price"), new RqlConstant(value.ToString()));
+        var rqlExpression = new RqlGreaterThan(new RqlConstant("price"),
+            new RqlConstant(value.ToString(CultureInfo.InvariantCulture)));
 
         return BuildRqlParserMock(rqlExpression);
     }
 
     internal static IRqlParser RqlGreaterEqualThan(decimal value)
     {
-        var rqlExpression = new RqlGreaterThanOrEqual(new RqlConstant("price"), new RqlConstant(value.ToString()));
+        var rqlExpression = new RqlGreaterThanOrEqual(new RqlConstant("price"),
+            new RqlConstant(value.ToString(CultureInfo.InvariantCulture)));
 
         return BuildRqlParserMock(rqlExpression);
     }
 
     internal static IRqlParser RqlLessThan(decimal value)
     {
-        var rqlExpression = new RqlLessThan(new RqlConstant("price"), new RqlConstant(value.ToString()));
+        var rqlExpression = new RqlLessThan(new RqlConstant("price"),
+            new RqlConstant(value.ToString(CultureInfo.InvariantCulture)));
 
         return BuildRqlParserMock(rqlExpression);
     }
 
     internal static IRqlParser RqlLessEqualThan(decimal value)
     {
-        var rqlExpression = new RqlLessThanOrEqual(new RqlConstant("price"), new RqlConstant(value.ToString()));
+        var rqlExpression = new RqlLessThanOrEqual(new RqlConstant("price"),
+            new RqlConstant(value.ToString(CultureInfo.InvariantCulture)));
 
         return BuildRqlParserMock(rqlExpression);
     }
