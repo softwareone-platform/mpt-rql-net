@@ -72,7 +72,7 @@ internal static class RqlParserFactory
 
     internal static IRqlParser RqlILike(string searchString)
     {
-        var rqlExpression = new RqlLikeInsensitive(new RqlConstant("name"), new RqlConstant(searchString));
+        var rqlExpression = new RqlLikeCaseInsensitive(new RqlConstant("name"), new RqlConstant(searchString));
 
         return BuildRqlParserMock(rqlExpression);
     }

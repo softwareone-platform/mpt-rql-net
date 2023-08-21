@@ -52,8 +52,8 @@ namespace SoftwareOne.Rql.Abstractions
         public static RqlLike Like(RqlExpression left, RqlExpression right)
             => new RqlLike(left, right);
 
-        public static RqlLikeInsensitive LikeInsensitive(RqlExpression left, RqlExpression right)
-            => new RqlLikeInsensitive(left, right);
+        public static RqlLikeCaseInsensitive LikeCaseInsensitive(RqlExpression left, RqlExpression right)
+            => new RqlLikeCaseInsensitive(left, right);
 
         public static RqlListIn ListIn(RqlExpression left, RqlExpression right)
             => new RqlListIn(left, right);

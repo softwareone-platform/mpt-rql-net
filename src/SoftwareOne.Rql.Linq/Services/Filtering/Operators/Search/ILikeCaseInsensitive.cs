@@ -3,5 +3,5 @@ using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search.Implementation;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search;
 
-[Expression(typeof(RqlLikeInsensitive), typeof(LikeInsensitive))]
-public interface ILikeInsensitive : ILike { }
+[Expression(typeof(RqlLikeCaseInsensitive), typeof(LikeInsensitive))]
+public interface ILikeCaseInsensitive : ILike { }

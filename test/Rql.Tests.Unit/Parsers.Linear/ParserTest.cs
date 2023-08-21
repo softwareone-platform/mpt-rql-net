@@ -114,6 +114,37 @@ public class ParserTest
     }
 
     [Theory]
+    [InlineData("in(status,(active,otherValue))")]
+    public void Parse_WithMultipleArrayQuery_ReturnsValidResult(string query)
+    {
+        // Act
+        var parsed = _sut.Parse(query);
+
+        // Assert
+        var op = Assert.IsType<RqlListIn>(parsed.Items![0]);
+        Assert.Equal("status", Assert.IsType<RqlConstant>(op.Left).Value);
+        var list = Assert.IsAssignableFrom<RqlGroup>(op.Right).Items!.OfType<RqlConstant>().ToList();
+        Assert.Equal("active", list[0].Value);
+        Assert.Equal("otherValue", list[1].Value);
+    }
+
+    [Theory]
+    [InlineData("out(status,(active))")]
+    [InlineData("out(status,(active,otherValue))")]
+    public void Parse_WithMultipleArrayOutQuery_ReturnsValidResult(string query)
+    {
+        // Act
+        var parsed = _sut.Parse(query);
+
+        // Assert
+        var op = Assert.IsType<RqlListOut>(parsed.Items![0]);
+        Assert.Equal("status", Assert.IsType<RqlConstant>(op.Left).Value);
+        var list = Assert.IsAssignableFrom<RqlGroup>(op.Right).Items!.OfType<RqlConstant>().ToList();
+        Assert.DoesNotContain(new RqlConstant("active"), list);
+        Assert.DoesNotContain(new RqlConstant("otherValue"), list);
+    }
+
+    [Theory]
     [InlineData("id=PRD-0000-0001&status=active")]
     [InlineData("and(id=PRD-0000-0001,status=active)")]
     [InlineData("id=PRD-0000-0001,status=active")]

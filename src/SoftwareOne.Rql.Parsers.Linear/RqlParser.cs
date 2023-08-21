@@ -33,7 +33,6 @@ namespace SoftwareOne.Rql.Parsers.Linear
 
         private static IList<ExpressionPair> ParseInternal(ReadOnlyMemory<char> query, int startIndex, out int x, params char[] endChars)
         {
-            // var words = new List<Word>();
             x = startIndex;
             var expressions = new List<ExpressionPair>();
 
@@ -84,7 +83,7 @@ namespace SoftwareOne.Rql.Parsers.Linear
                     }
 
                     var innerNodes = ParseInternal(query, x + 1, out x, ')');
-                    var node = ParseNode(word.ToString(), innerNodes);
+                    var node = NodeParser.Parse(word.ToString(), innerNodes);
                     expressions.Add(new ExpressionPair(word.GroupType, node));
 
                     word = Word.Make(query, x + 1);
@@ -117,7 +116,7 @@ namespace SoftwareOne.Rql.Parsers.Linear
                 var d1 = word.Delimiters[0];
                 var d2 = word.Delimiters[1];
 
-                var exp = ParseNode(word.Text[(d1 + 1)..d2].ToString(),
+                var exp = NodeParser.Parse(word.Text[(d1 + 1)..d2].ToString(),
                     new List<ExpressionPair>()
                     {
                         new(GroupType.And, ParseArgument(Unwrap(word, word.WordStart, d1))),
@@ -130,7 +129,7 @@ namespace SoftwareOne.Rql.Parsers.Linear
             {
                 var d1 = word.Delimiters[0];
 
-                var exp = ParseNode("eq", new List<ExpressionPair>()
+                var exp = NodeParser.Parse("eq", new List<ExpressionPair>()
                     {
                          new(GroupType.And, ParseArgument(Unwrap(word, word.WordStart, d1))),
                          new(GroupType.And, ParseArgument(Unwrap(word, d1 + 1, endIndex)))
@@ -226,72 +225,6 @@ namespace SoftwareOne.Rql.Parsers.Linear
                 "empty()" => RqlExpression.Empty(),
                 _ => RqlExpression.Constant(text)
             };
-        }
-
-        private static RqlExpression ParseNode(string word, IList<ExpressionPair> inner)
-        {
-            return word.ToLower(CultureInfo.InvariantCulture) switch
-            {
-                "" => Reduce(inner),
-                "and" => RqlExpression.And(PairToExpressions(inner)),
-                "or" => RqlExpression.Or(PairToExpressions(inner)),
-                "in" => MakeBinary(RqlExpression.ListIn, inner, static (left, right) =>
-                {
-                    // in case of in(prop,(val)) list gets reduced to constant
-                    // and has to be turned back into group
-                    if (right is RqlConstant)
-                        right = RqlExpression.Group(string.Empty, right);
-
-                    return (left, right);
-                }),
-                "out" => MakeBinary(RqlExpression.ListOut, inner),
-                "eq" => MakeBinary(RqlExpression.Equal, inner),
-                "ne" => MakeBinary(RqlExpression.NotEqual, inner),
-                "gt" => MakeBinary(RqlExpression.GreaterThan, inner),
-                "ge" => MakeBinary(RqlExpression.GreaterThanOrEqual, inner),
-                "lt" => MakeBinary(RqlExpression.LessThan, inner),
-                "le" => MakeBinary(RqlExpression.LessThanOrEqual, inner),
-                "like" => MakeBinary(RqlExpression.Like, inner),
-                "ilike" => MakeBinary(RqlExpression.LikeInsensitive, inner),
-                "not" => MakeUnary(RqlExpression.Not, inner),
-                var any => RqlExpression.Group(any, PairToExpressions(inner))
-            };
-
-            static RqlBinary MakeBinary(Func<RqlExpression, RqlExpression, RqlBinary> func, IList<ExpressionPair> inner,
-                Func<RqlExpression, RqlExpression, (RqlExpression, RqlExpression)>? visit = null)
-            {
-                if (inner.Count != 2)
-                    throw new Exception("Binary expression must have 2 arguments");
-
-                var left = inner[0].Expression;
-                var right = inner[1].Expression;
-
-                if (visit != null)
-                {
-                    (left, right) = visit(left, right);
-                }
-
-                return func(left, right);
-            }
-
-            static RqlUnary MakeUnary(Func<RqlExpression, RqlUnary> func, IList<ExpressionPair> inner,
-                Func<RqlExpression, RqlExpression>? visit = null)
-            {
-                if (inner.Count != 1)
-                    throw new Exception("Unary expression must have 1 argument");
-
-                var exp = inner[0].Expression;
-
-                if (visit != null)
-                {
-                    exp = visit(exp);
-                }
-
-                return func(exp);
-            }
-
-            static IEnumerable<RqlExpression> PairToExpressions(IList<ExpressionPair> inner)
-                => inner.Select(s => s.Expression);
         }
     }
 }
