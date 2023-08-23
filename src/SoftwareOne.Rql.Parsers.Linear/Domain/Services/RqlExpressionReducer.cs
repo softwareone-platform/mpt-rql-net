@@ -1,9 +1,11 @@
 ﻿using SoftwareOne.Rql.Abstractions;
+using SoftwareOne.Rql.Parsers.Linear.Domain.Core.Enumerations;
+using SoftwareOne.Rql.Parsers.Linear.Domain.Core.ValueTypes;
 
 namespace SoftwareOne.Rql.Parsers.Linear;
 
 // TODO: BS 18/08/2023 This class needs to be further refactored, separated it out for now but will come back to this VERY SOON
-internal class RqlExpressionReducer
+internal static class RqlExpressionReducer
 {
     public static RqlExpression Reduce(IList<ExpressionPair> expressions)
     {

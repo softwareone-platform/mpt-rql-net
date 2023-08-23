@@ -1,6 +1,6 @@
 ﻿namespace SoftwareOne.Rql.Linq.Core;
 
-internal class StringHelper
+internal static class StringHelper
 {
     private static readonly Dictionary<char, bool> _signMap;
 

@@ -24,7 +24,7 @@ internal static class BinaryExpressionFactory
 
         var values = grp.Items.Select(x => GetRightArgument(x, false)).ToList();
 
-        if (values.Any(t => t.IsError))
+        if (values.Exists(t => t.IsError))
             return values.SelectMany(s => s.Errors).ToList();
 
         return list.MakeExpression(member, values.Select(s => s.Value!));

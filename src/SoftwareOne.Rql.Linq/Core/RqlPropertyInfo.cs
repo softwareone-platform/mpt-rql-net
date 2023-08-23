@@ -1,7 +1,9 @@
-﻿using System.Reflection;
+﻿using SoftwareOne.Rql.Abstractions;
+using System.Reflection;
 
 namespace SoftwareOne.Rql.Linq.Core;
-internal class RqlPropertyInfo
+
+internal class RqlPropertyInfo : IRqlPropertyInfo
 {
     public string Name { get; internal set; } = null!;
     public PropertyInfo Property { get; internal set; } = null!;

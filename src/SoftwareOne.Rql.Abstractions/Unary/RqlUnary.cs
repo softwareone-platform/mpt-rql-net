@@ -6,7 +6,7 @@ namespace SoftwareOne.Rql.Abstractions.Unary
     {
         private readonly RqlExpression _expression;
 
-        internal RqlUnary(RqlExpression expression)
+        private protected RqlUnary(RqlExpression expression)
         {
             _expression = expression;
         }

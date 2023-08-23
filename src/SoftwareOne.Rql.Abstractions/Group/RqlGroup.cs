@@ -4,7 +4,7 @@
     {
         private readonly List<RqlExpression> _expressions;
 
-        internal RqlGroup(IEnumerable<RqlExpression> expressions)
+        private protected RqlGroup(IEnumerable<RqlExpression> expressions)
         {
             _expressions = expressions.ToList();
         }

@@ -12,10 +12,10 @@ delegate ErrorOr<Expression?> ComplexPropertyProcessor(MemberExpression member, 
 internal class ProjectionService<TView> : RqlService, IProjectionService<TView>
 {
     private readonly IRqlSettings _settings;
-    private readonly ITypeMetadataProvider _typeMetadataProvider;
+    private readonly IMetadataProvider _typeMetadataProvider;
     private readonly IRqlParser _parser;
 
-    public ProjectionService(IRqlSettings settings, ITypeMetadataProvider typeMetadataProvider, IRqlParser parser) : base(typeMetadataProvider)
+    public ProjectionService(IRqlSettings settings, IMetadataProvider typeMetadataProvider, IRqlParser parser) : base(typeMetadataProvider)
     {
         _settings = settings;
         _typeMetadataProvider = typeMetadataProvider;
@@ -43,7 +43,7 @@ internal class ProjectionService<TView> : RqlService, IProjectionService<TView>
         if (depth > 100)
             return Error.Validation(node.Value.ToString(), "Extreme select depth detected. Most likely a circular dependency issue.");
 
-        var properties = _typeMetadataProvider.GetProperties(param.Type);
+        var properties = _typeMetadataProvider.GetPropertiesByDeclaringType(param.Type);
         var bindings = new List<MemberBinding>(properties.Count());
 
         var errors = new List<Error>();

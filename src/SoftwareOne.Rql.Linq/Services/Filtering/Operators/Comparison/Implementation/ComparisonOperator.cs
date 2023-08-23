@@ -5,7 +5,7 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implement
 {
     internal class ComparisonOperator
     {
-        protected ErrorOr<Expression> MakeBinaryExpression(MemberExpression member, string? value, Func<Expression, Expression, BinaryExpression> method)
+        protected static ErrorOr<Expression> MakeBinaryExpression(MemberExpression member, string? value, Func<Expression, Expression, BinaryExpression> method)
         {
             if (value == null)
             {

@@ -6,7 +6,7 @@ using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
 using SoftwareOne.Rql.Linq.Services.Mapping;
 using SoftwareOne.Rql.Linq.Services.Ordering;
 using SoftwareOne.Rql.Linq.Services.Projection;
-using SoftwareOne.Rql.Parsers.Linear;
+using SoftwareOne.Rql.Parsers.Linear.Domain.Services;
 using System.Reflection;
 
 namespace SoftwareOne.Rql.Linq;
@@ -33,9 +33,13 @@ public static class RqlExtensions
         services.AddScoped(typeof(IOrderingService<>), typeof(OrderingService<>));
         services.AddScoped(typeof(IProjectionService<>), typeof(ProjectionService<>));
 
-        services.AddSingleton<ITypeMetadataProvider, TypeMetadataProvider>();
-        services.AddSingleton<IPropertyMetadataProvider, PropertyMetadataProvider>();
+        services.AddSingleton<MetadataProvider>();
+        services.AddSingleton<IMetadataProvider>(serviceProvider => serviceProvider.GetRequiredService<MetadataProvider>());
+        services.AddSingleton<IRqlMetadataProvider>(serviceProvider => serviceProvider.GetRequiredService<MetadataProvider>());
+
+        services.AddSingleton<IMetadataFactory, MetadataFactory>();
         services.AddSingleton(typeof(IPropertyNameProvider), options.PropertyMapperType ?? typeof(PropertyNameProvider));
+
         RegisterOperatorExpressions(services, options);
 
         if (options.ViewMappersAssembly != null)

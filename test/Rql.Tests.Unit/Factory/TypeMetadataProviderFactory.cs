@@ -1,14 +1,22 @@
-﻿using SoftwareOne.Rql.Linq.Core.Metadata;
+﻿using SoftwareOne.Rql.Abstractions;
+using SoftwareOne.Rql.Linq.Core.Metadata;
 
 namespace Rql.Tests.Unit.Factory;
 
 internal static class TypeMetadataProviderFactory
 {
-    internal static TypeMetadataProvider Default()
+    internal static IMetadataProvider Internal()
     {
-        return new TypeMetadataProvider(
+        return new MetadataProvider(
             new PropertyNameProvider(), 
-            new PropertyMetadataProvider(RqlSettingsFactory.Default()));
+            new MetadataFactory(RqlSettingsFactory.Default()));
+    }
+
+    internal static IRqlMetadataProvider Public()
+    {
+        return new MetadataProvider(
+            new PropertyNameProvider(), 
+            new MetadataFactory(RqlSettingsFactory.Default()));
     }
 }
 

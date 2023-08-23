@@ -12,7 +12,7 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
 {
     private readonly IRqlParser _parser;
 
-    public OrderingService(ITypeMetadataProvider typeMetadataProvider, IRqlParser parser) : base(typeMetadataProvider)
+    public OrderingService(IMetadataProvider typeMetadataProvider, IRqlParser parser) : base(typeMetadataProvider)
     {
         _parser = parser;
     }

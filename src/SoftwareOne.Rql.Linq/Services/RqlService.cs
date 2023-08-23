@@ -6,11 +6,11 @@ using System.Linq.Expressions;
 namespace SoftwareOne.Rql.Linq.Services;
 internal abstract class RqlService
 {
-    private readonly ITypeMetadataProvider _typeNameMaper;
+    private readonly IMetadataProvider _metadataProvider;
 
-    public RqlService(ITypeMetadataProvider typeNameMaper)
+    protected RqlService(IMetadataProvider metadataProvider)
     {
-        _typeNameMaper = typeNameMaper;
+        _metadataProvider = metadataProvider;
     }
 
     protected ErrorOr<MemberExpression> MakeMemberAccess(ParameterExpression pe, string path, Func<MemberPathInfo, ErrorOr<Success>>? pathHandler = null)
@@ -26,18 +26,20 @@ internal abstract class RqlService
                 var previousLength = current.Value.Path.Length;
                 var cumulativePath = current.Value.FullPath.AsMemory(0, (previousLength > 0 ? previousLength + 1 : previousLength) + segment.Length);
 
-                if (!_typeNameMaper.TryGetPropertyByDisplayName(current.Value.Expression.Type, segment, out var propInfo))
+                if (!_metadataProvider.TryGetPropertyByDisplayName(current.Value.Expression.Type, segment, out var propInfo))
                     return Error.Validation(MakeErrorCode(cumulativePath.ToString()), "Invalid property path.");
 
                 var expression = (Expression)Expression.MakeMemberAccess(current.Value!.Expression, propInfo!.Property);
                 var pathInfo = new MemberPathInfo(current.Value.FullPath, cumulativePath, propInfo, expression);
 
-                if (pathHandler != null)
+                if (pathHandler == null)
                 {
-                    var handlerRes = pathHandler(pathInfo);
-                    if (handlerRes.IsError)
-                        return handlerRes.Errors;
+                    return pathInfo;
                 }
+
+                var handlerRes = pathHandler(pathInfo);
+                if (handlerRes.IsError)
+                    return handlerRes.Errors;
 
                 return pathInfo;
             });

@@ -5,7 +5,7 @@
         private readonly RqlExpression _left;
         private readonly RqlExpression _right;
 
-        internal RqlBinary(RqlExpression left, RqlExpression right)
+        private protected RqlBinary(RqlExpression left, RqlExpression right)
         {
             _left = left;
             _right = right;

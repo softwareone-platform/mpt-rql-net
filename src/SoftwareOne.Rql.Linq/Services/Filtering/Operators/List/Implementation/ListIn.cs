@@ -8,7 +8,7 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.List.Implementation;
 internal class ListIn : IListIn
 {
     private static readonly MethodInfo _containsMethod = typeof(Enumerable).GetMethods().Single(
-        methodInfo => methodInfo.Name == nameof(Enumerable.Contains) && methodInfo.GetParameters().Count() == 2);
+        methodInfo => methodInfo.Name == nameof(Enumerable.Contains) && methodInfo.GetParameters().Length == 2);
 
     public virtual ErrorOr<Expression> MakeExpression(MemberExpression member, IEnumerable<string> list)
     {

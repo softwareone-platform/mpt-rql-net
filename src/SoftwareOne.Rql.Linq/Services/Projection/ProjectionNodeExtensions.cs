@@ -20,7 +20,7 @@ internal static class ProjectionNodeExtensions
         return wrap;
     }
 
-    private static ProjectionNode BuildFromRqlExpression(RqlExpression srcNode, bool? transientSign = null)
+    private static ProjectionNode BuildFromRqlExpression(RqlExpression srcNode)
     {
         switch (srcNode)
         {

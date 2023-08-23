@@ -1,6 +1,4 @@
-﻿using SoftwareOne.Rql.Abstractions;
-
-namespace SoftwareOne.Rql.Abstractions.Unary
+﻿namespace SoftwareOne.Rql.Abstractions.Unary
 {
     [Obsolete]
     public class RqlIsNull : RqlUnary

@@ -22,7 +22,7 @@ internal sealed class FilteringService<TView> : RqlService, IFilteringService<TV
     private readonly IRqlParser _parser;
 
     public FilteringService(IOperatorHandlerProvider operatorHandlerProvider,
-        ITypeMetadataProvider typeMetadataProvider,
+        IMetadataProvider typeMetadataProvider,
         IRqlParser parser) : base(typeMetadataProvider)
     {
         _operatorHandlerProvider = operatorHandlerProvider;
@@ -104,12 +104,12 @@ internal sealed class FilteringService<TView> : RqlService, IFilteringService<TV
         if (node.Left is not RqlConstant memberConstant)
             return Error.Validation(MakeErrorCode("unknown"), "Unknown property were used for binary expression.");
 
-            var member = MakeMemberAccess(pe, memberConstant.Value, static path =>
-            {
-                if (!path.PropertyInfo.Actions.HasFlag(RqlAction.Filter))
-                    return Error.Validation(description: "Filtering is not permitted");
-                return Result.Success;
-            });
+        var member = MakeMemberAccess(pe, memberConstant.Value, static path =>
+        {
+            if (!path.PropertyInfo.Actions.HasFlag(RqlAction.Filter))
+                return Error.Validation(description: "Filtering is not permitted");
+            return Result.Success;
+        });
 
         if (member.IsError)
             return AssignErrorCode(member.Errors, MakeErrorCode(memberConstant.Value));

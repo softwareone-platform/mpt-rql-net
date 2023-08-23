@@ -4,7 +4,7 @@ using SoftwareOne.Rql.Abstractions.Constant;
 using SoftwareOne.Rql.Abstractions.Group;
 using SoftwareOne.Rql.Parsers.Linear;
 using Rql.Tests.Unit.Factory;
-using SoftwareOne.Rql.Parsers.Linear.Domain;
+using SoftwareOne.Rql.Parsers.Linear.Domain.Core;
 using SoftwareOne.Rql.Abstractions.Exception;
 
 namespace Rql.Tests.Unit.Parsers.Linear.Domain.Services;
@@ -140,7 +140,7 @@ public class RqlBinaryParserTests
     [Fact]
     public void Parse_WhenInvalidExpression_ThrowsRqlBinaryParserException()
     {
-        // Act
+        // Act and Assert
         Assert.Throws<RqlBinaryParserException>(() =>
             RqlBinaryParser.Parse(Constants.RqlTerm.LikeCaseInsensitive, RqlExpressionFactory.InvalidOnlySingleExpression()));
     }
@@ -148,7 +148,7 @@ public class RqlBinaryParserTests
     [Fact]
     public void Parse_WhenInvalidRqlTerm_ThrowsRqlBinaryParserException()
     {
-        // Act
+        // Act and Assert
         Assert.Throws<RqlBinaryParserException>(() =>
             RqlBinaryParser.Parse("InvalidTerm", RqlExpressionFactory.Default()));
     }

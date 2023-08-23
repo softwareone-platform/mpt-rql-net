@@ -1,5 +1,7 @@
 ﻿using SoftwareOne.Rql.Abstractions;
+using SoftwareOne.Rql.Abstractions.Exception;
 using SoftwareOne.Rql.Abstractions.Unary;
+using SoftwareOne.Rql.Parsers.Linear.Domain.Core.ValueTypes;
 
 namespace SoftwareOne.Rql.Parsers.Linear;
 
@@ -15,13 +17,16 @@ internal static class RqlUnaryParser
             };
     }
 
-    internal static RqlExpression Parse(string word, IList<ExpressionPair> innerExpressions)
+    internal static RqlExpression Parse(string term, IList<ExpressionPair> innerExpressions)
     {
         if (innerExpressions.Count != 1)
-            throw new Exception("Unary expression must have 1 argument");
+            throw new RqlUnaryParserException("Unary expression must have 1 argument");
 
         var unaryExpression = innerExpressions[0].Expression;
-        var resolvedExpression = _expressionFunctionMap[word];
+
+        if (!_expressionFunctionMap.ContainsKey(term)) { throw new RqlUnaryParserException($"Unary parser does not recognise term '{term}'"); }
+
+        var resolvedExpression = _expressionFunctionMap[term];
 
         return resolvedExpression(unaryExpression);
     }
