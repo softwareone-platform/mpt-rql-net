@@ -17,10 +17,7 @@ namespace SoftwareOne.Rql
 
         public RqlAction Actions
         {
-            get
-            {
-                return _actionFlags ?? RqlAction.None;
-            }
+            get => _actionFlags ?? RqlAction.None;
             set
             {
                 _actionFlags = value;

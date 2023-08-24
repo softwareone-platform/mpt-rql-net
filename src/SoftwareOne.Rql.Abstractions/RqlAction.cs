@@ -9,6 +9,6 @@ namespace SoftwareOne.Rql
         Filter = 1 << 2,
         Order = 1 << 3,
 
-        All = Select | Filter | Order,
+        All = Select | Filter | Order
     }
 }

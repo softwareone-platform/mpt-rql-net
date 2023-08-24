@@ -31,8 +31,8 @@ public class TypeDescriptionProviderTests
 
         // Arrange
         IRqlMetadataProvider provider = new MetadataProvider(
-            new PropertyNameProvider(), 
-            new MetadataFactory(new RqlSettings{ DefaultActions = RqlAction.Filter | RqlAction.Order}));
+            new PropertyNameProvider(),
+            new MetadataFactory(new RqlSettings { DefaultActions = RqlAction.Filter | RqlAction.Order }));
 
         // Act 
         var props = provider.GetPropertiesByDeclaringType(typeof(SampleEntity));
@@ -40,6 +40,9 @@ public class TypeDescriptionProviderTests
         // Assert
         Assert.NotEmpty(props);
         Assert.True(props.All(e => e.Actions == (RqlAction.Filter | RqlAction.Order)));
+        Assert.Contains(props, e => e.Name == nameof(SampleEntity.Types) && e.Type == RqlPropertyType.Collection);
+        Assert.Contains(props, e => e.Name == nameof(SampleEntity.ModifiedDate) && e.Type == RqlPropertyType.Primitive);
+        Assert.Contains(props, e => e.Name == nameof(SampleEntity.Size) && e.Type == RqlPropertyType.Primitive);
     }
 
     [Theory]

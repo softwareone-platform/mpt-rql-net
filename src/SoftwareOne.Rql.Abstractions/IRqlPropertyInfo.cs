@@ -8,4 +8,5 @@ public interface IRqlPropertyInfo
     PropertyInfo Property { get; }
     bool IsDefault { get; }
     RqlAction Actions { get; }
+    RqlPropertyType Type { get; }
 }
