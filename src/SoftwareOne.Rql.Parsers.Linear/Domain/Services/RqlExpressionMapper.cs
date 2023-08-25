@@ -1,5 +1,7 @@
 ﻿using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Constant;
+using SoftwareOne.Rql.Abstractions.Exception;
+using SoftwareOne.Rql.Parsers.Linear.Domain.Core;
 using SoftwareOne.Rql.Parsers.Linear.Domain.Core.Enumerations;
 using SoftwareOne.Rql.Parsers.Linear.Domain.Core.ValueTypes;
 
@@ -9,51 +11,32 @@ namespace SoftwareOne.Rql.Parsers.Linear.Domain.Services
     {
         internal static RqlExpression MapFromWord(Word word)
         {
+            if (word.Delimiters.Count > 1)
+                throw new RqlExpressionMapperException("Mapping from a word can only have zero or one delimiter");
+
             var endIndex = word.WordStart + word.WordLength;
-            // TODO: BS 22/08/2023 Will be removing this very soon
-            // prop=operator=value
-            if (word.Delimiters.Count == 2)
-            {
-                var d1 = word.Delimiters[0];
-                var d2 = word.Delimiters[1];
 
-                var exp = RqlNodeParser.Parse(word.Text[(d1 + 1)..d2].ToString(),
-                    new List<ExpressionPair>()
+            if (word.Delimiters.Count == 1)
+                return RqlNodeParser.Parse(Constants.RqlTerm.Equal, new List<ExpressionPair>()
                     {
-                        new(GroupType.And, ParseArgument(Unwrap(word, word.WordStart, d1))),
-                        new(GroupType.And, ParseArgument(Unwrap(word, d2+1, endIndex)))
+                         new(GroupType.And, ParseArgument(Unwrap(word, word.WordStart, word.Delimiters[0]))),
+                         new(GroupType.And, ParseArgument(Unwrap(word, word.Delimiters[0] + 1, endIndex)))
                     });
-                return exp;
-            }
-            // prop=value
-            else if (word.Delimiters.Count == 1)
-            {
-                var d1 = word.Delimiters[0];
 
-                var exp = RqlNodeParser.Parse("eq", new List<ExpressionPair>()
-                    {
-                         new(GroupType.And, ParseArgument(Unwrap(word, word.WordStart, d1))),
-                         new(GroupType.And, ParseArgument(Unwrap(word, d1 + 1, endIndex)))
-                    });
-                return exp;
-            }
-            else
-            {
-                return ParseArgument(Unwrap(word, word.WordStart, endIndex));
-            }
+            return ParseArgument(Unwrap(word, word.WordStart, endIndex));
+        }
 
-            static string Unwrap(Word word, int from, int to)
+        private static string Unwrap(Word word, int fromIndex, int toIndex)
+        {
+            if (word.WrapStart.HasValue)
             {
-                if (word.WrapStart.HasValue)
-                {
-                    var wrapStart = word.WrapStart.Value;
-                    var wrapEnd = word.WrapEnd ?? word.Text.Length - 1;
+                var wrapStart = word.WrapStart.Value;
+                var wrapEnd = word.WrapEnd ?? word.Text.Length - 1;
 
-                    from = wrapStart >= from && wrapEnd < to ? wrapStart + 1 : from;
-                    to = wrapEnd < to ? wrapEnd : to;
-                }
-                return word.Text[from..to].ToString();
+                fromIndex = wrapStart >= fromIndex && wrapEnd < toIndex ? wrapStart + 1 : fromIndex;
+                toIndex = wrapEnd < toIndex ? wrapEnd : toIndex;
             }
+            return word.Text[fromIndex..toIndex].ToString();
         }
 
         private static RqlArgument ParseArgument(string text)

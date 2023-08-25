@@ -34,7 +34,7 @@ namespace SoftwareOne.Rql.Parsers.Linear.Domain.Services
             x = startIndex;
             var expressions = new List<ExpressionPair>();
 
-            char c;
+            char c; 
             var word = Word.Make(query, startIndex);
             var querySpan = query.Span;
 

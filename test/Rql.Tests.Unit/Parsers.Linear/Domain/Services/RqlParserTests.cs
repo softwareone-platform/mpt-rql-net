@@ -1,6 +1,7 @@
 using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Binary;
 using SoftwareOne.Rql.Abstractions.Constant;
+using SoftwareOne.Rql.Abstractions.Exception;
 using SoftwareOne.Rql.Abstractions.Group;
 using SoftwareOne.Rql.Abstractions.Unary;
 using SoftwareOne.Rql.Parsers.Linear.Domain.Services;
@@ -18,24 +19,51 @@ public class RqlParserTests
     }
 
     [Theory]
-    [InlineData("status=processing&limit=2&select=(name,id)&order=mail,-name")]
-    public void Parse_WithCombinationOfFilteringLimitingAndOrdering_ReturnsValidFilteredAndOrderedResult(string query)
+    [InlineData("field1=value1&field2=value2|field3=value3&field4=value4")]
+    public void Parse_WithAndOrAnd_ReturnsOr(string query)
     {
         // Act
         var actualResult = _sut.Parse(query);
 
         // Assert
-        var eq = Assert.IsType<RqlEqual>(actualResult.Items![0]);
-        var member = Assert.IsType<RqlConstant>(eq.Left);
-        Assert.Equal("status", member.Value);
-        var constant = Assert.IsType<RqlConstant>(eq.Right);
-        Assert.Equal("processing", constant.Value);
+        var or = Assert.IsType<RqlOr>(actualResult);
+        var andLeft = Assert.IsType<RqlAnd>(or.Items?[0]);
+        var andRight = Assert.IsType<RqlAnd>(or.Items?[1]);
+        Assert.IsType<RqlEqual>(andLeft.Items?[0]);
+        Assert.IsType<RqlEqual>(andLeft.Items?[1]);
+        Assert.IsType<RqlEqual>(andRight.Items?[0]);
+        Assert.IsType<RqlEqual>(andRight.Items?[1]);
     }
 
+    [Theory]
+    [InlineData("field1=value1|field2=value2&field3=value3|field4=value4")]
+    public void Parse_WithOrAndOr_ReturnsEqualWithAndWithEqualRqlExpressions(string query)
+    {
+        // Act
+        var actualResult = _sut.Parse(query);
+
+        // Assert
+        var or = Assert.IsType<RqlOr>(actualResult);
+        Assert.IsType<RqlEqual>(or.Items?[0]);
+        Assert.IsType<RqlAnd>(or.Items?[1]);
+        Assert.IsType<RqlEqual>(or.Items?[2]);
+    }
+
+    [Theory]
+    [InlineData("(field1=value1|field2=value2)&(field3=value3|field4=value4)")]
+    public void Parse_WithOrBracketsAndOrBrackets_ReturnsAndWithOrSubRqlExpressions(string query)
+    {
+        // Act
+        var actualResult = _sut.Parse(query);
+
+        // Assert
+        var and = Assert.IsType<RqlAnd>(actualResult);
+        Assert.IsType<RqlOr>(and.Items?[0]);
+        Assert.IsType<RqlOr>(and.Items?[1]);
+    }
 
     [Theory]
     [InlineData("status=processing")]
-    [InlineData("status=eq=processing")]
     [InlineData("eq(status,processing)")]
     public void Parse_WithEqualsQuery_ReturnsValidResult(string query)
     {
@@ -48,6 +76,14 @@ public class RqlParserTests
         Assert.Equal("status", member.Value);
         var constant = Assert.IsType<RqlConstant>(eq.Right);
         Assert.Equal("processing", constant.Value);
+    }
+
+    [Theory]
+    [InlineData("status=eq=processing")]
+    public void Parse_WithInvalidTooManyDelimiters_ThrowsRqlExpressionMapperException(string query)
+    {
+        // Act and Assert
+        Assert.Throws<RqlExpressionMapperException>(() => _sut.Parse(query));
     }
 
     [Theory]
@@ -129,7 +165,6 @@ public class RqlParserTests
 
     [Theory]
     [InlineData("gt(events.created.at,2020-01-01T00:00:00+00:00)")]
-    [InlineData("events.created.at=gt=2020-01-01T00:00:00+00:00")]
     public void Parse_WithDateQuery_ReturnsValidResult(string query)
     {
         // Act
@@ -322,7 +357,6 @@ public class RqlParserTests
 
     [Theory]
     [InlineData(@"product.name='i am ""happy"" is quoted here'")]
-    [InlineData(@"product.name=eq='i am ""happy"" is quoted here'")]
     [InlineData(@"eq(product.name,'i am ""happy"" is quoted here')")]
     public void Parse_WithSpecialQuoteCharacterQuery_ReturnsValidResult(string query)
     {
@@ -335,22 +369,6 @@ public class RqlParserTests
         Assert.Equal("product.name", member.Value);
         var constant = Assert.IsType<RqlConstant>(eq.Right);
         Assert.Equal(@"i am ""happy"" is quoted here", constant.Value);
-    }
-
-    [Fact]
-    public void Parse_WithInFunctionPrefix3Query_ReturnsValidResult()
-    {
-        // TODO: BS This functionality needs to be removed - will leave for later PR
-
-        // Act
-        var actualResult = _sut.Parse("status=eq=processing");
-
-        // Assert
-        var eq = Assert.IsType<RqlEqual>(actualResult.Items![0]);
-        var member = Assert.IsType<RqlConstant>(eq.Left);
-        Assert.Equal("status", member.Value);
-        var constant = Assert.IsType<RqlConstant>(eq.Right);
-        Assert.Equal("processing", constant.Value);
     }
 
     [Fact]
@@ -369,7 +387,6 @@ public class RqlParserTests
         Assert.Equal("-id", Assert.IsType<RqlConstant>(item2.Items[1]).Value);
         Assert.Equal("-id", Assert.IsType<RqlConstant>(grp.Items[2]).Value);
     }
-
 
     private static void CheckListOfConstantComparisons<TComparison>(IReadOnlyList<RqlExpression> items, int index, string prop, string value)
         where TComparison : RqlBinary

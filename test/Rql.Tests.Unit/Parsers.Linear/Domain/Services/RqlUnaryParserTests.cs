@@ -42,7 +42,7 @@ public class RqlUnaryParserTests
     [Fact]
     public void Parse_WhenInvalidRqlTerm_ThrowsRqlBinaryParserException()
     {
-        // Act
+        // Act and Assert
         Assert.Throws<RqlUnaryParserException>(() =>
             RqlUnaryParser.Parse("InvalidTerm", RqlExpressionFactory.Default()));
     }
