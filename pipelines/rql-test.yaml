@@ -7,64 +7,39 @@ trigger:
 
 variables:
   isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+  testResultsDir: 'test_artifacts'
+  coverageReportFile: 'coverage.xml'
+  nugetArtifactsName: packages
 
 pool:
   name: Standard-Linux
 
 stages:
   - stage: build
-    displayName: Build
+    displayName: Build and Analyze 
     jobs:
       - job: Build
         steps:
+          - checkout: self #required for SonarCloud code issues blaming
+            fetchDepth: 0
           - template: templates/use_dotnet_steps.yaml
-          - task: PowerShell@2
+          - template: templates/sonar_cloud_prepare.yaml
+            parameters:
+              resultsDir: ${{ variables.testResultsDir }}
+              coverageReportFile: ${{ variables.coverageReportFile }}
+          - template: templates/build_and_pack.yaml
+            parameters:
+              nugetArtifactsName: ${{ variables.nugetArtifactsName }}
+          - template: templates/run_unit_tests.yaml
+            parameters: 
+              resultsDir: ${{ variables.testResultsDir }}
+              coverageReportFile: ${{ variables.coverageReportFile }}
+          - task: SonarCloudAnalyze@1
+            displayName: Run SonarCloud Analysis
+          - task: SonarCloudPublish@1
+            displayName: Publish SonarCloud report
             inputs:
-              filePath: ./pipelines/build.ps1
-              arguments: ./artifacts
-    
-          - script: |
-              cp ./artifacts/* $(Build.ArtifactStagingDirectory)
-            displayName: Copy packages to artifacts
-
-          - task: PublishBuildArtifacts@1
-            inputs:
-              artifactName: packages
-
-  - stage: test
-    displayName: Test
-    jobs:
-      - job: runUnitTests
-        displayName: Run Unit Tests
-        steps:
-          - template: templates/use_dotnet_steps.yaml
-          - script: |
-              dotnet test --results-directory test_artifacts --filter Unit -c Release --logger trx
-            displayName: Run tests
-          - task: PublishTestResults@2
-            condition: always()
-            displayName: "Publish tests results"
-            inputs:
-              testRunner: "VSTest"
-              testResultsFiles: "test_artifacts/*.trx"
-              failTaskOnFailedTests: true
-              publishTestResults: true
-
-      - job: runIntegrationTests
-        displayName: Run Integration Tests
-        steps:
-          - template: templates/use_dotnet_steps.yaml
-          - script: |
-              dotnet test --results-directory test_artifacts --filter Integration -c Release --logger trx
-            displayName: Run tests
-          - task: PublishTestResults@2
-            condition: always()
-            displayName: "Publish tests results"
-            inputs:
-              testRunner: "VSTest"
-              testResultsFiles: "test_artifacts/*.trx"
-              failTaskOnFailedTests: true
-              publishTestResults: true
+              pollingTimeoutSec: '300'
 
   - stage: deploy
     displayName: "Deploy nuget package"
@@ -74,19 +49,21 @@ stages:
         displayName: Deploy to nuget
         steps:
           - task: UseDotNet@2
+            displayName: Install dotnet v6
             continueOnError: true
             inputs:
               version: 6.x
           - task: DownloadPipelineArtifact@2
+            displayName: 'Download Pipeline Artifacts'
             inputs:
               buildType: 'current'
-              artifactName: 'packages'
+              artifactName: ${{ variables.nugetArtifactsName }}
               targetPath: '$(System.ArtifactsDirectory)'
-            displayName: 'Download Pipeline Artifact'
           - task: NuGetAuthenticate@1
+            displayName: 'Authenticate on Nuget feed'
           - task: DotNetCoreCLI@2
             inputs:
+              displayName: Push package to NuGet feed
               command: custom
               custom: nuget
               arguments: 'push $(Build.ArtifactStagingDirectory)/*.nupkg -s  https://softwareone-pc.pkgs.visualstudio.com/_packaging/4242bb21-0c81-7ac9-a046-de09f6923e18/nuget/v3/index.json --api-key VSTS --skip-duplicate'
-            displayName: Push package to NuGet feed

@@ -1,0 +1,16 @@
+parameters:
+  nugetArtifactsName: 'packages'
+
+steps:
+  - task: PowerShell@2
+    displayName: Build and Pack
+    inputs:
+      filePath: ./pipelines/build.ps1
+      arguments: ./artifacts
+  - script: |
+      cp ./artifacts/* $(Build.ArtifactStagingDirectory)
+    displayName: Copy packages to artifacts
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Nuget packages to artifacts
+    inputs:
+       artifactName: ${{ parameters.nugetArtifactsName }}

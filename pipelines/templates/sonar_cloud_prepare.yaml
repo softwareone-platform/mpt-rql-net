@@ -1,0 +1,18 @@
+parameters:
+  resultsDir: 'test_artifacts'
+  coverageReportFile: 'coverage.xml'
+
+steps:
+  - task: SonarCloudPrepare@1
+    displayName: Prepare SonarCloud Analyzer
+    inputs:
+      SonarCloud: 'SonarCloud-Pyracloud'
+      organization: 'softwareone-pc'
+      scannerMode: 'MSBuild'
+      projectKey: 'softwareone-pc_one-lib-dotnet-rql'
+      projectName: 'one-lib-dotnet-rql'
+      #coverage report file settings and 
+      #...unit tests results reports settings
+      extraProperties: |
+        sonar.cs.vscoveragexml.reportsPaths=**/${{ parameters.resultsDir }}/${{ parameters.coverageReportFile }}
+        sonar.cs.vstest.reportsPaths=**/${{ parameters.resultsDir }}/*.trx
