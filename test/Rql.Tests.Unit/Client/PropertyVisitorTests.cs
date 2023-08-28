@@ -1,13 +1,20 @@
-﻿using System.Linq.Expressions;
-using Xunit;
-using SoftwareOne.Rql.Client;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Rql.Tests.Unit.Client.Models;
+using SoftwareOne.Rql.Client;
+using SoftwareOne.Rql.Client.Exceptions;
+using System.Linq.Expressions;
+using Xunit;
 
 namespace Rql.Tests.Unit.Client;
 
 public class PropertyVisitorTests
 {
+    private readonly PropertyVisitor _propertyVisitor;
+
+    public PropertyVisitorTests()
+    {
+        _propertyVisitor = new PropertyVisitor();
+    }
     [Fact]
     public void GetPath_WhenProperty_ThenNameIsReturned()
     {
@@ -15,7 +22,7 @@ public class PropertyVisitorTests
         Expression<Func<User, string>> xx = x => x.FirstName;
 
         // Act
-        var result = new PropertyVisitor().GetPath(xx);
+        var result = _propertyVisitor.GetPath(xx);
 
         // Assert
         result.Should().Be("FirstName");
@@ -28,7 +35,7 @@ public class PropertyVisitorTests
         Expression<Func<User, string>> xx = x => x.HomeAddress.Street;
 
         // Act
-        var result = new PropertyVisitor().GetPath(xx);
+        var result =_propertyVisitor.GetPath(xx);
 
         // Assert
         result.Should().Be("HomeAddress.Street");
@@ -41,6 +48,32 @@ public class PropertyVisitorTests
         Expression<Func<User, string>> xx = x => x.GetName();
 
         // Act & Assert
-        Assert.Throws<NotSupportedException>(() => new PropertyVisitor().GetPath(xx));
+        Assert.Throws<InvalidDefinitionException>(() => _propertyVisitor.GetPath(xx));
+    }
+
+    [Fact]
+    public void GetPath_WhenMethodOnProp_ThenOnlyNameIsReturned()
+    {
+        // Arrange 
+        Expression<Func<User, string>> xx = x => x.FirstName.ToUpper();
+
+        // Act
+        var result = _propertyVisitor.GetPath(xx);
+
+        // Assert
+        result.Should().Be("FirstName");
+    }
+
+    [Fact]
+    public void GetPath_WhenOtherMethodOnProp_ThenOnlyNameIsReturned()
+    {
+        // Arrange 
+        Expression<Func<User, bool>> xx = x => string.IsNullOrWhiteSpace(x.FirstName);
+
+        // Act
+        var result = _propertyVisitor.GetPath(xx);
+
+        // Act & Assert
+        result.Should().Be("FirstName");
     }
 }

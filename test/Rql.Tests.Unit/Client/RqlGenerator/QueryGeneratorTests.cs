@@ -1,13 +1,12 @@
 ﻿using FluentAssertions;
 using Rql.Tests.Unit.Client.Models;
 using SoftwareOne.Rql.Client;
-using SoftwareOne.Rql.Client.Builder.Dsl;
-using SoftwareOne.Rql.Client.Builder.Extensions;
-using SoftwareOne.Rql.Client.Builder.Order;
-using SoftwareOne.Rql.Client.Builder.Paging;
-using SoftwareOne.Rql.Client.Builder.Query;
-using SoftwareOne.Rql.Client.Builder.Select;
-using SoftwareOne.Rql.Client.RqlGenerator;
+using SoftwareOne.Rql.Linq.Client;
+using SoftwareOne.Rql.Linq.Client.Builder.Dsl;
+using SoftwareOne.Rql.Linq.Client.Builder.Order;
+using SoftwareOne.Rql.Linq.Client.Builder.Paging;
+using SoftwareOne.Rql.Linq.Client.Builder.Select;
+using SoftwareOne.Rql.Linq.Client.RqlGenerator;
 using Xunit;
 
 namespace Rql.Tests.Unit.Client.RqlGenerator;

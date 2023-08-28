@@ -22,4 +22,8 @@
 	  <ProjectReference Include="..\SoftwareOne.Rql.Parsers.Linear\SoftwareOne.Rql.Parsers.Linear.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Client\" />
+	</ItemGroup>
+
 </Project>

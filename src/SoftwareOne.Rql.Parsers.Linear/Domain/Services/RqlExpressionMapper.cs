@@ -13,7 +13,7 @@ namespace SoftwareOne.Rql.Parsers.Linear.Domain.Services
         {
             if (word.Delimiters.Count > 1)
                 throw new RqlExpressionMapperException("Mapping from a word can only have zero or one delimiter");
-
+            
             var endIndex = word.WordStart + word.WordLength;
 
             if (word.Delimiters.Count == 1)
@@ -22,7 +22,7 @@ namespace SoftwareOne.Rql.Parsers.Linear.Domain.Services
                          new(GroupType.And, ParseArgument(Unwrap(word, word.WordStart, word.Delimiters[0]))),
                          new(GroupType.And, ParseArgument(Unwrap(word, word.Delimiters[0] + 1, endIndex)))
                     });
-
+           
             return ParseArgument(Unwrap(word, word.WordStart, endIndex));
         }
 
