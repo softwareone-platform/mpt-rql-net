@@ -3,6 +3,26 @@ parameters:
   coverageReportFile: 'coverage.xml'
 
 steps:
+  - script: |
+      #openjdk-20.0.2_linux-x64_bin.tar.gz hash
+      echo beaf61959c2953310595e1162b0c626aef33d58628771033ff2936609661956c > /tmp/sha.txt
+      #download
+      wget -o /dev/null -O /tmp/openjdk-20.0.2_linux-x64_bin.tar.gz https://download.java.net/java/GA/jdk20.0.2/6e380f22cbe7469fa75fb448bd903d8e/9/GPL/openjdk-20.0.2_linux-x64_bin.tar.gz
+      ls -lah /tmp 
+      #compare hash of downloaded binary to the accepted
+      if sha256sum "/tmp/openjdk-20.0.2_linux-x64_bin.tar.gz" | grep -Eo '^\w+' | cmp -s /tmp/sha.txt
+          then echo "hash for jdk binary OK"  
+          else exit 1
+      fi
+  - task: JavaToolInstaller@0
+    displayName: Install Java v20
+    inputs:
+      versionSpec: '17'
+      jdkArchitectureOption: 'x64'
+      jdkSourceOption: 'LocalDirectory'
+      jdkFile: '/tmp/openjdk-20.0.2_linux-x64_bin.tar.gz'
+      jdkDestinationDirectory: '$(agent.toolsDirectory)/jdk20'
+      cleanDestinationDirectory: true
   - task: SonarCloudPrepare@1
     displayName: Prepare SonarCloud Analyzer
     inputs:

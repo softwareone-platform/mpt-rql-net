@@ -16,9 +16,10 @@ pool:
 
 stages:
   - stage: build
-    displayName: Build and Analyze 
+    displayName: Build, Test and Analyze
     jobs:
-      - job: Build
+      - job: build
+        displayName: Build, Test and Analyze
         steps:
           - checkout: self #required for SonarCloud code issues blaming
             fetchDepth: 0

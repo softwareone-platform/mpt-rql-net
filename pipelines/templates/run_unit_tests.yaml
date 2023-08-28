@@ -18,6 +18,6 @@ steps:
     displayName: Publish Unit Tests results
     inputs:
       testRunner: "VSTest"
-      testResultsFiles: "${{ variables.resultsDir }}/*.trx"
+      testResultsFiles: "${{ parameters.resultsDir }}/*.trx"
       failTaskOnFailedTests: true
       publishTestResults: true
