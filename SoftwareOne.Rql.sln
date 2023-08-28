@@ -23,8 +23,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution", "solution", "{F6
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftwareOne.Rql.Client", "src\SoftwareOne.Rql.Client\SoftwareOne.Rql.Client.csproj", "{3C108F42-DDFF-4493-9662-68748753248B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,10 +45,6 @@ Global
 		{C7A59410-10AA-4751-BD60-2FCF003BF430}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7A59410-10AA-4751-BD60-2FCF003BF430}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7A59410-10AA-4751-BD60-2FCF003BF430}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3C108F42-DDFF-4493-9662-68748753248B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3C108F42-DDFF-4493-9662-68748753248B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3C108F42-DDFF-4493-9662-68748753248B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3C108F42-DDFF-4493-9662-68748753248B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,7 +54,6 @@ Global
 		{CA8E83C5-07D6-427F-8DCC-3900645BFC20} = {D9D73D98-4311-4704-9A5E-35595B363B7F}
 		{D16DBA99-341B-4871-9E5D-9D9692E267FE} = {D9D73D98-4311-4704-9A5E-35595B363B7F}
 		{C7A59410-10AA-4751-BD60-2FCF003BF430} = {D9D73D98-4311-4704-9A5E-35595B363B7F}
-		{3C108F42-DDFF-4493-9662-68748753248B} = {D9D73D98-4311-4704-9A5E-35595B363B7F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A3AD745F-6707-49CB-8A5B-301F8D55333A}
