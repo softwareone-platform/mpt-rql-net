@@ -1,9 +1,8 @@
-﻿using SoftwareOne.Rql.Linq.Client.RqlGenerator;
+﻿using SoftwareOne.Rql.Client;
 
-#pragma warning disable IDE0130
-namespace SoftwareOne.Rql.Client;
+namespace SoftwareOne.Rql.Linq.Client;
 
-public class QueryGenerator : IQueryGenerator
+internal class QueryGenerator : IQueryGenerator
 {
     private readonly IQueryParamsGenerator _queryParamsGenerator;
     private readonly ISelectGenerator _selectGenerator;
@@ -18,12 +17,12 @@ public class QueryGenerator : IQueryGenerator
         _orderGenerator = orderGenerator;
     }
 
-    public Rql Generate(Query query)
+    public Rql.Client.Rql Generate(Query query)
     {
         var queryParams = _queryParamsGenerator.Generate(query.Op);
         var selectParams = _selectGenerator.Generate(query.Select);
         var pagingParams = _pagingGenerator.Generate(query.Paging);
         var orderParams = _orderGenerator.Generate(query.Order);
-        return new Rql(queryParams, selectParams, pagingParams, orderParams);
+        return new Rql.Client.Rql(queryParams, selectParams, pagingParams, orderParams);
     }
 }

@@ -1,3 +1,5 @@
-﻿namespace SoftwareOne.Rql.Linq.Client.Builder.Dsl;
+﻿using SoftwareOne.Rql.Client;
 
-public record AndOperator(IOperator Left, IOperator Right) : Operator;
+namespace SoftwareOne.Rql.Linq.Client.Dsl;
+
+internal record AndOperator(IOperator Left, IOperator Right) : Operator;

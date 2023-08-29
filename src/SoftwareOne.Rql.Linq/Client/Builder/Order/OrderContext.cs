@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
+using SoftwareOne.Rql.Client;
 
-namespace SoftwareOne.Rql.Linq.Client.Builder.Order;
+namespace SoftwareOne.Rql.Linq.Client.Order;
 
 public class OrderContext<T>  where T : class
 {
@@ -11,5 +12,5 @@ public class OrderContext<T>  where T : class
         return this;
     }
 
-    public IList<IOrder>? GetDefinition() => _orders;
+    internal IList<IOrder>? GetDefinition() => _orders;
 }

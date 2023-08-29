@@ -1,8 +1,8 @@
-﻿using SoftwareOne.Rql.Linq.Client.Builder.Paging;
+﻿using SoftwareOne.Rql.Client;
 
-namespace SoftwareOne.Rql.Linq.Client.RqlGenerator;
+namespace SoftwareOne.Rql.Linq.Client;
 
-public interface IPagingGenerator
+internal interface IPagingGenerator
 {
     string Generate(Paging paging);
 }

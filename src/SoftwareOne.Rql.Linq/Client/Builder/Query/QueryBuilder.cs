@@ -1,8 +1,5 @@
-﻿using SoftwareOne.Rql.Linq.Client;
-using SoftwareOne.Rql.Linq.Client.Builder.Dsl;
-using SoftwareOne.Rql.Linq.Client.Builder.Order;
-using SoftwareOne.Rql.Linq.Client.Builder.Paging;
-using SoftwareOne.Rql.Linq.Client.Builder.Select;
+﻿using SoftwareOne.Rql.Linq.Client.Dsl;
+using SoftwareOne.Rql.Linq.Client.Order;
 
 #pragma warning disable IDE0130
 namespace SoftwareOne.Rql.Client;

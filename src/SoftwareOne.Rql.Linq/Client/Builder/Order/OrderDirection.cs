@@ -1,4 +1,5 @@
-﻿namespace SoftwareOne.Rql.Linq.Client.Builder.Order;
+﻿#pragma warning disable IDE0130
+namespace SoftwareOne.Rql.Client;
 
 public enum OrderDirection
 {

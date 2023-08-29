@@ -1,8 +1,8 @@
-﻿using SoftwareOne.Rql.Linq.Client.Builder.Order;
+﻿using SoftwareOne.Rql.Client;
 
-namespace SoftwareOne.Rql.Linq.Client.RqlGenerator;
+namespace SoftwareOne.Rql.Linq.Client;
 
-public class OrderGenerator : IOrderGenerator
+internal class OrderGenerator : IOrderGenerator
 {
     public string Generate(IList<IOrder>? queryOrder) =>
         queryOrder?.Any() ?? false

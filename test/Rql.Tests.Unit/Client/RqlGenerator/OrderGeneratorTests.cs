@@ -1,7 +1,8 @@
 ﻿using FluentAssertions;
 using Rql.Tests.Unit.Client.Models;
-using SoftwareOne.Rql.Linq.Client.Builder.Order;
-using SoftwareOne.Rql.Linq.Client.RqlGenerator;
+using SoftwareOne.Rql.Client;
+using SoftwareOne.Rql.Linq.Client;
+using SoftwareOne.Rql.Linq.Client.Order;
 using Xunit;
 
 namespace Rql.Tests.Unit.Client.RqlGenerator;

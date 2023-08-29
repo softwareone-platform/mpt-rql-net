@@ -1,5 +1,5 @@
 ﻿#pragma warning disable IDE0130
-namespace SoftwareOne.Rql.Client.Exceptions;
+namespace SoftwareOne.Rql.Client;
 
 public class InvalidDefinitionException : Exception
 {

@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using Rql.Tests.Unit.Client.Models;
 using SoftwareOne.Rql.Client;
-using SoftwareOne.Rql.Linq.Client.Builder.Paging;
 using Xunit;
 
 namespace Rql.Tests.Unit.Client.Builder;

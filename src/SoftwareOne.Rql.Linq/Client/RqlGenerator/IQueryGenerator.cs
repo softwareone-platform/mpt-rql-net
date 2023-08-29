@@ -1,6 +1,4 @@
-﻿using SoftwareOne.Rql.Linq.Client;
-
-#pragma warning disable IDE0130
+﻿#pragma warning disable IDE0130
 namespace SoftwareOne.Rql.Client;
 
 public interface IQueryGenerator

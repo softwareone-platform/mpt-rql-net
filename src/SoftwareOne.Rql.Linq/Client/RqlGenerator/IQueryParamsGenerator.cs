@@ -1,6 +1,5 @@
-﻿using SoftwareOne.Rql.Linq.Client.Builder.Dsl;
-
-namespace SoftwareOne.Rql.Linq.Client.RqlGenerator;
+﻿#pragma warning disable IDE0130
+namespace SoftwareOne.Rql.Client;
 
 public interface IQueryParamsGenerator
 {

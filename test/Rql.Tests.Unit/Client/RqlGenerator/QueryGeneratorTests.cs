@@ -2,11 +2,7 @@
 using Rql.Tests.Unit.Client.Models;
 using SoftwareOne.Rql.Client;
 using SoftwareOne.Rql.Linq.Client;
-using SoftwareOne.Rql.Linq.Client.Builder.Dsl;
-using SoftwareOne.Rql.Linq.Client.Builder.Order;
-using SoftwareOne.Rql.Linq.Client.Builder.Paging;
-using SoftwareOne.Rql.Linq.Client.Builder.Select;
-using SoftwareOne.Rql.Linq.Client.RqlGenerator;
+using SoftwareOne.Rql.Linq.Client.Dsl;
 using Xunit;
 
 namespace Rql.Tests.Unit.Client.RqlGenerator;
@@ -34,10 +30,9 @@ public class QueryGeneratorTests
     public void WhenQueryAndSelectAndPagingAreNotEmptyAndShortSyntax_ThenAreGeneratedInRql()
     {
         // Arrange & Act
-        var rql = new QueryBuilder<User>(context => context.Eq(x => x.HomeAddress.Street, "abc"))
-            .WithSelect(context => context.Include(x => x.HomeAddress).Exclude(x => x.OfficeAddress))
-            .WithPaging(100, 10)
-            .BuildString();
+        var rql = BuilderExtensions.BuildString<User>(new QueryBuilder<User>(context => context.Eq(x => x.HomeAddress.Street, "abc"))
+                .WithSelect(context => context.Include(x => x.HomeAddress).Exclude(x => x.OfficeAddress))
+                .WithPaging(100, 10));
 
         // Assert
         rql.Should().Be("eq(HomeAddress.Street, 'abc')&select=HomeAddress,-OfficeAddress&limit=100&offset=10");

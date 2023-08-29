@@ -1,5 +1,5 @@
 ﻿using System.Linq.Expressions;
 
-namespace SoftwareOne.Rql.Linq.Client.Builder.Dsl;
+namespace SoftwareOne.Rql.Linq.Client.Dsl;
 
-public record In<T, U>(Expression<Func<T, U>> Exp, IEnumerable<U> Values) : MultiComparableOperator<T, U>(Exp, Values) where T : class;
+internal record In<T, U>(Expression<Func<T, U>> Exp, IEnumerable<U> Values) : MultiComparableOperator<T, U>(Exp, Values) where T : class;

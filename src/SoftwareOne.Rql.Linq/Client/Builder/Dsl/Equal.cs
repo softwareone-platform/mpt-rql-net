@@ -1,5 +1,5 @@
 ﻿using System.Linq.Expressions;
 
-namespace SoftwareOne.Rql.Linq.Client.Builder.Dsl;
+namespace SoftwareOne.Rql.Linq.Client.Dsl;
 
-public record Equal<T, U>(Expression<Func<T, U>> Exp, U Value) : ComparableOperator<T, U>(Exp, Value) where T : class;
+internal record Equal<T, U>(Expression<Func<T, U>> Exp, U Value) : ComparableOperator<T, U>(Exp, Value) where T : class;

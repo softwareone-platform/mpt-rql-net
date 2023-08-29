@@ -1,3 +1,4 @@
-﻿namespace SoftwareOne.Rql.Linq.Client.Builder.Dsl;
+﻿namespace SoftwareOne.Rql.Linq.Client.Dsl;
 
-public record EmptyOperator() : Operator;
+#pragma warning disable S2094
+internal record EmptyOperator() : Operator;

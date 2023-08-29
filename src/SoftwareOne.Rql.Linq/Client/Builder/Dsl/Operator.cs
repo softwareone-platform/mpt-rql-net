@@ -1,6 +1,8 @@
-﻿namespace SoftwareOne.Rql.Linq.Client.Builder.Dsl;
+﻿using SoftwareOne.Rql.Client;
 
-public abstract record Operator : IOperator
+namespace SoftwareOne.Rql.Linq.Client.Dsl;
+
+internal abstract record Operator : IOperator
 {
     public IOperator And(IOperator right)
     {

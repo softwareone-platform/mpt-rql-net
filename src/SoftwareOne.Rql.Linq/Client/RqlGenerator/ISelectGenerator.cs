@@ -1,8 +1,8 @@
-﻿using SoftwareOne.Rql.Linq.Client.Builder.Select;
+﻿using SoftwareOne.Rql.Client;
 
-namespace SoftwareOne.Rql.Linq.Client.RqlGenerator;
+namespace SoftwareOne.Rql.Linq.Client;
 
-public interface ISelectGenerator
+internal interface ISelectGenerator
 {
     string Generate(SelectFields selectFields);
 }

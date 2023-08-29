@@ -1,5 +1,4 @@
-﻿using SoftwareOne.Rql.Client.Exceptions;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Reflection;
 
 #pragma warning disable IDE0130

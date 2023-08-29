@@ -1,3 +1,5 @@
-﻿namespace SoftwareOne.Rql.Linq.Client.Builder.Dsl;
+﻿using SoftwareOne.Rql.Client;
 
-public record NotOperator(IOperator Left) : Operator;
+namespace SoftwareOne.Rql.Linq.Client.Dsl;
+
+internal record NotOperator(IOperator Left) : Operator;

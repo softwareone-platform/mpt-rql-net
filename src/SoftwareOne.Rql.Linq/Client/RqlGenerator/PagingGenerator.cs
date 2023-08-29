@@ -1,9 +1,8 @@
-﻿using SoftwareOne.Rql.Client.Exceptions;
-using SoftwareOne.Rql.Linq.Client.Builder.Paging;
+﻿using SoftwareOne.Rql.Client;
 
-namespace SoftwareOne.Rql.Linq.Client.RqlGenerator;
+namespace SoftwareOne.Rql.Linq.Client;
 
-public class PagingGenerator : IPagingGenerator
+internal class PagingGenerator : IPagingGenerator
 {
     public string Generate(Paging paging)
     {

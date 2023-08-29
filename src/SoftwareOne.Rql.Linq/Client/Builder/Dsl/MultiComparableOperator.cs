@@ -1,9 +1,9 @@
 ﻿using System.Linq.Expressions;
 using SoftwareOne.Rql.Client;
 
-namespace SoftwareOne.Rql.Linq.Client.Builder.Dsl;
+namespace SoftwareOne.Rql.Linq.Client.Dsl;
 
-public abstract record MultiComparableOperator<T, U>(Expression<Func<T, U>> Exp, IEnumerable<U> Values) : Operator, IComparableOperator
+internal abstract record MultiComparableOperator<T, U>(Expression<Func<T, U>> Exp, IEnumerable<U> Values) : Operator, IComparableOperator
 {
     public QueryOperator ToQueryOperator()
     {

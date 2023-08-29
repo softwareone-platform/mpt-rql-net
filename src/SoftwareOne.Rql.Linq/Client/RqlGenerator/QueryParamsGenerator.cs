@@ -1,9 +1,9 @@
-﻿using SoftwareOne.Rql.Client.Exceptions;
-using SoftwareOne.Rql.Linq.Client.Builder.Dsl;
+﻿using SoftwareOne.Rql.Client;
+using SoftwareOne.Rql.Linq.Client.Dsl;
 
-namespace SoftwareOne.Rql.Linq.Client.RqlGenerator;
+namespace SoftwareOne.Rql.Linq.Client;
 
-public class QueryParamsGenerator : IQueryParamsGenerator
+internal class QueryParamsGenerator : IQueryParamsGenerator
 {
     private static ILookup<Type, string> TypesTranslator => new Dictionary<Type, string>
     {

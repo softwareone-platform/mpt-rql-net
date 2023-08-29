@@ -1,5 +1,5 @@
 ﻿using System.Linq.Expressions;
-using SoftwareOne.Rql.Linq.Client.Builder.Dsl;
+using SoftwareOne.Rql.Linq.Client.Dsl;
 
 #pragma warning disable IDE0130
 namespace SoftwareOne.Rql.Client;

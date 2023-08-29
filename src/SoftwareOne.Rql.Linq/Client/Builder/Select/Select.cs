@@ -1,9 +1,9 @@
 ﻿using System.Linq.Expressions;
-using SoftwareOne.Rql.Client;
 
-namespace SoftwareOne.Rql.Linq.Client.Builder.Select;
+#pragma warning disable IDE0130
+namespace SoftwareOne.Rql.Client;
 
-public record Select<T, U>(Expression<Func<T, U>> exp) : ISelect
+internal record Select<T, U>(Expression<Func<T, U>> exp) : ISelect
 {
     public string ToQuery()
     {
