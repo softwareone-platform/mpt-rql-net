@@ -1,4 +1,5 @@
 ﻿using ErrorOr;
+using SoftwareOne.Rql.Abstractions;
 using System.Collections;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -10,8 +11,12 @@ internal class ListIn : IListIn
     private static readonly MethodInfo _containsMethod = typeof(Enumerable).GetMethods().Single(
         methodInfo => methodInfo.Name == nameof(Enumerable.Contains) && methodInfo.GetParameters().Length == 2);
 
-    public virtual ErrorOr<Expression> MakeExpression(MemberExpression member, IEnumerable<string> list)
+    public virtual ErrorOr<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, IEnumerable<string> list)
     {
+        var validationResult = ValidationHelper.ValidateOperatorApplicability(propertyInfo, Operator);
+        if (validationResult.IsError)
+            return validationResult.Errors;
+
         var listType = typeof(List<>).MakeGenericType(member.Type);
         var values = (IList)Activator.CreateInstance(listType)!;
 
@@ -32,4 +37,6 @@ internal class ListIn : IListIn
         var contains = _containsMethod.MakeGenericMethod(member.Type);
         return Expression.Call(contains, Expression.Constant(values), member);
     }
+
+    protected virtual RqlOperators Operator => RqlOperators.ListIn;
 }

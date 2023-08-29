@@ -1,4 +1,5 @@
 ﻿using ErrorOr;
+using SoftwareOne.Rql.Abstractions;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -24,15 +25,19 @@ internal class Like : ILike
         _wildcard = '*';
     }
 
-    public ErrorOr<Expression> MakeExpression(MemberExpression member, string pattern)
+    public ErrorOr<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, string pattern)
     {
-        var methodInfo = pattern switch
+        var (methodInfo, rqlOperator) = pattern switch
         {
-            var s when s.StartsWith(_wildcard) && s.EndsWith(_wildcard) => _methodContains,
-            var s when s.StartsWith(_wildcard) => _methodEndsWith,
-            var s when s.EndsWith(_wildcard) => _methodStartsWith,
-            _ => _methodEquals
+            var s when s.StartsWith(_wildcard) && s.EndsWith(_wildcard) => (_methodContains, RqlOperators.Contains),
+            var s when s.StartsWith(_wildcard) => (_methodEndsWith, RqlOperators.EndsWith),
+            var s when s.EndsWith(_wildcard) => (_methodStartsWith, RqlOperators.StartsWith),
+            _ => (_methodEquals, RqlOperators.Eq)
         };
+
+        var validationResult = ValidationHelper.ValidateOperatorApplicability(propertyInfo, rqlOperator);
+        if (validationResult.IsError)
+            return validationResult.Errors;
 
         return Expression.Call(member, methodInfo, Expression.Constant(pattern.Trim(_wildcard)));
     }

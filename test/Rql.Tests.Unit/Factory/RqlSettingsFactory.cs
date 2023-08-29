@@ -7,7 +7,7 @@ internal static class RqlSettingsFactory
 {
     internal static RqlSettings Default()
     {
-        var rqlSettings = new RqlSettings { DefaultActions = RqlAction.Filter };
+        var rqlSettings = new RqlSettings { DefaultActions = RqlActions.Filter };
 
         return rqlSettings;
     }

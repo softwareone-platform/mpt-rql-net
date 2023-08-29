@@ -13,7 +13,7 @@ public class RqlOptions
         OperatorOverrides = new Dictionary<Type, Type>();
         Settings = new RqlSettings
         {
-            DefaultActions = RqlAction.All,
+            DefaultActions = RqlActions.All,
             Select = new RqlSelectSettings
             {
                 Mode = SelectMode.All

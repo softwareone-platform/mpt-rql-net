@@ -4,7 +4,7 @@ namespace SoftwareOne.Rql.Linq.Configuration
 {
     public interface IRqlSettings
     {
-        RqlAction DefaultActions { get; set; }
+        RqlActions DefaultActions { get; set; }
         IRqlSelectSettings Select { get; }
     }
 }

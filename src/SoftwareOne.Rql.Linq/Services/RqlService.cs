@@ -13,7 +13,7 @@ internal abstract class RqlService
         _metadataProvider = metadataProvider;
     }
 
-    protected ErrorOr<MemberExpression> MakeMemberAccess(ParameterExpression pe, string path, Func<MemberPathInfo, ErrorOr<Success>>? pathHandler = null)
+    protected ErrorOr<MemberPathInfo> MakeMemberAccess(ParameterExpression pe, string path, Func<MemberPathInfo, ErrorOr<Success>>? pathHandler = null)
     {
         var nameSegments = path.Split('.');
         var aggregatedInfo = nameSegments.Aggregate(
@@ -47,7 +47,7 @@ internal abstract class RqlService
         if (aggregatedInfo.IsError)
             return aggregatedInfo.Errors;
 
-        return (MemberExpression)aggregatedInfo.Value.Expression;
+        return aggregatedInfo.Value;
     }
 
     internal record MemberPathInfo(string FullPath, ReadOnlyMemory<char> Path, RqlPropertyInfo PropertyInfo, Expression Expression);

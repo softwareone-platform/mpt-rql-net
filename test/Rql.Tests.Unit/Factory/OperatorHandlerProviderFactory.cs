@@ -6,73 +6,40 @@ namespace Rql.Tests.Unit.Factory;
 internal static class OperatorHandlerProviderFactory
 {
     internal static IOperatorHandlerProvider Equal()
-    {
-        var operatorHandlerProviderMock = new Mock<IOperatorHandlerProvider>();
-        operatorHandlerProviderMock.Setup(operatorHandlerProvider => operatorHandlerProvider.GetOperatorHandler(It.IsAny<Type>())).Returns(
-            new SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.Equal());
-
-        return operatorHandlerProviderMock.Object;
-    }
+        => Build<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.Equal>();
 
     internal static IOperatorHandlerProvider NotEqual()
-    {
-        var operatorHandlerProviderMock = new Mock<IOperatorHandlerProvider>();
-        operatorHandlerProviderMock.Setup(operatorHandlerProvider => operatorHandlerProvider.GetOperatorHandler(It.IsAny<Type>())).Returns(
-            new SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.NotEqual());
-
-        return operatorHandlerProviderMock.Object;
-    }
+        => Build<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.NotEqual>();
 
     internal static IOperatorHandlerProvider GreaterThan()
-    {
-        var operatorHandlerProviderMock = new Mock<IOperatorHandlerProvider>();
-        operatorHandlerProviderMock.Setup(operatorHandlerProvider => operatorHandlerProvider.GetOperatorHandler(It.IsAny<Type>())).Returns(
-            new SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.GreaterThan());
-
-        return operatorHandlerProviderMock.Object;
-    }
+        => Build<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.GreaterThan>();
 
     internal static IOperatorHandlerProvider GreaterEqualThan()
-    {
-        var operatorHandlerProviderMock = new Mock<IOperatorHandlerProvider>();
-        operatorHandlerProviderMock.Setup(operatorHandlerProvider => operatorHandlerProvider.GetOperatorHandler(It.IsAny<Type>())).Returns(
-            new SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.GreaterThanOrEqual());
-
-        return operatorHandlerProviderMock.Object;
-    }
+        => Build<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.GreaterThanOrEqual>();
 
     internal static IOperatorHandlerProvider LessThan()
-    {
-        var operatorHandlerProviderMock = new Mock<IOperatorHandlerProvider>();
-        operatorHandlerProviderMock.Setup(operatorHandlerProvider => operatorHandlerProvider.GetOperatorHandler(It.IsAny<Type>())).Returns(
-            new SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.LessThan());
-
-        return operatorHandlerProviderMock.Object;
-    }
+        => Build<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.LessThan>();
 
     internal static IOperatorHandlerProvider LessEqualThan()
-    {
-        var operatorHandlerProviderMock = new Mock<IOperatorHandlerProvider>();
-        operatorHandlerProviderMock.Setup(operatorHandlerProvider => operatorHandlerProvider.GetOperatorHandler(It.IsAny<Type>())).Returns(
-            new SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.LessThanOrEqual());
+         => Build<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.LessThanOrEqual>();
 
-        return operatorHandlerProviderMock.Object;
-    }
+    internal static IOperatorHandlerProvider ListIn()
+        => Build<SoftwareOne.Rql.Linq.Services.Filtering.Operators.List.Implementation.ListIn>();
+
+    internal static IOperatorHandlerProvider ListOut()
+        => Build<SoftwareOne.Rql.Linq.Services.Filtering.Operators.List.Implementation.ListOut>();
 
     internal static IOperatorHandlerProvider Like()
-    {
-        var operatorHandlerProviderMock = new Mock<IOperatorHandlerProvider>();
-        operatorHandlerProviderMock.Setup(operatorHandlerProvider => operatorHandlerProvider.GetOperatorHandler(It.IsAny<Type>())).Returns(
-            new SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search.Implementation.Like());
-
-        return operatorHandlerProviderMock.Object;
-    }
+        => Build<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search.Implementation.Like>();
 
     internal static IOperatorHandlerProvider ILike()
+        => Build<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search.Implementation.LikeInsensitive>();
+
+    private static IOperatorHandlerProvider Build<T>() where T : IOperator, new()
     {
         var operatorHandlerProviderMock = new Mock<IOperatorHandlerProvider>();
         operatorHandlerProviderMock.Setup(operatorHandlerProvider => operatorHandlerProvider.GetOperatorHandler(It.IsAny<Type>())).Returns(
-            new SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search.Implementation.LikeInsensitive());
+            new T());
 
         return operatorHandlerProviderMock.Object;
     }

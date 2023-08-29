@@ -6,7 +6,8 @@ public interface IRqlPropertyInfo
 {
     string Name { get; }
     PropertyInfo Property { get; }
-    bool IsDefault { get; }
-    RqlAction Actions { get; }
+    bool IsCore { get; }
+    RqlActions Actions { get; }
+    RqlOperators Operators { get; }
     RqlPropertyType Type { get; }
 }

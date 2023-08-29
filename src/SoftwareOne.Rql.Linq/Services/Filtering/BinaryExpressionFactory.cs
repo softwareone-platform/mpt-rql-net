@@ -17,7 +17,7 @@ internal static class BinaryExpressionFactory
         return arg.IsError ? arg.Errors : factory(arg.Value);
     }
 
-    internal static ErrorOr<Expression> MakeList(RqlBinary node, MemberExpression member, IListOperator list)
+    internal static ErrorOr<Expression> MakeList(RqlBinary node, IRqlPropertyInfo propertyInfo, MemberExpression member, IListOperator list)
     {
         if (node.Right is not RqlGroup grp || grp.Items == null || grp.Items.Count == 0)
             return Error.Validation(description: "Value has to be a non empty array.");
@@ -27,7 +27,7 @@ internal static class BinaryExpressionFactory
         if (values.Exists(t => t.IsError))
             return values.SelectMany(s => s.Errors).ToList();
 
-        return list.MakeExpression(member, values.Select(s => s.Value!));
+        return list.MakeExpression(propertyInfo, member, values.Select(s => s.Value!));
     }
 
     private static ErrorOr<string?> GetRightArgument(RqlExpression right, bool allowNull)

@@ -104,21 +104,25 @@ internal sealed class FilteringService<TView> : RqlService, IFilteringService<TV
         if (node.Left is not RqlConstant memberConstant)
             return Error.Validation(MakeErrorCode("unknown"), "Unknown property were used for binary expression.");
 
-        var member = MakeMemberAccess(pe, memberConstant.Value, static path =>
+        var memberInfo = MakeMemberAccess(pe, memberConstant.Value, static path =>
         {
-            if (!path.PropertyInfo.Actions.HasFlag(RqlAction.Filter))
+            if (!path.PropertyInfo.Actions.HasFlag(RqlActions.Filter))
                 return Error.Validation(description: "Filtering is not permitted");
             return Result.Success;
         });
 
-        if (member.IsError)
-            return AssignErrorCode(member.Errors, MakeErrorCode(memberConstant.Value));
+
+        if (memberInfo.IsError)
+            return AssignErrorCode(memberInfo.Errors, MakeErrorCode(memberConstant.Value));
+
+        var property = memberInfo.Value.PropertyInfo;
+        var member = (MemberExpression)memberInfo.Value.Expression;
 
         var expression = handler switch
         {
-            IComparisonOperator comp => BinaryExpressionFactory.MakeSimple(node, true, value => comp.MakeExpression(member.Value, value)),
-            ISearchOperator search => BinaryExpressionFactory.MakeSimple(node, false, value => search.MakeExpression(member.Value, value!)),
-            IListOperator list => BinaryExpressionFactory.MakeList(node, member.Value, list),
+            IComparisonOperator comp => BinaryExpressionFactory.MakeSimple(node, true, value => comp.MakeExpression(property, member, value)),
+            ISearchOperator search => BinaryExpressionFactory.MakeSimple(node, false, value => search.MakeExpression(property, member, value!)),
+            IListOperator list => BinaryExpressionFactory.MakeList(node, property, member, list),
             _ => MakeInternalError()
         };
 

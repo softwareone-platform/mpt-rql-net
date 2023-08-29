@@ -3,7 +3,7 @@ using SoftwareOne.Rql.Linq.Core.Metadata;
 
 namespace Rql.Tests.Unit.Factory;
 
-internal static class TypeMetadataProviderFactory
+internal static class MetadataProviderFactory
 {
     internal static IMetadataProvider Internal()
     {

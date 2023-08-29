@@ -1,12 +1,17 @@
 ﻿using ErrorOr;
+using SoftwareOne.Rql.Abstractions;
 using System.Linq.Expressions;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation
 {
-    internal class ComparisonOperator
+    internal abstract class ComparisonOperator
     {
-        protected static ErrorOr<Expression> MakeBinaryExpression(MemberExpression member, string? value, Func<Expression, Expression, BinaryExpression> method)
+        protected ErrorOr<Expression> MakeBinaryExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, string? value, Func<Expression, Expression, BinaryExpression> method)
         {
+            var validationResult = ValidationHelper.ValidateOperatorApplicability(propertyInfo, Operator);
+            if (validationResult.IsError)
+                return validationResult.Errors;
+
             if (value == null)
             {
                 // check if member type is nullable
@@ -24,5 +29,7 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implement
 
             return method(member, constant);
         }
+
+        protected abstract RqlOperators Operator { get; }
     }
 }

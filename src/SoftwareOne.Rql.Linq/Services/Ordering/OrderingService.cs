@@ -39,20 +39,22 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
         {
             var (path, isAsc) = StringHelper.ExtractSign(op.Value);
 
-                var eoMemberAccess = MakeMemberAccess(param, path.ToString(), path =>
+                var memberInfo = MakeMemberAccess(param, path.ToString(), path =>
                 {
-                    if (!path.PropertyInfo.Actions.HasFlag(RqlAction.Order))
+                    if (!path.PropertyInfo.Actions.HasFlag(RqlActions.Order))
                         return Error.Validation(MakeErrorCode(path.Path.ToString()), "Ordering is not permitted.");
                     return Result.Success;
                 });
 
-            if (eoMemberAccess.IsError)
+            if (memberInfo.IsError)
             {
-                errors.AddRange(eoMemberAccess.Errors);
+                errors.AddRange(memberInfo.Errors);
                 continue;
             }
 
-            var functions = (IOrderingFunctions)Activator.CreateInstance(typeof(OrderingFunctions<,>).MakeGenericType(typeof(TView), eoMemberAccess.Value.Type))!;
+            var member = memberInfo.Value.Expression;
+
+            var functions = (IOrderingFunctions)Activator.CreateInstance(typeof(OrderingFunctions<,>).MakeGenericType(typeof(TView), member.Type))!;
 
             MethodInfo methodInfo;
             if (isAsc)
@@ -60,7 +62,7 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
             else
                 methodInfo = isFirst ? functions.GetOrderByDescending() : functions.GetThenByDescending();
 
-            var orderExp = Expression.Lambda(eoMemberAccess.Value, param);
+            var orderExp = Expression.Lambda(member, param);
 
             query = (IQueryable<TView>)methodInfo.Invoke(null, new object[] { query, orderExp })!;
             isFirst = false;

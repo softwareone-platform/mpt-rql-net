@@ -2,12 +2,12 @@
 
 public class SampleEntityView
 {
-    public int Id { get; set; }
-    public string? Desc { get; set; }
-    public string Name { get; set; } = null!;
-    public string Category { get; set; } = null!;
-    public DateTime ListDate { get; set; }
-    public decimal Price { get; set; }
-    public decimal SellPrice { get; set; }
-    public SampleEntityView? Sub { get; set; }
+    public virtual int Id { get; set; }
+    public virtual string? Desc { get; set; }
+    public virtual string Name { get; set; } = null!;
+    public virtual string Category { get; set; } = null!;
+    public virtual DateTime ListDate { get; set; }
+    public virtual decimal Price { get; set; }
+    public virtual decimal SellPrice { get; set; }
+    public virtual SampleEntityView? Sub { get; set; }
 }

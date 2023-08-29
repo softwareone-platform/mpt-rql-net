@@ -3,10 +3,10 @@ using System.Linq.Expressions;
 
 namespace Rql.Tests.Unit.Utility;
 
-internal class SampleEntityMapper : IRqlMapper<SampleEntity, SampleEntityView>
+internal class SampleEntityMapper<TView> : IRqlMapper<SampleEntity, TView> where TView : SampleEntityView, new()
 {
-    public Expression<Func<SampleEntity, SampleEntityView>> GetMapping()
-        => t => new SampleEntityView
+    public Expression<Func<SampleEntity, TView>> GetMapping()
+        => t => new TView
         {
             Id = t.Id,
             Desc = t.Description,
@@ -15,7 +15,7 @@ internal class SampleEntityMapper : IRqlMapper<SampleEntity, SampleEntityView>
             Price = t.Price,
             SellPrice = t.SalePrice,
             ListDate = t.ListDate,
-            Sub = new SampleEntityView
+            Sub = new TView
             {
                 Id = t.Id,
                 Desc = t.Description,

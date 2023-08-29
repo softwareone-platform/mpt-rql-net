@@ -14,14 +14,14 @@ public class TypeDescriptionProviderTests
     public void GetDescription_SampleEntity_AllFilter()
     {
         // Arrange
-        var provider = TypeMetadataProviderFactory.Public();
+        var provider = MetadataProviderFactory.Public();
 
         // Act 
         var props = provider.GetPropertiesByDeclaringType(typeof(SampleEntity));
 
         // Assert
         Assert.NotEmpty(props);
-        Assert.True(props.All(e => e.Actions == RqlAction.Filter));
+        Assert.True(props.All(e => e.Actions == RqlActions.Filter));
     }
 
 
@@ -32,26 +32,26 @@ public class TypeDescriptionProviderTests
         // Arrange
         IRqlMetadataProvider provider = new MetadataProvider(
             new PropertyNameProvider(),
-            new MetadataFactory(new RqlSettings { DefaultActions = RqlAction.Filter | RqlAction.Order }));
+            new MetadataFactory(new RqlSettings { DefaultActions = RqlActions.Filter | RqlActions.Order }));
 
         // Act 
         var props = provider.GetPropertiesByDeclaringType(typeof(SampleEntity));
 
         // Assert
         Assert.NotEmpty(props);
-        Assert.True(props.All(e => e.Actions == (RqlAction.Filter | RqlAction.Order)));
+        Assert.True(props.All(e => e.Actions == (RqlActions.Filter | RqlActions.Order)));
         Assert.Contains(props, e => e.Name == nameof(SampleEntity.Types) && e.Type == RqlPropertyType.Collection);
         Assert.Contains(props, e => e.Name == nameof(SampleEntity.ModifiedDate) && e.Type == RqlPropertyType.Primitive);
         Assert.Contains(props, e => e.Name == nameof(SampleEntity.Size) && e.Type == RqlPropertyType.Primitive);
     }
 
     [Theory]
-    [InlineData(RqlAction.All)]
-    [InlineData(RqlAction.Filter)]
-    [InlineData(RqlAction.None)]
-    [InlineData(RqlAction.Select)]
-    [InlineData(RqlAction.Order)]
-    public void GetDescription_DescriptionSampleEntity_GlobalPropDoesNotChange(RqlAction globalAction)
+    [InlineData(RqlActions.All)]
+    [InlineData(RqlActions.Filter)]
+    [InlineData(RqlActions.None)]
+    [InlineData(RqlActions.Select)]
+    [InlineData(RqlActions.Order)]
+    public void GetDescription_DescriptionSampleEntity_GlobalPropDoesNotChange(RqlActions globalAction)
     {
 
         // Arrange
@@ -64,10 +64,10 @@ public class TypeDescriptionProviderTests
 
         // Assert
         Assert.NotEmpty(props);
-        Assert.Contains(props, e => e.Name == nameof(SampleTypeDescriptionEntity.OrderProp) && e.Actions == RqlAction.Order);
-        Assert.Contains(props, e => e.Name == nameof(SampleTypeDescriptionEntity.AllProp) && e.Actions == RqlAction.All);
-        Assert.Contains(props, e => e.Name == nameof(SampleTypeDescriptionEntity.FilterProp) && e.Actions == RqlAction.Filter);
-        Assert.Contains(props, e => e.Name == nameof(SampleTypeDescriptionEntity.SelectProp) && e.Actions == RqlAction.Select);
-        Assert.Contains(props, e => e.Name == nameof(SampleTypeDescriptionEntity.NoneProp)  && e.Actions == RqlAction.None);
+        Assert.Contains(props, e => e.Name == nameof(SampleTypeDescriptionEntity.OrderProp) && e.Actions == RqlActions.Order);
+        Assert.Contains(props, e => e.Name == nameof(SampleTypeDescriptionEntity.AllProp) && e.Actions == RqlActions.All);
+        Assert.Contains(props, e => e.Name == nameof(SampleTypeDescriptionEntity.FilterProp) && e.Actions == RqlActions.Filter);
+        Assert.Contains(props, e => e.Name == nameof(SampleTypeDescriptionEntity.SelectProp) && e.Actions == RqlActions.Select);
+        Assert.Contains(props, e => e.Name == nameof(SampleTypeDescriptionEntity.NoneProp)  && e.Actions == RqlActions.None);
     }
 }

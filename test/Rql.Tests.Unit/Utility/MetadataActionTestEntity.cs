@@ -2,16 +2,20 @@
 
 namespace Rql.Tests.Unit.Utility;
 
-internal class SampleTypeDescriptionEntity
+internal class MetadataActionTestEntity
 {
     [RqlProperty(RqlActions.Order)]
-    public string OrderProp { get; set; }
+    public string OrderProp { get; set; } = null!;
+
     [RqlProperty(RqlActions.Filter)]
     public int FilterProp { get; set; }
+
     [RqlProperty(RqlActions.All)]
-    public string AllProp { get; set; }
+    public string AllProp { get; set; } = null!;
+
     [RqlProperty(RqlActions.Select)]
-    public string SelectProp { get; set; }
+    public string SelectProp { get; set; } = null!;
+
     [RqlProperty(RqlActions.None)]
-    public string NoneProp { get; set; }
+    public string NoneProp { get; set; } = null!;
 }

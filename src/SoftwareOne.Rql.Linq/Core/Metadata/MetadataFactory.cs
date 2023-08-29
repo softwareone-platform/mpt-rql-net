@@ -14,28 +14,54 @@ internal class MetadataFactory : IMetadataFactory
 
     public RqlPropertyInfo MakeRqlPropertyInfo(string name, PropertyInfo property)
     {
-        var pi = new RqlPropertyInfo
+        var propertyInfo = new RqlPropertyInfo
         {
             Name = name,
             Property = property,
             Type = GetRqlPropertyType(property),
-            Actions = _settings.DefaultActions
+            Actions = _settings.DefaultActions,
+            Operators = RqlOperators.All
         };
 
-        TryApplyAttributeData(pi, property.GetCustomAttributes<RqlPropertyAttribute>(true).FirstOrDefault());
+        var attribute = property.GetCustomAttributes<RqlPropertyAttribute>(true).FirstOrDefault();
 
-        return pi;
-
-        static void TryApplyAttributeData(RqlPropertyInfo property, RqlPropertyAttribute? attribute)
+        if (attribute != null)
         {
-            if (attribute != null)
-            {
-                property.IsDefault = attribute.IsCore;
+            propertyInfo.IsCore = attribute.IsCore;
 
-                if (attribute.ActionsSet)
-                    property.Actions = attribute.Actions;
-            }
+            if (attribute.ActionsSet)
+                propertyInfo.Actions = attribute.Actions;
+
+            if (attribute.OperatorsSet)
+                propertyInfo.Operators = attribute.Operators;
         }
+
+        propertyInfo.Operators &= GetOperatorsForProperty(propertyInfo);
+
+        return propertyInfo;
+    }
+
+    private static RqlOperators GetOperatorsForProperty(RqlPropertyInfo propertyInfo)
+    {
+        // Operators are not applicable to complex properties
+        if (propertyInfo.Type != RqlPropertyType.Primitive && propertyInfo.Type != RqlPropertyType.Binary)
+            return RqlOperators.None;
+
+        Type propType = propertyInfo.Property.PropertyType;
+        var innerType = Nullable.GetUnderlyingType(propType);
+        propType = innerType ?? propType;
+
+        var operators = RqlOperators.GenericDefaults;
+
+        if (typeof(string).IsAssignableFrom(propType))
+            operators = RqlOperators.StringDefaults;
+        else if (typeof(Guid).IsAssignableFrom(propType))
+            operators = RqlOperators.GuidDefaults;
+
+        if (innerType != null)
+            operators |= RqlOperators.Null;
+
+        return operators;
     }
 
     private static RqlPropertyType GetRqlPropertyType(PropertyInfo property)

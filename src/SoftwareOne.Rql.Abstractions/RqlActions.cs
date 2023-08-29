@@ -2,12 +2,12 @@
 namespace SoftwareOne.Rql
 {
     [Flags]
-    public enum RqlAction
+    public enum RqlActions
     {
         None = 0,
-        Select = 1 << 1,
-        Filter = 1 << 2,
-        Order = 1 << 3,
+        Select = 1 << 0,
+        Filter = 1 << 1,
+        Order = 1 << 2,
 
         All = Select | Filter | Order
     }

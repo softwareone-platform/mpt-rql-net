@@ -7,7 +7,7 @@
             Select = new RqlSelectSettings();
         }
 
-        public RqlAction DefaultActions { get; set; }
+        public RqlActions DefaultActions { get; set; }
         public IRqlSelectSettings Select { get; init; }
     }
 }

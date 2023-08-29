@@ -48,12 +48,12 @@ internal class ProjectionService<TView> : RqlService, IProjectionService<TView>
 
         var errors = new List<Error>();
 
-        foreach (var rqlPropery in properties)
+        foreach (var rqlProperty in properties)
         {
-            if (!rqlPropery.Actions.HasFlag(RqlAction.Select))
+            if (!rqlProperty.Actions.HasFlag(RqlActions.Select))
                 continue;
 
-            if (node.TryGetChild(rqlPropery.Name, out var propertyNode))
+            if (node.TryGetChild(rqlProperty.Name, out var propertyNode))
             {
                 // subtracted properties are skipped unless they have children
                 if (propertyNode!.Mode == SelectMode.None && propertyNode!.Children == null)
@@ -66,15 +66,15 @@ internal class ProjectionService<TView> : RqlService, IProjectionService<TView>
             }
 
             // if parent in defaults mode skip all non reference props
-            if (node.Mode == SelectMode.Core && !rqlPropery.IsDefault && (propertyNode == null || propertyNode.Mode != SelectMode.All))
+            if (node.Mode == SelectMode.Core && !rqlProperty.IsCore && (propertyNode == null || propertyNode.Mode != SelectMode.All))
                 continue;
 
-            var propertyInit = rqlPropery.Type switch
+            var propertyInit = rqlProperty.Type switch
             {
-                RqlPropertyType.Primitive => Expression.MakeMemberAccess(param, rqlPropery.Property),
-                RqlPropertyType.Binary => Expression.MakeMemberAccess(param, rqlPropery.Property),
-                RqlPropertyType.Reference => ProcessComplexProperty(param, propertyNode, rqlPropery, depth, ProcessReferenceProperty),
-                RqlPropertyType.Collection => ProcessComplexProperty(param, propertyNode, rqlPropery, depth, ProcessCollectionProperty),
+                RqlPropertyType.Primitive => Expression.MakeMemberAccess(param, rqlProperty.Property),
+                RqlPropertyType.Binary => Expression.MakeMemberAccess(param, rqlProperty.Property),
+                RqlPropertyType.Reference => ProcessComplexProperty(param, propertyNode, rqlProperty, depth, ProcessReferenceProperty),
+                RqlPropertyType.Collection => ProcessComplexProperty(param, propertyNode, rqlProperty, depth, ProcessCollectionProperty),
                 _ => throw new NotImplementedException("Unknown RQL property type"),
             };
 
@@ -85,7 +85,7 @@ internal class ProjectionService<TView> : RqlService, IProjectionService<TView>
             }
 
             if (propertyInit.Value != null)
-                bindings.Add(Expression.Bind(rqlPropery.Property, propertyInit.Value));
+                bindings.Add(Expression.Bind(rqlProperty.Property, propertyInit.Value));
         }
 
         if (errors.Any())
