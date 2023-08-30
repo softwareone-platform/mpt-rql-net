@@ -1,0 +1,20 @@
+parameters:
+  resultsDir: 'test_artifacts'
+  coverageReportFile: 'coverage.xml'
+  filter: ""
+
+steps:
+  #necessary to publish XML code coverage report for Sonar Cloud analyzer
+  - script: |
+      dotnet tool install --global dotnet-coverage || true
+    displayName: Install dotnet-coverage tool
+  - script: |
+      dotnet-coverage collect "dotnet test --results-directory ${{ parameters.resultsDir }} --filter ${{ parameters.filter }} -c Release --logger trx" -f xml -o "${{ parameters.resultsDir }}/${{ parameters.coverageReportFile }}"
+    displayName: ${{ parameters.filter }} Tests and code Coverage
+  - task: PublishTestResults@2
+    displayName: Publish ${{ parameters.filter }} Tests results
+    inputs:
+      testRunner: "VSTest"
+      testResultsFiles: "${{ parameters.resultsDir }}/*.trx"
+      failTaskOnFailedTests: true
+      publishTestResults: true

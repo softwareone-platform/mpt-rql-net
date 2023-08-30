@@ -8,7 +8,6 @@ trigger:
 variables:
   isMain: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
   testResultsDir: 'test_artifacts'
-  coverageReportFile: 'coverage.xml'
   nugetArtifactsName: packages
 
 pool:
@@ -27,14 +26,20 @@ stages:
           - template: templates/sonar_cloud_prepare.yaml
             parameters:
               resultsDir: ${{ variables.testResultsDir }}
-              coverageReportFile: ${{ variables.coverageReportFile }}
+              coverageReportFile: coverage_*.xml
           - template: templates/build_and_pack.yaml
             parameters:
               nugetArtifactsName: ${{ variables.nugetArtifactsName }}
-          - template: templates/run_unit_tests.yaml
+          - template: templates/run_tests.yaml
             parameters: 
               resultsDir: ${{ variables.testResultsDir }}
-              coverageReportFile: ${{ variables.coverageReportFile }}
+              coverageReportFile: coverage_unit.xml
+              filter: Unit
+          - template: templates/run_tests.yaml
+            parameters:
+              resultsDir: ${{ variables.testResultsDir }}
+              coverageReportFile: coverage_integration.xml
+              filter: Integration    
           - task: SonarCloudAnalyze@1
             displayName: Run SonarCloud Analysis
           - task: SonarCloudPublish@1
