@@ -51,8 +51,8 @@ internal static class ProjectionNodeExtensions
                     };
                 }
             default:
-                throw new Exception("Usupported node type");
-        };
+                throw new NotImplementedException("Node type is not implemented");
+        }
     }
 
     private static void AddChild(this ProjectionNode parent, ProjectionNode child)

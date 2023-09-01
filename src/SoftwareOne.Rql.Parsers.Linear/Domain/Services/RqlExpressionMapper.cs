@@ -7,7 +7,7 @@ using SoftwareOne.Rql.Parsers.Linear.Domain.Core.ValueTypes;
 
 namespace SoftwareOne.Rql.Parsers.Linear.Domain.Services
 {
-    internal class RqlExpressionMapper
+    internal static class RqlExpressionMapper
     {
         internal static RqlExpression MapFromWord(Word word)
         {

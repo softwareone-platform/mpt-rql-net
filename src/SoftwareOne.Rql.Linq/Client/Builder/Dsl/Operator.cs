@@ -4,13 +4,13 @@ namespace SoftwareOne.Rql.Linq.Client.Dsl;
 
 internal abstract record Operator : IOperator
 {
-    public IOperator And(IOperator right)
+    public IOperator And(IOperator other)
     {
-        return new AndOperator(this, right);
+        return new AndOperator(this, other);
     }
 
-    public IOperator Or(IOperator right)
+    public IOperator Or(IOperator other)
     {
-        return new OrOperator(this, right);
+        return new OrOperator(this, other);
     }
 }

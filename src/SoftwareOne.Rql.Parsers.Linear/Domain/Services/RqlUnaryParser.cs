@@ -7,15 +7,7 @@ namespace SoftwareOne.Rql.Parsers.Linear;
 
 internal static class RqlUnaryParser
 {
-    private static readonly Dictionary<string, Func<RqlExpression, RqlUnary>> _expressionFunctionMap;
-
-    static RqlUnaryParser()
-    {
-        _expressionFunctionMap = new Dictionary<string, Func<RqlExpression, RqlUnary>>
-            {
-                { "not", RqlExpression.Not }
-            };
-    }
+    private static readonly Dictionary<string, Func<RqlExpression, RqlUnary>> _expressionFunctionMap = new() { { "not", RqlExpression.Not } };
 
     internal static RqlExpression Parse(string term, IList<ExpressionPair> innerExpressions)
     {
@@ -24,9 +16,8 @@ internal static class RqlUnaryParser
 
         var unaryExpression = innerExpressions[0].Expression;
 
-        if (!_expressionFunctionMap.ContainsKey(term)) { throw new RqlUnaryParserException($"Unary parser does not recognise term '{term}'"); }
-
-        var resolvedExpression = _expressionFunctionMap[term];
+        if (!_expressionFunctionMap.TryGetValue(term, out var resolvedExpression))
+            throw new RqlUnaryParserException($"Unary parser does not recognise term '{term}'");
 
         return resolvedExpression(unaryExpression);
     }

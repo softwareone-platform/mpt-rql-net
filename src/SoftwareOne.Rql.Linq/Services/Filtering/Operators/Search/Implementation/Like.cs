@@ -7,23 +7,11 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search.Implementatio
 
 internal class Like : ILike
 {
-    private static readonly MethodInfo _methodStartsWith;
-    private static readonly MethodInfo _methodEndsWith;
-    private static readonly MethodInfo _methodContains;
-    private static readonly MethodInfo _methodEquals;
-    private static readonly char _wildcard;
-
-    static Like()
-    {
-        var stringType = typeof(string);
-        var args = new[] { stringType };
-
-        _methodStartsWith = stringType.GetMethod(nameof(string.StartsWith), args)!;
-        _methodEndsWith = stringType.GetMethod(nameof(string.EndsWith), args)!;
-        _methodContains = stringType.GetMethod(nameof(string.Contains), args)!;
-        _methodEquals = stringType.GetMethod(nameof(string.Equals), args)!;
-        _wildcard = '*';
-    }
+    private static readonly MethodInfo _methodStartsWith = typeof(string).GetMethod(nameof(string.StartsWith), new[] { typeof(string) })!;
+    private static readonly MethodInfo _methodEndsWith = typeof(string).GetMethod(nameof(string.EndsWith), new[] { typeof(string) })!;
+    private static readonly MethodInfo _methodContains = typeof(string).GetMethod(nameof(string.Contains), new[] { typeof(string) })!;
+    private static readonly MethodInfo _methodEquals = typeof(string).GetMethod(nameof(string.Equals), new[] { typeof(string) })!;
+    private static readonly char _wildcard = '*';
 
     public ErrorOr<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, string pattern)
     {

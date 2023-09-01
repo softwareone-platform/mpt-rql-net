@@ -2,17 +2,12 @@
 
 internal static class StringHelper
 {
-    private static readonly Dictionary<char, bool> _signMap;
-
-    static StringHelper()
+    private static readonly Dictionary<char, bool> _signMap = new()
     {
-        _signMap = new Dictionary<char, bool>()
-        {
-            { '+', true },
-            { ' ', true },
-            { '-', false }
-        };
-    }
+        { '+', true },
+        { ' ', true },
+        { '-', false }
+    };
 
     public static (ReadOnlyMemory<char> value, bool sign) ExtractSign(string initialValue)
     {
@@ -22,7 +17,7 @@ internal static class StringHelper
         {
             return (initialValue.AsMemory(1), mod);
         }
-        
+
         return (initialValue.AsMemory(), true);
     }
 }

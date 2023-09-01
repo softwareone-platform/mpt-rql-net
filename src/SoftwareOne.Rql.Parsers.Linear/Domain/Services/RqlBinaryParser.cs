@@ -9,24 +9,19 @@ namespace SoftwareOne.Rql.Parsers.Linear;
 
 internal static class RqlBinaryParser
 {
-    private static readonly Dictionary<string, Func<RqlExpression, RqlExpression, RqlBinary>> _expressionFunctionMap;
-
-    static RqlBinaryParser()
+    private static readonly Dictionary<string, Func<RqlExpression, RqlExpression, RqlBinary>> _expressionFunctionMap = new()
     {
-        _expressionFunctionMap = new Dictionary<string, Func<RqlExpression, RqlExpression, RqlBinary>>
-            {
-                { Constants.RqlTerm.ListIn, RqlExpression.ListIn },
-                { Constants.RqlTerm.ListOut, RqlExpression.ListOut },
-                { Constants.RqlTerm.Equal, RqlExpression.Equal},
-                { Constants.RqlTerm.NotEqual, RqlExpression.NotEqual},
-                { Constants.RqlTerm.GreaterThan, RqlExpression.GreaterThan},
-                { Constants.RqlTerm.GreaterThanOrEqual, RqlExpression.GreaterThanOrEqual},
-                { Constants.RqlTerm.LessThan, RqlExpression.LessThan},
-                { Constants.RqlTerm.LessThanOrEqual, RqlExpression.LessThanOrEqual},
-                { Constants.RqlTerm.Like, RqlExpression.Like},
-                { Constants.RqlTerm.LikeCaseInsensitive, RqlExpression.LikeCaseInsensitive}
-            };
-    }
+        { Constants.RqlTerm.ListIn, RqlExpression.ListIn },
+        { Constants.RqlTerm.ListOut, RqlExpression.ListOut },
+        { Constants.RqlTerm.Equal, RqlExpression.Equal},
+        { Constants.RqlTerm.NotEqual, RqlExpression.NotEqual},
+        { Constants.RqlTerm.GreaterThan, RqlExpression.GreaterThan},
+        { Constants.RqlTerm.GreaterThanOrEqual, RqlExpression.GreaterThanOrEqual},
+        { Constants.RqlTerm.LessThan, RqlExpression.LessThan},
+        { Constants.RqlTerm.LessThanOrEqual, RqlExpression.LessThanOrEqual},
+        { Constants.RqlTerm.Like, RqlExpression.Like},
+        { Constants.RqlTerm.LikeCaseInsensitive, RqlExpression.LikeCaseInsensitive}
+    };
 
     internal static RqlExpression Parse(string term, IList<ExpressionPair> innerExpressionPairs)
     {
@@ -35,9 +30,8 @@ internal static class RqlBinaryParser
 
         var left = innerExpressionPairs[0].Expression;
 
-        if(!_expressionFunctionMap.ContainsKey(term)) { throw new RqlBinaryParserException($"Binary parser does not recognise term '{term}'"); }
-
-        var resolvedExpression = _expressionFunctionMap[term];
+        if(!_expressionFunctionMap.TryGetValue(term, out var resolvedExpression))
+            throw new RqlBinaryParserException($"Binary parser does not recognise term '{term}'");
 
         // There is an exception for resolving the right expression of the RqlBinary for ListIn
         // i.e. in the case of in(prop, (singleListValue)) where singleListValue is just a single value list, this has to be turned back into group

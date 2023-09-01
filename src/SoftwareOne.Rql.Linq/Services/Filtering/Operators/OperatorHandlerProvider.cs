@@ -18,7 +18,7 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators
         public IOperator GetOperatorHandler(Type expression)
         {
             if (!_mapper.TryGetValue(expression, out var handlerType))
-                throw new Exception($"Unknown expression key: {expression.Name}");
+                throw new NotImplementedException($"Expression key is not implemented: {expression.Name}");
 
             return (IOperator)_serviceProvider.GetService(handlerType!)!;
         }

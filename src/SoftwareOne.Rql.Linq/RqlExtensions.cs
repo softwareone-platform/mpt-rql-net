@@ -60,11 +60,8 @@ public static class RqlExtensions
         foreach (var type in types)
         {
             var attribute = type.GetCustomAttribute<ExpressionAttribute>();
-            if (attribute == null)
+            if (attribute == null || expMapping.ContainsKey(attribute.Key))
                 continue;
-
-            if (expMapping.ContainsKey(attribute.Key))
-                throw new Exception($"Expression key '{attribute.Key}' is used more than once.");
 
             var implementation = options.OperatorOverrides.TryGetValue(type, out var typeValue) ? typeValue : attribute.Implementation;
 

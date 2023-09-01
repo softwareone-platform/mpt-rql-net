@@ -18,9 +18,9 @@ public class ValueConverterTests
         result.Should().Be(expected);
     }
 
-    public static IEnumerable<object[]> GetData()
+    public static IEnumerable<object?[]> GetData()
     {
-        return new List<object[]>
+        return new List<object?[]>
         {
             new object[] { TestEnum.One, "1"},
             new object[] { 5.1m, "5.1"},
@@ -31,9 +31,7 @@ public class ValueConverterTests
             new object[] { (double?)5.1, "5.1"},
             new object[] { 5, "5"},
             new object[] { (int?)5, "5"},
-            new object[] { (int?)null, "null()"},
-            new object[] { (string)null, "null()"},
-            new object[] { (DateTime?)null, "null()"},
+            new object ?[] { default, "null()"},
             new object[] { true, "true"},
             new object[] { false, "false"},
             new object[] { 'c', "'c'"},

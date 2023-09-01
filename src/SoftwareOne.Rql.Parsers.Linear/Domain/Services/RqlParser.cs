@@ -7,7 +7,7 @@ namespace SoftwareOne.Rql.Parsers.Linear.Domain.Services
 {
     public class RqlParser : IRqlParser
     {
-        private static readonly HashSet<char> _textDelimiters;
+        private static readonly HashSet<char> _textDelimiters = new() { '"', '\'' };
         private static readonly Dictionary<char, GroupType> _operatorToType = new()
         {
             { ',' , GroupType.And },
@@ -15,11 +15,6 @@ namespace SoftwareOne.Rql.Parsers.Linear.Domain.Services
             { ';' , GroupType.Or },
             { '|' , GroupType.Or }
         };
-
-        static RqlParser()
-        {
-            _textDelimiters = new HashSet<char> { '"', '\'' };
-        }
 
         public RqlGroup Parse(string expression)
         {
@@ -96,7 +91,7 @@ namespace SoftwareOne.Rql.Parsers.Linear.Domain.Services
                     word.WordLength++;
 
                 x++;
-            };
+            }
 
             if (word.WordLength > 0)
                 expressions.Add(new ExpressionPair(word.GroupType, RqlExpressionMapper.MapFromWord(word)));
