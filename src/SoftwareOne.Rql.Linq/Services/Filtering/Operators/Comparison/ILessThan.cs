@@ -4,4 +4,4 @@ using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementatio
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison;
 
 [Expression(typeof(RqlLessThan), typeof(LessThan))]
-public interface ILessThan : IComparisonOperator { }
+public interface ILessThan : IComparisonOperator, IActualOperator { }

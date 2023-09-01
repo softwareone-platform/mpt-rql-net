@@ -4,4 +4,4 @@ using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementatio
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison;
 
 [Expression(typeof(RqlNotEqual), typeof(NotEqual))]
-public interface INotEqual : IComparisonOperator { }
+public interface INotEqual : IComparisonOperator, IActualOperator { }

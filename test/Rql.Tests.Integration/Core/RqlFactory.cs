@@ -1,17 +1,25 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SoftwareOne.Rql;
-using SoftwareOne.Rql.Linq;
+using System;
 
 namespace Rql.Tests.Integration.Core
 {
     internal static class RqlFactory
     {
-        public static IRqlQueryable<T> Make<T>(Action<RqlOptions>? configure)
+        public static IRqlQueryable<TStorage, TStorage> Make<TStorage>(Action<RqlConfiguration>? configure = null)
+            => Make<TStorage, TStorage>(configure);
+
+        public static IRqlQueryable<TStorage, TView> Make<TStorage, TView>(Action<RqlConfiguration>? configure)
+         => MakeProvider(configure).GetRequiredService<IRqlQueryable<TStorage, TView>>();
+
+        public static IServiceProvider MakeProvider(Action<RqlConfiguration>? configure = null)
         {
             var services = new ServiceCollection();
-            services.AddRql(configure);
-            var serviceProvider = services.BuildServiceProvider();
-            return serviceProvider.GetRequiredService<IRqlQueryable<T>>();
+            if (configure != null)
+                services.AddRql(configure);
+            else
+                services.AddRql(); // keep it explicit for default case coverage
+            return services.BuildServiceProvider();
         }
     }
 }

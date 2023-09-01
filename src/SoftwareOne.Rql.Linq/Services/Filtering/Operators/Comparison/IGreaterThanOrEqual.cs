@@ -4,4 +4,4 @@ using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementatio
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison;
 
 [Expression(typeof(RqlGreaterThanOrEqual), typeof(GreaterThanOrEqual))]
-public interface IGreaterThanOrEqual : IComparisonOperator { }
+public interface IGreaterThanOrEqual : IComparisonOperator, IActualOperator { }

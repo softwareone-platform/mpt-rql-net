@@ -1,25 +1,30 @@
 ﻿using SoftwareOne.Rql;
-using SoftwareOne.Rql.Linq;
+using System.Linq.Expressions;
 using Xunit;
 
 namespace Rql.Tests.Integration.Core;
 
-public abstract class TestExecutor<T> where T : ITestEntity
+public abstract class TestExecutor<TStorage> : TestExecutor<TStorage, TStorage> where TStorage : ITestEntity
 {
-    private readonly IRqlQueryable<T> _rql;
+    protected override Expression<Func<TStorage, TStorage>> GetMapping() => t => t;
+}
+
+public abstract class TestExecutor<TStorage, TView> where TView : ITestEntity
+{
+    private readonly IRqlQueryable<TStorage, TView> _rql;
 
     public TestExecutor()
     {
-        _rql = RqlFactory.Make<T>(ConfigureRql);
+        _rql = MakeRql();
     }
 
-    public void ResultMatch(Func<IQueryable<T>, IQueryable<T>> configure, string? filter = null, string? order = null, string? select = null, bool isHappyFlow = true)
-        => ResultMatch(configure(GetQuery()), filter, order, select, isHappyFlow: isHappyFlow);
+    public void ResultMatch(Func<IQueryable<TView>, IQueryable<TView>> configure, string? filter = null, string? order = null, string? select = null, bool isHappyFlow = true)
+        => ResultMatch(configure(GetQuery().Select(GetMapping())), filter, order, select, isHappyFlow: isHappyFlow);
 
-    public void ResultMatch(Func<T, bool> predicate, string? filter = null, string? order = null, string? select = null, bool isHappyFlow = true)
-        => ResultMatch(GetQuery().Where(predicate).AsEnumerable(), filter, order, select, isHappyFlow: isHappyFlow);
+    public void ResultMatch(Func<TView, bool> predicate, string? filter = null, string? order = null, string? select = null, bool isHappyFlow = true)
+        => ResultMatch(GetQuery().Select(GetMapping()).Where(predicate).AsEnumerable(), filter, order, select, isHappyFlow: isHappyFlow);
 
-    public void ResultMatch(IEnumerable<T> toCompare, string? filter = null, string? order = null, string? select = null, bool isHappyFlow = true)
+    public void ResultMatch(IEnumerable<TView> toCompare, string? filter = null, string? order = null, string? select = null, bool isHappyFlow = true)
     {
         var transformed = _rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select });
 
@@ -31,7 +36,9 @@ public abstract class TestExecutor<T> where T : ITestEntity
         Assert.Equal(isHappyFlow, data.SequenceEqual(toCompare.OfType<ITestEntity>(), new TestEntityEqualityComparer()));
     }
 
-    protected abstract IQueryable<T> GetQuery();
+    protected abstract IRqlQueryable<TStorage, TView> MakeRql();
 
-    protected abstract void ConfigureRql(RqlOptions options);
+    protected abstract IQueryable<TStorage> GetQuery();
+
+    protected abstract Expression<Func<TStorage, TView>> GetMapping();
 }

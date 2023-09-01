@@ -1,6 +1,7 @@
 ﻿using ErrorOr;
 
-namespace SoftwareOne.Rql.Linq;
+#pragma warning disable IDE0130
+namespace SoftwareOne.Rql;
 
 public interface IRqlQueryable<in TStorage, TView>
 {

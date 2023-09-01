@@ -19,7 +19,8 @@ public static class ProductRepository
 
         foreach (var item in _data)
         {
-            item.Sub = item;
+            item.Reference = item;
+            item.Collection = new List<Product> { item, item };
         }
     }
 

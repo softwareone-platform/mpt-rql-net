@@ -1,6 +1,7 @@
-﻿using Xunit;
+﻿using Rql.Tests.Integration.Tests.Functionality.Utility;
+using Xunit;
 
-namespace Rql.Tests.Integration.Tests.Order;
+namespace Rql.Tests.Integration.Tests.Functionality;
 
 public class BasicOrderTests
 {
@@ -17,5 +18,5 @@ public class BasicOrderTests
     [InlineData("category,id,-name")]
     [InlineData("-category,-name", false)]
     public void Ordering_CategoryAsc_NameDesc(string order, bool isHappyFlow = true)
-       => _testExecutor.ResultMatch(q => q.OrderBy(o => o.Category).ThenBy(o=> o.Id).ThenByDescending(o => o.Name), order: order, isHappyFlow: isHappyFlow);
+       => _testExecutor.ResultMatch(q => q.OrderBy(o => o.Category).ThenBy(o => o.Id).ThenByDescending(o => o.Name), order: order, isHappyFlow: isHappyFlow);
 }

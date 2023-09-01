@@ -1,6 +1,7 @@
-﻿using Xunit;
+﻿using Rql.Tests.Integration.Tests.Functionality.Utility;
+using Xunit;
 
-namespace Rql.Tests.Integration.Tests.Filter;
+namespace Rql.Tests.Integration.Tests.Functionality;
 
 public class BasicFilterTests
 {
@@ -20,11 +21,11 @@ public class BasicFilterTests
 
 
     [Theory]
-    [InlineData("eq(sub.name,Jewelry Widget)")]
-    [InlineData("sub.name=Jewelry Widget")]
-    [InlineData("eq(sub.name,WRONG_DATA)", false)]
+    [InlineData("eq(reference.name,Jewelry Widget)")]
+    [InlineData("reference.name=Jewelry Widget")]
+    [InlineData("eq(reference.name,WRONG_DATA)", false)]
     public void Path_Name_Equal(string query, bool isHappyFlow = true)
-        => _testExecutor.ResultMatch(t => t.Sub!.Name == "Jewelry Widget", query, isHappyFlow: isHappyFlow);
+        => _testExecutor.ResultMatch(t => t.Reference!.Name == "Jewelry Widget", query, isHappyFlow: isHappyFlow);
 
     [Theory]
     [InlineData("ne(name,Jewelry Widget)")]

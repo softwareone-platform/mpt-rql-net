@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SoftwareOne.Rql.Abstractions;
+using SoftwareOne.Rql.Linq;
 using SoftwareOne.Rql.Linq.Core.Metadata;
 using SoftwareOne.Rql.Linq.Services.Filtering;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
@@ -9,16 +10,17 @@ using SoftwareOne.Rql.Linq.Services.Projection;
 using SoftwareOne.Rql.Parsers.Linear.Domain.Services;
 using System.Reflection;
 
-namespace SoftwareOne.Rql.Linq;
+#pragma warning disable IDE0130
+namespace SoftwareOne.Rql;
 
 public static class RqlExtensions
 {
     public static IServiceCollection AddRql(this IServiceCollection services)
         => services.AddRql(null);
 
-    public static IServiceCollection AddRql(this IServiceCollection services, Action<RqlOptions>? configure)
+    public static IServiceCollection AddRql(this IServiceCollection services, Action<RqlConfiguration>? configure)
     {
-        var options = new RqlOptions();
+        var options = new RqlConfiguration();
         configure?.Invoke(options);
 
         services.AddSingleton(options.Settings);
@@ -48,7 +50,7 @@ public static class RqlExtensions
         return services;
     }
 
-    private static void RegisterOperatorExpressions(IServiceCollection services, RqlOptions options)
+    private static void RegisterOperatorExpressions(IServiceCollection services, RqlConfiguration options)
     {
         var expMapping = new OperatorHandlerMapper();
         var producerType = typeof(IOperator);
@@ -76,16 +78,16 @@ public static class RqlExtensions
 
     private static void ScanForViewMappers(IServiceCollection services, Assembly mappingsAssembly)
     {
-        var mapType = typeof(IRqlMapper);
+        var mapTypeRoot = typeof(IRqlMapper);
         var mapTypeGeneric = typeof(IRqlMapper<,>);
-        var types = mappingsAssembly.GetTypes().Where(t => t.IsClass && mapType.IsAssignableFrom(t)).ToList();
+        var mapTypes = mappingsAssembly.GetTypes().Where(t => t.IsClass && mapTypeRoot.IsAssignableFrom(t)).ToList();
 
-        foreach (var mt in types)
+        foreach (var mapType in mapTypes)
         {
-            var inf = mt.GetInterfaces().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == mapTypeGeneric);
+            var inf = Array.Find(mapType.GetInterfaces(), t => t.IsGenericType && t.GetGenericTypeDefinition() == mapTypeGeneric);
             if (inf == null) continue;
 
-            services.AddSingleton(inf, mt);
+            services.AddSingleton(inf, mapType);
         }
     }
 }
