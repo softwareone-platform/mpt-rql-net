@@ -3,7 +3,7 @@
 #pragma warning disable IDE0130
 namespace SoftwareOne.Rql.Client;
 
-internal record Order<T, U>(Expression<Func<T, U>> Body, OrderDirection OrderDirection) : IOrder
+internal record Order<T, TValue>(Expression<Func<T, TValue>> Body, OrderDirection OrderDirection) : IOrder
 {
     public string ToQuery()
     {

@@ -6,13 +6,16 @@ namespace SoftwareOne.Rql.Client;
 
 public class QueryContext<T> where T : class
 {
-    public IOperator Eq<U>(Expression<Func<T, U>> exp, U value) => new Equal<T, U>(exp, value);
-    public IOperator NEq<U>(Expression<Func<T, U>> exp, U value) => new NotEqual<T, U>(exp, value);
-    public IOperator Gt<U>(Expression<Func<T, U>> exp, U value) => new Gt<T, U>(exp, value);
-    public IOperator Ge<U>(Expression<Func<T, U>> exp, U value) => new Ge<T, U>(exp, value);
-    public IOperator Lt<U>(Expression<Func<T, U>> exp, U value) => new Lt<T, U>(exp, value);
-    public IOperator Le<U>(Expression<Func<T, U>> exp, U value) => new Le<T, U>(exp, value);
-    public IOperator Like<U>(Expression<Func<T, U>> exp, U value) => new Like<T, U>(exp, value);
-    public IOperator In<U>(Expression<Func<T, U>> exp, IEnumerable<U> values) => new In<T, U>(exp, values);
+    public IOperator Eq<TValue>(Expression<Func<T, TValue>> exp, TValue value) => new Equal<T, TValue>(exp, value);
+    public IOperator NEq<TValue>(Expression<Func<T, TValue>> exp, TValue value) => new NotEqual<T, TValue>(exp, value);
+    public IOperator Gt<TValue>(Expression<Func<T, TValue>> exp, TValue value) => new Gt<T, TValue>(exp, value);
+    public IOperator Ge<TValue>(Expression<Func<T, TValue>> exp, TValue value) => new Ge<T, TValue>(exp, value);
+    public IOperator Lt<TValue>(Expression<Func<T, TValue>> exp, TValue value) => new Lt<T, TValue>(exp, value);
+    public IOperator Le<TValue>(Expression<Func<T, TValue>> exp, TValue value) => new Le<T, TValue>(exp, value);
+    public IOperator Like<TValue>(Expression<Func<T, TValue>> exp, TValue value) => new Like<T, TValue>(exp, value);
+
+    public IOperator In<TValue>(Expression<Func<T, TValue>> exp, IEnumerable<TValue> values) =>
+        new In<T, TValue>(exp, values);
+
     public IOperator Not(IOperator op) => new NotOperator(op);
 }
