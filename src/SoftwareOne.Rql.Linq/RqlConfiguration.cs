@@ -43,10 +43,13 @@ public class RqlConfiguration
         return this;
     }
 
-    public RqlConfiguration SetMappingsLocation(Type type)
-        => SetMappingsLocation(type.Assembly);
-
-    public RqlConfiguration SetMappingsLocation(Assembly assembly)
+    /// <summary>
+    /// Scan provided assembly for IRqlMapper implementations.
+    /// Only one assembly may be registered for scan.
+    /// </summary>
+    /// <param name="assembly">Assembly to be scanned</param>
+    /// <returns></returns>
+    public RqlConfiguration ScanForMappers(Assembly assembly)
     {
         ViewMappersAssembly = assembly;
         return this;

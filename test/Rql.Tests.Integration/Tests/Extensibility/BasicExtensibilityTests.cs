@@ -19,7 +19,7 @@ public class BasicExtensibilityTests
         var mapperType = typeof(IRqlMapper<,>).MakeGenericType(storage, view);
 
         // Act
-        var provider = RqlFactory.MakeProvider(config => config.SetMappingsLocation(typeof(ProductView)));
+        var provider = RqlFactory.MakeProvider(config => config.ScanForMappers(typeof(ProductView).Assembly));
         var service = provider.GetService(mapperType);
 
         // Assert
