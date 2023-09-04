@@ -26,8 +26,8 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
 
         var node = _parser.Parse(order);
 
-        var orderProps = node.Items!.OfType<RqlConstant>().ToList();
-        if (!orderProps.Any())
+        var orderProperties = node.Items!.OfType<RqlConstant>().ToList();
+        if (!orderProperties.Any())
             return Error.Validation(MakeErrorCode("no_props"), "No valid ordering properties were detected");
 
         var isFirst = true;
@@ -35,39 +35,44 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
 
         var errors = new List<Error>();
 
-        foreach (var op in orderProps)
+        foreach (var property in orderProperties)
         {
-            var (path, isAsc) = StringHelper.ExtractSign(op.Value);
+            var (path, isAsc) = StringHelper.ExtractSign(property.Value);
+            var member = MakeOrderingMemberAccess(param, path.ToString());
 
-                var memberInfo = MakeMemberAccess(param, path.ToString(), path =>
-                {
-                    if (!path.PropertyInfo.Actions.HasFlag(RqlActions.Order))
-                        return Error.Validation(MakeErrorCode(path.Path.ToString()), "Ordering is not permitted.");
-                    return Result.Success;
-                });
-
-            if (memberInfo.IsError)
+            if (member.IsError)
             {
-                errors.AddRange(memberInfo.Errors);
+                errors.AddRange(member.Errors);
                 continue;
             }
 
-            var member = memberInfo.Value.Expression;
+            var method = MakeOrderingMethod(member.Value.Expression, isAsc, isFirst);
+            var expression = Expression.Lambda(member.Value.Expression, param);
 
-            var functions = (IOrderingFunctions)Activator.CreateInstance(typeof(OrderingFunctions<,>).MakeGenericType(typeof(TView), member.Type))!;
-
-            MethodInfo methodInfo;
-            if (isAsc)
-                methodInfo = isFirst ? functions.GetOrderBy() : functions.GetThenBy();
-            else
-                methodInfo = isFirst ? functions.GetOrderByDescending() : functions.GetThenByDescending();
-
-            var orderExp = Expression.Lambda(member, param);
-
-            query = (IQueryable<TView>)methodInfo.Invoke(null, new object[] { query, orderExp })!;
+            query = (IQueryable<TView>)method.Invoke(null, new object[] { query, expression })!;
             isFirst = false;
         }
 
         return errors.Any() ? errors : ErrorOrFactory.From(query);
+    }
+
+    private ErrorOr<MemberPathInfo> MakeOrderingMemberAccess(ParameterExpression param, string path)
+    {
+        return MakeMemberAccess(param, path.ToString(), path =>
+        {
+            if (!path.PropertyInfo.Actions.HasFlag(RqlActions.Order))
+                return Error.Validation(MakeErrorCode(path.Path.ToString()), "Ordering is not permitted.");
+            return Result.Success;
+        });
+    }
+
+    private static MethodInfo MakeOrderingMethod(Expression member, bool isAsc, bool isFirst)
+    {
+        var functions = (IOrderingFunctions)Activator.CreateInstance(typeof(OrderingFunctions<,>).MakeGenericType(typeof(TView), member.Type))!;
+
+        if (isAsc)
+            return isFirst ? functions.GetOrderBy() : functions.GetThenBy();
+        else
+            return isFirst ? functions.GetOrderByDescending() : functions.GetThenByDescending();
     }
 }
