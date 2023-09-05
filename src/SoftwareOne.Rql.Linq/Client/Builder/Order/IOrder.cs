@@ -3,5 +3,4 @@ namespace SoftwareOne.Rql.Client;
 
 public interface IOrder
 {
-    string ToQuery();
 }

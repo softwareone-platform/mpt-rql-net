@@ -1,13 +1,12 @@
 ﻿using System.Linq.Expressions;
 
-#pragma warning disable IDE0130
-namespace SoftwareOne.Rql.Client;
+namespace SoftwareOne.Rql.Linq.Client.Select;
 
-internal record Select<T, U>(Expression<Func<T, U>> exp) : ISelect
+internal record Select<T, U>(Expression<Func<T, U>> exp) : IInternalSelect
 {
-    public string ToQuery()
+    public string ToQuery(IPropertyVisitor propertyVisitor)
     {
-        var property = new PropertyVisitor().GetPath(exp.Body);
+        var property = propertyVisitor.GetPath(exp.Body);
         return property;
     }
 }

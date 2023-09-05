@@ -1,4 +1,5 @@
-﻿#pragma warning disable IDE0130
-namespace SoftwareOne.Rql.Client;
+﻿using SoftwareOne.Rql.Client;
 
-public record SelectFields(IList<ISelect> Included, IList<ISelect> Excluded);
+namespace SoftwareOne.Rql.Linq.Client.Select;
+
+internal record SelectFields(IList<ISelect>? Included, IList<ISelect>? Excluded);

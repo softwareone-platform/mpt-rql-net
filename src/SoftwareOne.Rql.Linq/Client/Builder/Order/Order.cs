@@ -1,13 +1,12 @@
 ﻿using System.Linq.Expressions;
 
-#pragma warning disable IDE0130
-namespace SoftwareOne.Rql.Client;
+namespace SoftwareOne.Rql.Linq.Client.Order;
 
-internal record Order<T, TValue>(Expression<Func<T, TValue>> Body, OrderDirection OrderDirection) : IOrder
+internal record Order<T, TValue>(Expression<Func<T, TValue>> Body, OrderDirection OrderDirection) : IInternalOrder
 {
-    public string ToQuery()
+    public string ToQuery(IPropertyVisitor propertyVisitor)
     {
-        var property = new PropertyVisitor().GetPath(Body.Body);
+        var property = propertyVisitor.GetPath(Body.Body);
         return OrderDirection == OrderDirection.Descending ? $"-{property}" : property;
     }
 }

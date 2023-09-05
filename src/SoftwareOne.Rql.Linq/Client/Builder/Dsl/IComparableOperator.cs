@@ -1,7 +1,8 @@
-﻿#pragma warning disable IDE0130
-namespace SoftwareOne.Rql.Client;
+﻿using SoftwareOne.Rql.Client;
+
+namespace SoftwareOne.Rql.Linq.Client.Dsl;
 
 internal interface IComparableOperator
 {
-    QueryOperator ToQueryOperator();
+    QueryOperator ToQueryOperator(IPropertyVisitor propertyVisitor);
 };

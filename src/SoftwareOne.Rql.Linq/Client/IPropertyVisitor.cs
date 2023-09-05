@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-#pragma warning disable IDE0130
-namespace SoftwareOne.Rql.Client;
+namespace SoftwareOne.Rql.Linq.Client;
 
 internal interface IPropertyVisitor
 {

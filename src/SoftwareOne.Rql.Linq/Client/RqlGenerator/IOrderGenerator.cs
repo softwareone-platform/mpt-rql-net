@@ -1,8 +1,8 @@
-﻿using SoftwareOne.Rql.Client;
+﻿using SoftwareOne.Rql.Linq.Client.Order;
 
 namespace SoftwareOne.Rql.Linq.Client;
 
 internal interface IOrderGenerator
 {
-    string Generate(IList<IOrder>? queryOrder);
+    string? Generate(IOrderDefinitionProvider? order);
 }

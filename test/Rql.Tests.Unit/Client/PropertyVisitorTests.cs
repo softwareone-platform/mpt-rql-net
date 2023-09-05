@@ -2,6 +2,8 @@
 using Rql.Tests.Unit.Client.Models;
 using System.Linq.Expressions;
 using SoftwareOne.Rql.Client;
+using SoftwareOne.Rql.Linq.Client;
+using SoftwareOne.Rql.Linq.Core.Metadata;
 using Xunit;
 
 namespace Rql.Tests.Unit.Client;
@@ -12,7 +14,7 @@ public class PropertyVisitorTests
 
     public PropertyVisitorTests()
     {
-        _propertyVisitor = new PropertyVisitor();
+        _propertyVisitor = new PropertyVisitor(new PropertyNameProvider());
     }
     [Fact]
     public void GetPath_WhenProperty_ThenNameIsReturned()
@@ -74,5 +76,16 @@ public class PropertyVisitorTests
 
         // Act & Assert
         result.Should().Be("FirstName");
+    }
+
+    [Fact]
+    public void GetPath_JsonAttributes_JsonPropertyIsUsed()
+    {
+        // Arrange
+        Expression<Func<ExampleWithJson, string>> xx = x => x.PropWithAttribute;
+        // Act
+        var result = _propertyVisitor.GetPath(xx);
+        // Assert
+        result.Should().Be("IamAJsonTag");
     }
 }

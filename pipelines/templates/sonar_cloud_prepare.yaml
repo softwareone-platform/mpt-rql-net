@@ -34,5 +34,7 @@ steps:
       #coverage report file settings and 
       #...unit tests results reports settings
       extraProperties: |
+        sonar.coverage.exclusions = samples/,test/
+        sonar.exclusions = samples/,test/
         sonar.cs.vscoveragexml.reportsPaths=**/${{ parameters.resultsDir }}/${{ parameters.coverageReportFile }}
         sonar.cs.vstest.reportsPaths=**/${{ parameters.resultsDir }}/*.trx

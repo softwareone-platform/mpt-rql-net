@@ -1,13 +1,18 @@
-﻿using System.Linq.Expressions;
+﻿using SoftwareOne.Rql.Client;
+using System.Linq.Expressions;
 using System.Reflection;
 
-#pragma warning disable IDE0130
-namespace SoftwareOne.Rql.Client;
+namespace SoftwareOne.Rql.Linq.Client;
 
 internal class PropertyVisitor : ExpressionVisitor, IPropertyVisitor
 {
     private readonly Stack<string> _path = new();
-    
+    private readonly IPropertyNameProvider _nameProvider;
+
+    public PropertyVisitor(IPropertyNameProvider nameProvider)
+    {
+        _nameProvider = nameProvider;
+    }
 
     protected override Expression VisitMember(MemberExpression node)
     {
@@ -16,12 +21,13 @@ internal class PropertyVisitor : ExpressionVisitor, IPropertyVisitor
             throw new InvalidDefinitionException($"The path {nameof(node)} can only contain properties");
         }
         
-        _path.Push(propertyInfo.Name);
+        _path.Push(_nameProvider.GetName(propertyInfo));
         return base.VisitMember(node);
     }
 
     public string GetPath(Expression? expression)
     {
+        _path.Clear();
         Visit(expression);
 
         if (!_path.Any())

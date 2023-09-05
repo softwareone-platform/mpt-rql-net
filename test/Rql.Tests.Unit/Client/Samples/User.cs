@@ -4,5 +4,5 @@ public record User(string FirstName, string LastName, int Id, Address HomeAddres
 {
     public string GetName() => $"{FirstName} {LastName}";
 
-    public IList<string>? InvoiceIds { get; set; }
+    public IList<string> InvoiceIds { get; set; } = new List<string>() ;
 }

@@ -1,130 +1,152 @@
 ﻿using FluentAssertions;
 using Rql.Tests.Unit.Client.Models;
+using Rql.Tests.Unit.Factory;
 using SoftwareOne.Rql.Client;
-using SoftwareOne.Rql.Linq.Client;
-using SoftwareOne.Rql.Linq.Client.Dsl;
 using Xunit;
 
 namespace Rql.Tests.Unit.Client.RqlGenerator;
 
 public class QueryGeneratorTests
 {
+    private readonly IRqlRequestBuilderProvider _builderProvider;
+
+    public QueryGeneratorTests()
+    {
+        _builderProvider = new TestRqlRequestBuilderProvider();
+    }
+
+    [Fact]
+    public void WhenEverythingIsEmpty_ThenEmptyQueryIsGenerated()
+    {
+        // Arrange & Act
+        var rql = _builderProvider.GetRqlRequestBuilder<User>().Build();
+
+        // Assert
+        rql.Select.Should().Be(default);
+        rql.Order.Should().Be(default);
+        rql.Filter.Should().Be(default);
+    }
+
+    [Fact]
+    public void WhenQueryIsEmptyButHasSelect_ThenOnlySelectIsGenerated()
+    {
+        // Arrange & Act
+        var rql = _builderProvider.GetRqlRequestBuilder<User>()
+            .Select(e => e.Include(e => e.FirstName))
+            .Build();
+
+        // Assert
+        rql.Select.Should().Be("FirstName");
+        rql.Order.Should().Be(default);
+        rql.Filter.Should().Be(default);
+    }
+
+    [Fact]
+    public void WhenSelectIsEmptyButHasSelect_ThenOnlyOrderIsGenerated()
+    {
+        // Arrange & Act
+        var rql = _builderProvider.GetRqlRequestBuilder<User>()
+            .Order(e => e.OrderBy(e => e.FirstName))
+            .Build();
+
+        // Assert
+        rql.Order.Should().Be("FirstName");
+        rql.Select.Should().Be(default);
+        rql.Filter.Should().Be(default);
+    }
+    
     [Fact]
     public void WhenQueryIsNotEmptyAndSelectAndPagingAreNotDefined_ThenQueryIsGeneratedInRql()
     {
-        // Arrange
-        var query = new QueryBuilder<User>()
-            .WithQuery(context => context.Eq(x => x.HomeAddress.Street, "abc"))
+        // Arrange & Act
+        var rql = _builderProvider.GetRqlRequestBuilder<User>()
+            .Where(context => context.Eq(x => x.HomeAddress.Street, "abc"))
             .Build();
 
-        // Act
-        var rql = new QueryGenerator(new QueryParamsGenerator(), new SelectGenerator(), new PagingGenerator(), new OrderGenerator()).Generate(query);
-
         // Assert
-        rql.ToString().Should().Be("eq(HomeAddress.Street, 'abc')");
+        rql.Filter.Should().Be("eq(HomeAddress.Street, 'abc')");
+        rql.Select.Should().Be(default);
+        rql.Order.Should().Be(default);
     }
 
     [Fact]
     public void WhenQueryAndSelect_ThenQueryIsGeneratedInRql()
     {
-        // Arrange
-        var query = new QueryBuilder<User>()
-            .WithQuery(context => context.Eq(x => x.HomeAddress.Street, "abc"))
-            .WithSelect(c=>c.Exclude(x=>x.HomeAddress))
+        // Arrange & Act
+        var query = _builderProvider.GetRqlRequestBuilder<User>()
+            .Where(context => context.Eq(x => x.HomeAddress.Street, "abc"))
+            .Select(c=>c.Exclude(x=>x.HomeAddress))
             .Build();
 
-        // Act
-        var rql = new QueryGenerator(new QueryParamsGenerator(), new SelectGenerator(), new PagingGenerator(), new OrderGenerator()).Generate(query);
-
         // Assert
-        rql.ToString().Should().Be("eq(HomeAddress.Street, 'abc')&select=-HomeAddress");
+        query.Filter.Should().Be("eq(HomeAddress.Street, 'abc')");
+        query.Select.Should().Be("-HomeAddress");
     }
 
     [Fact]
-    public void WhenQueryAndSelectAndPagingAreNotEmptyAndShortSyntax_ThenAreGeneratedInRql()
+    public void WhenQueryAndSelectAreNotEmptyAndShortSyntax_ThenAreGeneratedInRql()
     {
         // Arrange & Act
-        var rql = QueryBuilder<User>.FromQuery(context => context.Eq(x => x.HomeAddress.Street, "abc"))
-            .WithSelect(context => context.Include(x => x.HomeAddress).Exclude(x => x.OfficeAddress))
-            .WithPaging(100, 10)
-            .BuildString();
+        var rql = _builderProvider.GetRqlRequestBuilder<User>()
+                .Where( context => context.Eq(x => x.HomeAddress.Street, "abc"))
+                .Select(context => context.Include(x => x.HomeAddress).Exclude(x => x.OfficeAddress))
+                .Build();
 
         // Assert
-        rql.Should().Be("eq(HomeAddress.Street, 'abc')&select=HomeAddress,-OfficeAddress&limit=100&offset=10");
+        rql.Filter.Should().Be("eq(HomeAddress.Street, 'abc')");
+        rql.Select.Should().Be("HomeAddress,-OfficeAddress");
     }
 
+  
     [Fact]
-    public void WhenQueryAndSelectAndPagingAreNotEmpty_ThenAreGeneratedInRql()
+    public void WhenQueryAndSelectAreNotEmptyIsNotDefined_ThenAreGeneratedInRql()
     {
-        // Arrange
-        var query = new QueryBuilder<User>()
-            .WithQuery(context => context.Eq(x => x.HomeAddress.Street, "abc"))
-            .WithSelect(context => context.Include(x => x.HomeAddress).Exclude(x => x.OfficeAddress)) 
-            .WithPaging(100, 10) 
+        // Arrange & Act
+        var query = _builderProvider.GetRqlRequestBuilder<User>()
+            .Where(context => context.Eq(x => x.HomeAddress.Street, "abc"))
+            .Order(context => context.OrderByDescending(x => x.FirstName).ThenBy(x => x.LastName))
+            .Select(context => context.Include(x => x.HomeAddress).Exclude(x => x.OfficeAddress))
             .Build();
-
-        // Act
-        var rql = new QueryGenerator(new QueryParamsGenerator(), new SelectGenerator(), new PagingGenerator(), new OrderGenerator()).Generate(query).ToString();
-
+        
         // Assert
-        rql.Should().Be("eq(HomeAddress.Street, 'abc')&select=HomeAddress,-OfficeAddress&limit=100&offset=10");
-    }
-
-    [Fact]
-    public void WhenQueryAndSelectAreNotEmptyAndPagingIsNotDefined_ThenAreGeneratedInRql()
-    {
-        // Arrange
-        var query = new QueryBuilder<User>()
-            .WithQuery(context => context.Eq(x => x.HomeAddress.Street, "abc"))
-            .WithSelect(context => context.Include(x => x.HomeAddress).Exclude(x => x.OfficeAddress))
-            .WithOrder(context => context.OrderBy(x => x.FirstName, OrderDirection.Descending).OrderBy(x => x.LastName, OrderDirection.Ascending))
-            .Build();
-
-        // Act
-        var rql = new QueryGenerator(new QueryParamsGenerator(), new SelectGenerator(), new PagingGenerator(), new OrderGenerator()).Generate(query).ToString();
-
-        // Assert
-        rql.Should().Be("eq(HomeAddress.Street, 'abc')&select=HomeAddress,-OfficeAddress&order=(-FirstName,LastName)");
+        query.Filter.Should().Be("eq(HomeAddress.Street, 'abc')");
+        query.Select.Should().Be("HomeAddress,-OfficeAddress");
+        query.Order.Should().Be("-FirstName,LastName");
     }
 
     [Fact]
     public void WhenQuerySelectOrderAndPaging_ThenAreGeneratedInRql()
     {
-        // Arrange
-        var query = new QueryBuilder<User>()
-            .WithQuery(context => context.Eq(x => x.HomeAddress.Street, "abc"))
-            .WithSelect(context => context.Include(x => x.HomeAddress).Exclude(x => x.OfficeAddress))
-            .WithOrder(context => context.OrderBy(x => x.FirstName, OrderDirection.Descending).OrderBy(x => x.LastName, OrderDirection.Ascending))
-            .WithPaging(100, 10)
+        // Arrange & Act
+        var query = _builderProvider.GetRqlRequestBuilder<User>()
+            .Where(context => context.Eq(x => x.HomeAddress.Street, "abc"))
+            .Order(context => context.OrderByDescending(x => x.FirstName).ThenBy(x => x.LastName))
+            .Select(context => context.Include(x => x.HomeAddress).Exclude(x => x.OfficeAddress))
             .Build();
 
-        // Act
-        var rql = new QueryGenerator(new QueryParamsGenerator(), new SelectGenerator(), new PagingGenerator(), new OrderGenerator()).Generate(query).ToString();
-
         // Assert
-        rql.Should().Be("eq(HomeAddress.Street, 'abc')&select=HomeAddress,-OfficeAddress&limit=100&offset=10&order=(-FirstName,LastName)");
+        query.Filter.Should().Be("eq(HomeAddress.Street, 'abc')");
+        query.Select.Should().Be("HomeAddress,-OfficeAddress");
+        query.Order.Should().Be("-FirstName,LastName");
     }
 
     [Fact]
-    public void WhenQueryAndSelectAndPagingAreNotEmptyAndLongSyntax_ThenAreGeneratedInRql()
+    public void WhenQueryingWithJsonAttributes_ThenJsonNameIsReturnedIfExistsInRql()
     {
-        // Arrange
-        var op = new Equal<User, string>(x => x.HomeAddress.Street, "abc");
-        var select = new SelectFields(
-            new List<ISelect> { new Select<User, Address>(x => x.HomeAddress) },
-            new List<ISelect> { new Select<User, Address>(x => x.OfficeAddress) }
-        );
-
-        var query = new Query(
-            op,
-            new CustomPaging(100, 10),
-            select
-        );
-
-        // Act
-        var rql = new QueryGenerator(new QueryParamsGenerator(), new SelectGenerator(), new PagingGenerator(), new OrderGenerator()).Generate(query).ToString();
-
+        // Arrange & Act
+        var query = _builderProvider.GetRqlRequestBuilder<ExampleWithJson>()
+            .Where(context => context.Eq(x => x.PropWithoutAttribute, "abc"))
+            .Order(context => context.OrderByDescending(x => x.PropWithAttribute).ThenBy(x => x.PropWithoutAttribute))
+            .Select(context => context.Include(x => x.PropWithAttribute)
+                .Include(x => x.AddressWithAttribute.CityWithoutProp)
+                .Include(x => x.AddressWithOutAttribute.CityWithoutProp)
+                .Include(x => x.AddressWithAttribute.StreetWithProp)
+                .Include(x => x.AddressWithOutAttribute.StreetWithProp).Exclude(x => x.PropWithoutAttribute))
+            .Build();
+        
         // Assert
-        rql.Should().Be("eq(HomeAddress.Street, 'abc')&select=HomeAddress,-OfficeAddress&limit=100&offset=10");
+        query.Filter.Should().Be("eq(PropWithoutAttribute, 'abc')");
+        query.Select.Should().Be("IamAJsonTag,Address.CityWithoutProp,AddressWithOutAttribute.CityWithoutProp,Address.Street,AddressWithOutAttribute.Street,-PropWithoutAttribute");
+        query.Order.Should().Be("-IamAJsonTag,PropWithoutAttribute");
     }
 }

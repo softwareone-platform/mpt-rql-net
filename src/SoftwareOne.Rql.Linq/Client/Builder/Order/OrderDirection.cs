@@ -1,7 +1,6 @@
-﻿#pragma warning disable IDE0130
-namespace SoftwareOne.Rql.Client;
+﻿namespace SoftwareOne.Rql.Linq.Client.Order;
 
-public enum OrderDirection
+internal enum OrderDirection
 {
     Ascending,
     Descending,

@@ -5,9 +5,9 @@ namespace SoftwareOne.Rql.Linq.Client.Dsl;
 
 internal abstract record MultiComparableOperator<T, U>(Expression<Func<T, U>> Exp, IEnumerable<U> Values) : Operator, IComparableOperator
 {
-    public QueryOperator ToQueryOperator()
+    public QueryOperator ToQueryOperator(IPropertyVisitor propertyVisitor)
     {
-        var property = new PropertyVisitor().GetPath(Exp.Body);
+        var property = propertyVisitor.GetPath(Exp.Body);
         var val = string.Join(',', Values.Select(ValueConverter.Convert));
         return new QueryOperator(property, val);
     }

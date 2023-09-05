@@ -39,7 +39,7 @@ stages:
             parameters:
               resultsDir: ${{ variables.testResultsDir }}
               coverageReportFile: coverage_integration.xml
-              filter: Integration    
+              filter: Integration
           - task: SonarCloudAnalyze@1
             displayName: Run SonarCloud Analysis
           - task: SonarCloudPublish@1

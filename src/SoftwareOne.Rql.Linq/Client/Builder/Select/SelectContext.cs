@@ -1,28 +1,26 @@
-﻿using System.Collections.Immutable;
+﻿using SoftwareOne.Rql.Client;
 using System.Linq.Expressions;
 
-#pragma warning disable IDE0130
-namespace SoftwareOne.Rql.Client;
+namespace SoftwareOne.Rql.Linq.Client.Select;
 
-public class SelectContext<T> where T : class
+internal class SelectContext<T> : ISelectDefinitionProvider, ISelectContext<T> where T : class
 {
-    private readonly IList<ISelect> _included = new List<ISelect>();
-    private readonly IList<ISelect> _excluded = new List<ISelect>();
+    private IList<ISelect>? _included;
+    private IList<ISelect>? _excluded;
 
-    public SelectContext<T> Include<U>(Expression<Func<T, U>> exp)
+    public ISelectContext<T> Include<U>(Expression<Func<T, U>> exp)
     {
+        _included ??= new List<ISelect>();
         _included.Add(new Select<T, U>(exp));
         return this;
     }
 
-    public SelectContext<T> Exclude<U>(Expression<Func<T, U>> exp)
+    public ISelectContext<T> Exclude<U>(Expression<Func<T, U>> exp)
     {
+        _excluded ??= new List<ISelect>();
         _excluded.Add(new Select<T, U>(exp));
         return this;
     }
 
-    internal SelectFields GetDefinition()
-    {
-        return new SelectFields(_included.ToImmutableList(), _excluded.ToImmutableList());
-    }
+    SelectFields ISelectDefinitionProvider.GetDefinition() => new(_included, _excluded);
 }
