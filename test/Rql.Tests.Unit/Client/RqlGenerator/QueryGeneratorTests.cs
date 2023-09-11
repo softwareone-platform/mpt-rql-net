@@ -19,7 +19,7 @@ public class QueryGeneratorTests
     public void WhenEverythingIsEmpty_ThenEmptyQueryIsGenerated()
     {
         // Arrange & Act
-        var rql = _builderProvider.GetRqlRequestBuilder<User>().Build();
+        var rql = _builderProvider.GetBuilder<User>().Build();
 
         // Assert
         rql.Select.Should().Be(default);
@@ -31,7 +31,7 @@ public class QueryGeneratorTests
     public void WhenQueryIsEmptyButHasSelect_ThenOnlySelectIsGenerated()
     {
         // Arrange & Act
-        var rql = _builderProvider.GetRqlRequestBuilder<User>()
+        var rql = _builderProvider.GetBuilder<User>()
             .Select(e => e.Include(e => e.FirstName))
             .Build();
 
@@ -45,8 +45,8 @@ public class QueryGeneratorTests
     public void WhenSelectIsEmptyButHasSelect_ThenOnlyOrderIsGenerated()
     {
         // Arrange & Act
-        var rql = _builderProvider.GetRqlRequestBuilder<User>()
-            .Order(e => e.OrderBy(e => e.FirstName))
+        var rql = _builderProvider.GetBuilder<User>()
+            .OrderBy(e => e.FirstName)
             .Build();
 
         // Assert
@@ -59,12 +59,12 @@ public class QueryGeneratorTests
     public void WhenQueryIsNotEmptyAndSelectAndPagingAreNotDefined_ThenQueryIsGeneratedInRql()
     {
         // Arrange & Act
-        var rql = _builderProvider.GetRqlRequestBuilder<User>()
+        var rql = _builderProvider.GetBuilder<User>()
             .Where(context => context.Eq(x => x.HomeAddress.Street, "abc"))
             .Build();
 
         // Assert
-        rql.Filter.Should().Be("eq(HomeAddress.Street, 'abc')");
+        rql.Filter.Should().Be("eq(HomeAddress.Street,'abc')");
         rql.Select.Should().Be(default);
         rql.Order.Should().Be(default);
     }
@@ -73,27 +73,27 @@ public class QueryGeneratorTests
     public void WhenQueryAndSelect_ThenQueryIsGeneratedInRql()
     {
         // Arrange & Act
-        var query = _builderProvider.GetRqlRequestBuilder<User>()
+        var query = _builderProvider.GetBuilder<User>()
             .Where(context => context.Eq(x => x.HomeAddress.Street, "abc"))
-            .Select(c=>c.Exclude(x=>x.HomeAddress))
+            .Select(c=>c.Exclude(x=>x.LastName, x => x.Id))
             .Build();
 
         // Assert
-        query.Filter.Should().Be("eq(HomeAddress.Street, 'abc')");
-        query.Select.Should().Be("-HomeAddress");
+        query.Filter.Should().Be("eq(HomeAddress.Street,'abc')");
+        query.Select.Should().Be("-LastName,-Id");
     }
 
     [Fact]
     public void WhenQueryAndSelectAreNotEmptyAndShortSyntax_ThenAreGeneratedInRql()
     {
         // Arrange & Act
-        var rql = _builderProvider.GetRqlRequestBuilder<User>()
+        var rql = _builderProvider.GetBuilder<User>()
                 .Where( context => context.Eq(x => x.HomeAddress.Street, "abc"))
                 .Select(context => context.Include(x => x.HomeAddress).Exclude(x => x.OfficeAddress))
                 .Build();
 
         // Assert
-        rql.Filter.Should().Be("eq(HomeAddress.Street, 'abc')");
+        rql.Filter.Should().Be("eq(HomeAddress.Street,'abc')");
         rql.Select.Should().Be("HomeAddress,-OfficeAddress");
     }
 
@@ -102,14 +102,14 @@ public class QueryGeneratorTests
     public void WhenQueryAndSelectAreNotEmptyIsNotDefined_ThenAreGeneratedInRql()
     {
         // Arrange & Act
-        var query = _builderProvider.GetRqlRequestBuilder<User>()
+        var query = _builderProvider.GetBuilder<User>()
             .Where(context => context.Eq(x => x.HomeAddress.Street, "abc"))
-            .Order(context => context.OrderByDescending(x => x.FirstName).ThenBy(x => x.LastName))
+            .OrderByDescending(x => x.FirstName).ThenBy(x => x.LastName)
             .Select(context => context.Include(x => x.HomeAddress).Exclude(x => x.OfficeAddress))
             .Build();
         
         // Assert
-        query.Filter.Should().Be("eq(HomeAddress.Street, 'abc')");
+        query.Filter.Should().Be("eq(HomeAddress.Street,'abc')");
         query.Select.Should().Be("HomeAddress,-OfficeAddress");
         query.Order.Should().Be("-FirstName,LastName");
     }
@@ -118,14 +118,14 @@ public class QueryGeneratorTests
     public void WhenQuerySelectOrderAndPaging_ThenAreGeneratedInRql()
     {
         // Arrange & Act
-        var query = _builderProvider.GetRqlRequestBuilder<User>()
+        var query = _builderProvider.GetBuilder<User>()
             .Where(context => context.Eq(x => x.HomeAddress.Street, "abc"))
-            .Order(context => context.OrderByDescending(x => x.FirstName).ThenBy(x => x.LastName))
+            .OrderByDescending(x => x.FirstName).ThenBy(x => x.LastName)
             .Select(context => context.Include(x => x.HomeAddress).Exclude(x => x.OfficeAddress))
             .Build();
 
         // Assert
-        query.Filter.Should().Be("eq(HomeAddress.Street, 'abc')");
+        query.Filter.Should().Be("eq(HomeAddress.Street,'abc')");
         query.Select.Should().Be("HomeAddress,-OfficeAddress");
         query.Order.Should().Be("-FirstName,LastName");
     }
@@ -134,9 +134,9 @@ public class QueryGeneratorTests
     public void WhenQueryingWithJsonAttributes_ThenJsonNameIsReturnedIfExistsInRql()
     {
         // Arrange & Act
-        var query = _builderProvider.GetRqlRequestBuilder<ExampleWithJson>()
+        var query = _builderProvider.GetBuilder<ExampleWithJson>()
             .Where(context => context.Eq(x => x.PropWithoutAttribute, "abc"))
-            .Order(context => context.OrderByDescending(x => x.PropWithAttribute).ThenBy(x => x.PropWithoutAttribute))
+            .OrderByDescending(x => x.PropWithAttribute).ThenBy(x => x.PropWithoutAttribute)
             .Select(context => context.Include(x => x.PropWithAttribute)
                 .Include(x => x.AddressWithAttribute.CityWithoutProp)
                 .Include(x => x.AddressWithOutAttribute.CityWithoutProp)
@@ -145,7 +145,7 @@ public class QueryGeneratorTests
             .Build();
         
         // Assert
-        query.Filter.Should().Be("eq(PropWithoutAttribute, 'abc')");
+        query.Filter.Should().Be("eq(PropWithoutAttribute,'abc')");
         query.Select.Should().Be("IamAJsonTag,Address.CityWithoutProp,AddressWithOutAttribute.CityWithoutProp,Address.Street,AddressWithOutAttribute.Street,-PropWithoutAttribute");
         query.Order.Should().Be("-IamAJsonTag,PropWithoutAttribute");
     }

@@ -18,7 +18,8 @@ public class QueryBuilderTests
         var rql = queryBuilder
             .Where(e => e.Eq(f => f.Category, "a"))
             .Build();
-        rql.Filter.Should().Be("eq(Category, 'a')");
+
+        rql.Filter.Should().Be("eq(Category,'a')");
     }
 
     [Fact]
@@ -29,9 +30,14 @@ public class QueryBuilderTests
 
         Assert.NotNull(queryBuilder);
 
-        var rql = queryBuilder.GetRqlRequestBuilder<Product>()
+        var rql = queryBuilder.GetBuilder<Product>()
             .Where(e => e.Eq(f => f.Category, "a"))
+            .OrderByDescending(e => e.Category)
+            .ThenBy(f => f.Name)
+            .Select(e => e.Include(f => f.Category))
+            
             .Build();
-        rql.Filter.Should().Be("eq(Category, 'a')");
+        rql.Filter.Should().Be("eq(Category,'a')");
+        rql.Order.Should().Be("-Category,Name");
     }
 }

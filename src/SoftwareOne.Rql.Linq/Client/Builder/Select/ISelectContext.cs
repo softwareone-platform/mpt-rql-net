@@ -4,6 +4,6 @@ namespace SoftwareOne.Rql.Client;
 
 public interface ISelectContext<T> where T : class
 {
-    ISelectContext<T> Include<TValue>(Expression<Func<T, TValue>> exp);
-    ISelectContext<T> Exclude<TValue>(Expression<Func<T, TValue>> exp);
+    ISelectContext<T> Include(params Expression<Func<T, object>>[] exp);
+    ISelectContext<T> Exclude(params Expression<Func<T, object>>[] exp);
 }

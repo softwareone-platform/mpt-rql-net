@@ -1,8 +1,8 @@
 ﻿using SoftwareOne.Rql.Client;
 
-namespace SoftwareOne.Rql.Linq.Client.Order;
+namespace SoftwareOne.Rql.Linq.Client.Builder.Order;
 
 internal interface IOrderDefinitionProvider
 {
-    internal IList<IOrder>? GetDefinition();
+    internal IList<IOrderDefinition>? GetDefinition();
 }

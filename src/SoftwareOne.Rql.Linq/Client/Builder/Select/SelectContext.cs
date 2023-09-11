@@ -1,24 +1,33 @@
 ﻿using SoftwareOne.Rql.Client;
+using SoftwareOne.Rql.Linq.Client.Builder.Select;
 using System.Linq.Expressions;
 
 namespace SoftwareOne.Rql.Linq.Client.Select;
 
 internal class SelectContext<T> : ISelectDefinitionProvider, ISelectContext<T> where T : class
 {
-    private IList<ISelect>? _included;
-    private IList<ISelect>? _excluded;
+    private IList<ISelectDefinition>? _included;
+    private IList<ISelectDefinition>? _excluded;
 
-    public ISelectContext<T> Include<U>(Expression<Func<T, U>> exp)
+    public ISelectContext<T> Include(params Expression<Func<T, object>>[] exp)
     {
-        _included ??= new List<ISelect>();
-        _included.Add(new Select<T, U>(exp));
+        _included ??= new List<ISelectDefinition>();
+        foreach (var expression in exp)
+        {
+            _included.Add(new SelectDefinition<T, object>(expression));
+        }
+
         return this;
     }
 
-    public ISelectContext<T> Exclude<U>(Expression<Func<T, U>> exp)
+    public ISelectContext<T> Exclude(params Expression<Func<T, object>>[] exp)
     {
-        _excluded ??= new List<ISelect>();
-        _excluded.Add(new Select<T, U>(exp));
+        _excluded ??= new List<ISelectDefinition>();
+        foreach (var expression in exp)
+        {
+            _excluded.Add(new SelectDefinition<T, object>(expression));
+        }
+        
         return this;
     }
 

@@ -1,7 +1,9 @@
-﻿#pragma warning disable IDE0130
-namespace SoftwareOne.Rql.Client;
+﻿using System.Linq.Expressions;
+using SoftwareOne.Rql.Linq.Client.Builder.Order;
 
-public interface IOrderContext
+namespace SoftwareOne.Rql.Linq.Client.Order;
+
+internal interface IOrderContext<T> where T : class
 {
-
+    void AddOrder<TValue>(Expression<Func<T, TValue>> orderExpression, OrderDirection direction);
 }

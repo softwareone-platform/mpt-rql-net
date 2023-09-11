@@ -1,4 +1,4 @@
-﻿namespace SoftwareOne.Rql.Linq.Client.Order;
+﻿namespace SoftwareOne.Rql.Linq.Client.Builder.Order;
 
 internal enum OrderDirection
 {

@@ -1,5 +1,5 @@
 ﻿using SoftwareOne.Rql.Client;
 
-namespace SoftwareOne.Rql.Linq.Client.Select;
+namespace SoftwareOne.Rql.Linq.Client.Builder.Select;
 
-internal record SelectFields(IList<ISelect>? Included, IList<ISelect>? Excluded);
+internal record SelectFields(IList<ISelectDefinition>? Included, IList<ISelectDefinition>? Excluded);

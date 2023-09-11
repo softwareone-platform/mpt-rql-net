@@ -1,66 +1,41 @@
 ﻿using SoftwareOne.Rql.Client;
-using SoftwareOne.Rql.Linq.Client.Dsl;
+using SoftwareOne.Rql.Linq.Client.Builder.Operators;
 using System.Linq.Expressions;
 
-namespace SoftwareOne.Rql.Linq.Client.Filter;
+namespace SoftwareOne.Rql.Linq.Client.Builder.Filter;
 
-internal class FilterContext<T> : IFilterDefinitionProvider, IFilterContext<T> where T : class
+internal class FilterContext<T> : IFilterContext<T> where T : class
 {
-    private IOperator? _operator;
+    public IOperator Eq<TValue>(Expression<Func<T, TValue>> exp, TValue value)
+        => new Equal<T, TValue>(exp, value);
 
-    public IFilterContext<T> Eq<TValue>(Expression<Func<T, TValue>> exp, TValue value)
-    {
-        _operator = new Equal<T, TValue>(exp, value);
-        return this;
-    }
+    public IOperator Ne<TValue>(Expression<Func<T, TValue>> exp, TValue value)
+        => new NotEqual<T, TValue>(exp, value);
 
-    public IFilterContext<T> NEq<TValue>(Expression<Func<T, TValue>> exp, TValue value)
-    {
-        _operator = new NotEqual<T, TValue>(exp, value);
-        return this;
-    }
+    public IOperator Gt<TValue>(Expression<Func<T, TValue>> exp, TValue value)
+        => new Gt<T, TValue>(exp, value);
 
-    public IFilterContext<T> Gt<TValue>(Expression<Func<T, TValue>> exp, TValue value)
-    {
-        _operator = new Gt<T, TValue>(exp, value);
-        return this;
-    }
+    public IOperator Ge<TValue>(Expression<Func<T, TValue>> exp, TValue value)
+        => new Ge<T, TValue>(exp, value);
 
-    public IFilterContext<T> Ge<TValue>(Expression<Func<T, TValue>> exp, TValue value)
-    {
-        _operator = new Ge<T, TValue>(exp, value);
-        return this;
-    }
+    public IOperator Lt<TValue>(Expression<Func<T, TValue>> exp, TValue value)
+        => new Lt<T, TValue>(exp, value);
 
-    public IFilterContext<T> Lt<TValue>(Expression<Func<T, TValue>> exp, TValue value)
-    {
-        _operator = new Lt<T, TValue>(exp, value);
-        return this;
-    }
+    public IOperator Le<TValue>(Expression<Func<T, TValue>> exp, TValue value)
+        => new Le<T, TValue>(exp, value);
 
-    public IFilterContext<T> Le<TValue>(Expression<Func<T, TValue>> exp, TValue value)
-    {
-        _operator = new Le<T, TValue>(exp, value);
-        return this;
-    }
+    public IOperator Like<TValue>(Expression<Func<T, TValue>> exp, TValue value)
+        => new Like<T, TValue>(exp, value);
 
-    public IFilterContext<T> Like<TValue>(Expression<Func<T, TValue>> exp, TValue value)
-    {
-        _operator = new Like<T, TValue>(exp, value);
-        return this;
-    }
+    public IOperator In<TValue>(Expression<Func<T, TValue>> exp, IEnumerable<TValue> values)
+        => new In<T, TValue>(exp, values);
+    
+    public IOperator Not(IOperator inner)
+        => new NotOperator(inner);
 
-    public IFilterContext<T> In<TValue>(Expression<Func<T, TValue>> exp, IEnumerable<TValue> values)
-    {
-        _operator = new In<T, TValue>(exp, values);
-        return this;
-    }
+    public IOperator And(params IOperator[] operators)
+        => new AndOperator(operators);
 
-    public IFilterContext<T> Not(IOperator op)
-    {
-        _operator = new NotOperator(op);
-        return this;
-    } 
-
-    IOperator? IFilterDefinitionProvider.GetDefinition() => _operator;
+    public IOperator Or(params IOperator[] operators)
+        => new OrOperator(operators);
 }

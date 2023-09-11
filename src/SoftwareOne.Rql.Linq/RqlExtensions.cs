@@ -11,8 +11,10 @@ using SoftwareOne.Rql.Parsers.Linear.Domain.Services;
 using System.Reflection;
 using SoftwareOne.Rql.Client;
 using SoftwareOne.Rql.Linq.Client;
-using SoftwareOne.Rql.Linq.Client.RqlRequest;
 using IOperator = SoftwareOne.Rql.Linq.Services.Filtering.Operators.IOperator;
+using SoftwareOne.Rql.Linq.Client.Core;
+using SoftwareOne.Rql.Linq.Client.Builder.Request;
+using SoftwareOne.Rql.Linq.Client.Generator;
 
 #pragma warning disable IDE0130
 namespace SoftwareOne.Rql;
@@ -46,27 +48,29 @@ public static class RqlExtensions
 
         services.AddSingleton<IMetadataFactory, MetadataFactory>();
         services.AddSingleton(typeof(IPropertyNameProvider), options.PropertyMapperType ?? typeof(PropertyNameProvider));
-        services.AddScoped<IPropertyVisitor, PropertyVisitor>();
-
-        services.AddSingleton<IOrderGenerator, OrderGenerator>();
-        services.AddSingleton<IFilterGenerator, FilterGenerator>();
-        services.AddSingleton<ISelectGenerator, SelectGenerator>();
-        services.AddSingleton<IRqlRequestGenerator, RqlRequestGenerator>();
-        services.AddSingleton<IRqlRequestBuilderProvider, RqlRequestBuilderProvider>();
         
-        services.AddScoped(typeof(IRqlRequestBuilder<>), typeof(RqlRequestBuilder<>));
-        services.AddScoped(typeof(IRqlRequestBuilderWithOrder<>), typeof(RqlRequestBuilder<>));
-        services.AddScoped(typeof(IRqlRequestBuilderWithRqlRequest<>), typeof(RqlRequestBuilder<>));
-        services.AddScoped(typeof(IRqlRequestBuilderWithSelect<>), typeof(RqlRequestBuilder<>));
-
-        services.AddSingleton<IRqlRequestBuilderProvider, RqlRequestBuilderProvider>();
-
+        RegisterClient(services);
         RegisterOperatorExpressions(services, options);
 
         if (options.ViewMappersAssembly != null)
             ScanForViewMappers(services, options.ViewMappersAssembly);
 
         return services;
+    }
+
+    private static void RegisterClient(IServiceCollection services)
+    {
+        services.AddScoped<IPropertyVisitor, PropertyVisitor>();
+        services.AddSingleton<IOrderGenerator, OrderGenerator>();
+        services.AddSingleton<IFilterGenerator, FilterGenerator>();
+        services.AddSingleton<ISelectGenerator, SelectGenerator>();
+        services.AddSingleton<IRqlRequestGenerator, RqlRequestGenerator>();
+        services.AddSingleton<IRqlRequestBuilderProvider, RqlRequestBuilderProvider>();
+
+        services.AddScoped(typeof(IRqlRequestBuilder<>), typeof(RqlRequestBuilder<>));
+        services.AddTransient(typeof(IRqlRequestBuilderContext<>), typeof(RqlRequestBuilderContext<>));
+
+        services.AddSingleton<IRqlRequestBuilderProvider, RqlRequestBuilderProvider>();
     }
 
     private static void RegisterOperatorExpressions(IServiceCollection services, RqlConfiguration options)

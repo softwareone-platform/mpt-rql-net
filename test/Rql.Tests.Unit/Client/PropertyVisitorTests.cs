@@ -2,9 +2,9 @@
 using Rql.Tests.Unit.Client.Models;
 using System.Linq.Expressions;
 using SoftwareOne.Rql.Client;
-using SoftwareOne.Rql.Linq.Client;
 using SoftwareOne.Rql.Linq.Core.Metadata;
 using Xunit;
+using SoftwareOne.Rql.Linq.Client.Core;
 
 namespace Rql.Tests.Unit.Client;
 

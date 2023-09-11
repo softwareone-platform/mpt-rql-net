@@ -1,37 +1,17 @@
-﻿using SoftwareOne.Rql.Client;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
+using SoftwareOne.Rql.Linq.Client.Builder.Order;
 
 namespace SoftwareOne.Rql.Linq.Client.Order;
 
-internal class OrderContext<T> : IOrderDefinitionProvider, IOrderBeginContext<T>, IThenByContext<T> where T : class
+internal class OrderContext<T> : IOrderContext<T>, IOrderDefinitionProvider where T : class
 {
-    private IList<IOrder>? _definition;
-    public IThenByContext<T> OrderBy<TValue>(Expression<Func<T, TValue>> orderExpression)
+    private IList<IOrderDefinition>? _orderDefinitions;
+
+    public void AddOrder<TValue>(Expression<Func<T, TValue>> orderExpression, OrderDirection direction)
     {
-        Add(orderExpression, OrderDirection.Ascending);
-        return this;
-    }
-    public IThenByContext<T> OrderByDescending<TValue>(Expression<Func<T, TValue>> orderExpression)
-    {
-        Add(orderExpression, OrderDirection.Descending);
-        return this;
+        _orderDefinitions ??= new List<IOrderDefinition>();
+        _orderDefinitions.Add(new OrderDefinition<T, TValue>(orderExpression, direction));
     }
 
-    public IThenByContext<T> ThenBy<TValue>(Expression<Func<T, TValue>> orderExpression)
-    {
-        return OrderBy(orderExpression);
-    }
-
-    public IThenByContext<T> ThenByDescending<TValue>(Expression<Func<T, TValue>> orderExpression)
-    {
-        return OrderByDescending(orderExpression);
-    }
-
-    private void Add<TValue>(Expression<Func<T, TValue>> orderExpression, OrderDirection direction)
-    {
-        _definition ??= new List<IOrder>();
-        _definition.Add(new Order<T, TValue>(orderExpression, direction));
-    }
-
-    IList<IOrder>? IOrderDefinitionProvider.GetDefinition() => _definition;
+    IList<IOrderDefinition>? IOrderDefinitionProvider.GetDefinition() => _orderDefinitions;
 }

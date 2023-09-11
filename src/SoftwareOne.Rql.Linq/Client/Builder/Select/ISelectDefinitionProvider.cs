@@ -1,4 +1,4 @@
-﻿namespace SoftwareOne.Rql.Linq.Client.Select;
+﻿namespace SoftwareOne.Rql.Linq.Client.Builder.Select;
 
 internal interface ISelectDefinitionProvider
 {

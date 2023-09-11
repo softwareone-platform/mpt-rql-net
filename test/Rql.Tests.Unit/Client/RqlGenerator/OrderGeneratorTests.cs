@@ -1,8 +1,8 @@
 ﻿using FluentAssertions;
 using Rql.Tests.Unit.Client.Models;
-using Rql.Tests.Unit.Client.Samples;
-using SoftwareOne.Rql.Client;
-using SoftwareOne.Rql.Linq.Client;
+using SoftwareOne.Rql.Linq.Client.Builder.Order;
+using SoftwareOne.Rql.Linq.Client.Core;
+using SoftwareOne.Rql.Linq.Client.Generator;
 using SoftwareOne.Rql.Linq.Client.Order;
 using SoftwareOne.Rql.Linq.Core.Metadata;
 using Xunit;
@@ -35,9 +35,9 @@ public class OrderGeneratorTests
     public void WhenOrdered_ThenGenerated()
     {
         // Arrange
-        IOrderDefinitionProvider holder = ((OrderContext<User>)new OrderContext<User>()
-            .OrderByDescending(x => x.FirstName)
-            .ThenBy(x => x.HomeAddress));
+        var holder = new OrderContext<User>();
+        holder.AddOrder(o => o.FirstName, OrderDirection.Descending);
+        holder.AddOrder(o => o.HomeAddress, OrderDirection.Ascending);
 
         // Act 
         var result = new OrderGenerator(_propertyVisitor).Generate(holder);
