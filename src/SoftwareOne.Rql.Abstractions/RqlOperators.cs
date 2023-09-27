@@ -18,11 +18,14 @@ namespace SoftwareOne.Rql
         EndsWith = 1 << 10,
         Null = 1 << 11,
         Empty = 1 << 12,
+        Any = 1 << 13,
+        All = 1 << 14,
 
         GenericDefaults = Eq | Ne | Gt | Ge | Lt | Le | ListIn | ListOut,
         GuidDefaults = Eq | Ne | ListIn | ListOut,
         StringDefaults = Eq | Ne | StartsWith | EndsWith | Contains | ListIn | ListOut | Empty | Null,
+        CollectionDefaults = Any | All,
 
-        All = Eq | Ne | Gt | Ge | Lt | Le | ListIn | ListOut | StartsWith | Contains | EndsWith | Null | Empty
+        AllOperators = Eq | Ne | Gt | Ge | Lt | Le | ListIn | ListOut | StartsWith | Contains | EndsWith | Null | Empty | All | Any
     }
 }

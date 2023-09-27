@@ -18,6 +18,8 @@
             internal const string LessThanOrEqual = "le";
             internal const string Like = "like";
             internal const string LikeCaseInsensitive = "ilike";
+            internal const string Any = "any";
+            internal const string All = "all";
         }
     }
 }

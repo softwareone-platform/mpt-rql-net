@@ -25,6 +25,32 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution", "solution", "{F6
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rql.Tests.Integration", "test\Rql.Tests.Integration\Rql.Tests.Integration.csproj", "{848FB3C4-C9B4-4C8F-83F4-0B7ED53F3464}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{AEFB19FB-136A-4DAF-BBB0-F864315A9D0F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rql.Sample.Application", "samples\Rql.Sample.Application\Rql.Sample.Application.csproj", "{5A64C8D1-4213-4280-B458-E6814C2B1385}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rql.Sample.Api", "samples\Rql.Sample.Api\Rql.Sample.Api.csproj", "{BF242D47-AAC5-4A1F-8F2E-F8E04CFF52F5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rql.Sample.Contracts", "samples\Rql.Sample.Contracts\Rql.Sample.Contracts.csproj", "{F0F12C1B-3DDE-4EDD-B632-FDFEF106AC31}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rql.Sample.Domain", "samples\Rql.Sample.Domain\Rql.Sample.Domain.csproj", "{50026E65-689A-402A-B2CA-C7A71A000E12}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rql.Sample.Infrastructure", "samples\Rql.Sample.Infrastructure\Rql.Sample.Infrastructure.csproj", "{CFFB44E6-0321-480B-B258-9B9A22D3D0CD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipelines", "pipelines", "{73947017-5B82-4F5D-A273-142E0B58AEC4}"
+	ProjectSection(SolutionItems) = preProject
+		pipelines\build.ps1 = pipelines\build.ps1
+		pipelines\rql-test.yaml = pipelines\rql-test.yaml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{4B53A37B-A23C-46F6-B53E-54F6017D0541}"
+	ProjectSection(SolutionItems) = preProject
+		pipelines\templates\build_and_pack.yaml = pipelines\templates\build_and_pack.yaml
+		pipelines\templates\run_tests.yaml = pipelines\templates\run_tests.yaml
+		pipelines\templates\sonar_cloud_prepare.yaml = pipelines\templates\sonar_cloud_prepare.yaml
+		pipelines\templates\use_dotnet_steps.yaml = pipelines\templates\use_dotnet_steps.yaml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +77,26 @@ Global
 		{848FB3C4-C9B4-4C8F-83F4-0B7ED53F3464}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{848FB3C4-C9B4-4C8F-83F4-0B7ED53F3464}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{848FB3C4-C9B4-4C8F-83F4-0B7ED53F3464}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A64C8D1-4213-4280-B458-E6814C2B1385}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A64C8D1-4213-4280-B458-E6814C2B1385}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A64C8D1-4213-4280-B458-E6814C2B1385}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A64C8D1-4213-4280-B458-E6814C2B1385}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF242D47-AAC5-4A1F-8F2E-F8E04CFF52F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF242D47-AAC5-4A1F-8F2E-F8E04CFF52F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF242D47-AAC5-4A1F-8F2E-F8E04CFF52F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF242D47-AAC5-4A1F-8F2E-F8E04CFF52F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0F12C1B-3DDE-4EDD-B632-FDFEF106AC31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0F12C1B-3DDE-4EDD-B632-FDFEF106AC31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0F12C1B-3DDE-4EDD-B632-FDFEF106AC31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0F12C1B-3DDE-4EDD-B632-FDFEF106AC31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50026E65-689A-402A-B2CA-C7A71A000E12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50026E65-689A-402A-B2CA-C7A71A000E12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50026E65-689A-402A-B2CA-C7A71A000E12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50026E65-689A-402A-B2CA-C7A71A000E12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFFB44E6-0321-480B-B258-9B9A22D3D0CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFFB44E6-0321-480B-B258-9B9A22D3D0CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFFB44E6-0321-480B-B258-9B9A22D3D0CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFFB44E6-0321-480B-B258-9B9A22D3D0CD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -61,6 +107,13 @@ Global
 		{D16DBA99-341B-4871-9E5D-9D9692E267FE} = {D9D73D98-4311-4704-9A5E-35595B363B7F}
 		{C7A59410-10AA-4751-BD60-2FCF003BF430} = {D9D73D98-4311-4704-9A5E-35595B363B7F}
 		{848FB3C4-C9B4-4C8F-83F4-0B7ED53F3464} = {D980A974-8FE2-479D-B67E-E544F3904994}
+		{5A64C8D1-4213-4280-B458-E6814C2B1385} = {AEFB19FB-136A-4DAF-BBB0-F864315A9D0F}
+		{BF242D47-AAC5-4A1F-8F2E-F8E04CFF52F5} = {AEFB19FB-136A-4DAF-BBB0-F864315A9D0F}
+		{F0F12C1B-3DDE-4EDD-B632-FDFEF106AC31} = {AEFB19FB-136A-4DAF-BBB0-F864315A9D0F}
+		{50026E65-689A-402A-B2CA-C7A71A000E12} = {AEFB19FB-136A-4DAF-BBB0-F864315A9D0F}
+		{CFFB44E6-0321-480B-B258-9B9A22D3D0CD} = {AEFB19FB-136A-4DAF-BBB0-F864315A9D0F}
+		{73947017-5B82-4F5D-A273-142E0B58AEC4} = {F624E774-7C26-40D1-BCBA-1574F88B28D5}
+		{4B53A37B-A23C-46F6-B53E-54F6017D0541} = {73947017-5B82-4F5D-A273-142E0B58AEC4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A3AD745F-6707-49CB-8A5B-301F8D55333A}

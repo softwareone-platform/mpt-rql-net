@@ -20,7 +20,8 @@ internal class MetadataFactory : IMetadataFactory
             Property = property,
             Type = GetRqlPropertyType(property),
             Actions = _settings.DefaultActions,
-            Operators = RqlOperators.All
+            Operators = _settings.AllowedOperators,
+            ElementType = GetCollectionElementType(property.PropertyType)
         };
 
         var attribute = property.GetCustomAttributes<RqlPropertyAttribute>(true).FirstOrDefault();
@@ -28,6 +29,7 @@ internal class MetadataFactory : IMetadataFactory
         if (attribute != null)
         {
             propertyInfo.IsCore = attribute.IsCore;
+            propertyInfo.IsHidden = attribute.IsHidden;
 
             if (attribute.ActionsSet)
                 propertyInfo.Actions = attribute.Actions;
@@ -36,17 +38,18 @@ internal class MetadataFactory : IMetadataFactory
                 propertyInfo.Operators = attribute.Operators;
         }
 
-        propertyInfo.Operators &= GetOperatorsForProperty(propertyInfo);
+        propertyInfo.Operators &= propertyInfo.Type switch
+        {
+            RqlPropertyType.Primitive => GetOperatorsForSimpleProperty(propertyInfo),
+            RqlPropertyType.Collection => RqlOperators.CollectionDefaults,
+            _ => RqlOperators.None,
+        };
 
         return propertyInfo;
     }
 
-    private static RqlOperators GetOperatorsForProperty(RqlPropertyInfo propertyInfo)
+    private static RqlOperators GetOperatorsForSimpleProperty(RqlPropertyInfo propertyInfo)
     {
-        // Operators are not applicable to complex properties
-        if (propertyInfo.Type != RqlPropertyType.Primitive && propertyInfo.Type != RqlPropertyType.Binary)
-            return RqlOperators.None;
-
         Type propType = propertyInfo.Property.PropertyType;
         var innerType = Nullable.GetUnderlyingType(propType);
         propType = innerType ?? propType;
@@ -63,6 +66,22 @@ internal class MetadataFactory : IMetadataFactory
 
         return operators;
     }
+
+    private static Type? GetCollectionElementType(Type type)
+    {
+        if (type.IsArray)
+            return type.GetElementType()!;
+
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+            return type.GetGenericArguments()[0];
+
+        var enumType = type.GetInterfaces()
+            .Where(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+            .Select(t => t.GenericTypeArguments[0]).FirstOrDefault();
+
+        return enumType ?? default;
+    }
+
 
     private static RqlPropertyType GetRqlPropertyType(PropertyInfo property)
     {

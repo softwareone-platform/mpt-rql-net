@@ -25,6 +25,8 @@ internal static class RqlNodeParser
             Constants.RqlTerm.LessThanOrEqual => RqlBinaryParser.Parse(Constants.RqlTerm.LessThanOrEqual, expressionPairList),
             Constants.RqlTerm.Like => RqlBinaryParser.Parse(Constants.RqlTerm.Like, expressionPairList),
             Constants.RqlTerm.LikeCaseInsensitive => RqlBinaryParser.Parse(Constants.RqlTerm.LikeCaseInsensitive, expressionPairList),
+            Constants.RqlTerm.Any => RqlBinaryParser.Parse(Constants.RqlTerm.Any, expressionPairList),
+            Constants.RqlTerm.All => RqlBinaryParser.Parse(Constants.RqlTerm.All, expressionPairList),
             var any => RqlExpression.Group(any, expressionPairList.Select(s => s.Expression))
         };
     }

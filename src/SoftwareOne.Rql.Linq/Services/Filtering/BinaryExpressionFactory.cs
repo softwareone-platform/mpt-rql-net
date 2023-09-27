@@ -3,14 +3,29 @@ using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Binary;
 using SoftwareOne.Rql.Abstractions.Constant;
 using SoftwareOne.Rql.Abstractions.Group;
+using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.List;
+using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search;
+using System.Diagnostics.Metrics;
 using System.Linq.Expressions;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering;
 
 internal static class BinaryExpressionFactory
 {
-    internal static ErrorOr<Expression> MakeSimple(RqlBinary node, bool allowNull, Func<string?, ErrorOr<Expression>> factory)
+    internal static ErrorOr<Expression> MakeComparison(RqlBinary node, IRqlPropertyInfo propertyInfo, MemberExpression member, IComparisonOperator comparison)
+    {
+        var arg = GetRightArgument(node.Right, true);
+        return comparison.MakeExpression(propertyInfo, member, arg.Value);
+    }
+
+    internal static ErrorOr<Expression> MakeSearch(RqlBinary node, IRqlPropertyInfo propertyInfo, MemberExpression member, ISearchOperator search)
+    {
+        var arg = GetRightArgument(node.Right, false);
+        return search.MakeExpression(propertyInfo, member, arg.Value!);
+    }
+
+    internal static ErrorOr<Expression> MakeReference(RqlBinary node, bool allowNull, Func<string?, ErrorOr<Expression>> factory)
     {
         var arg = GetRightArgument(node.Right, allowNull);
 

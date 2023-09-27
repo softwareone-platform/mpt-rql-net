@@ -6,6 +6,7 @@ using SoftwareOne.Rql.Abstractions.Group;
 using SoftwareOne.Rql.Abstractions.Unary;
 using SoftwareOne.Rql.Linq.Core.Metadata;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
+using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Collection;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.List;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search;
@@ -111,7 +112,6 @@ internal sealed class FilteringService<TView> : RqlService, IFilteringService<TV
             return Result.Success;
         });
 
-
         if (memberInfo.IsError)
             return AssignErrorCode(memberInfo.Errors, MakeErrorCode(memberConstant.Value));
 
@@ -120,9 +120,10 @@ internal sealed class FilteringService<TView> : RqlService, IFilteringService<TV
 
         var expression = handler switch
         {
-            IComparisonOperator comp => BinaryExpressionFactory.MakeSimple(node, true, value => comp.MakeExpression(property, member, value)),
-            ISearchOperator search => BinaryExpressionFactory.MakeSimple(node, false, value => search.MakeExpression(property, member, value!)),
+            IComparisonOperator comp => BinaryExpressionFactory.MakeComparison(node, property, member, comp),
+            ISearchOperator search => BinaryExpressionFactory.MakeSearch(node, property, member, search),
             IListOperator list => BinaryExpressionFactory.MakeList(node, property, member, list),
+            ICollectionOperator sub => MakeCollectionExpression(node, property, member, sub),
             _ => MakeInternalError()
         };
 
@@ -130,6 +131,22 @@ internal sealed class FilteringService<TView> : RqlService, IFilteringService<TV
 
         static List<Error> AssignErrorCode(IEnumerable<Error> errors, string code)
             => errors.Select(s => Error.Validation(code, s.Description)).ToList();
+    }
+
+    private ErrorOr<Expression> MakeCollectionExpression(RqlBinary node, Core.RqlPropertyInfo propertyInfo, MemberExpression member, ICollectionOperator handler)
+    {
+        if (propertyInfo.ElementType == null)
+            return Error.Failure(description: "Collection property has incompatible type");
+
+        var param = Expression.Parameter(propertyInfo.ElementType);
+        var innerExpression = MakeFilterExpression(param, node.Right);
+        
+        if (innerExpression.IsError)
+            return innerExpression.Errors;
+
+        var lambda = Expression.Lambda(innerExpression.Value, param);
+
+        return handler.MakeExpression(propertyInfo, member, lambda);
     }
 
     private ErrorOr<Expression> MakeUnaryExpression(ParameterExpression pe, RqlUnary node)

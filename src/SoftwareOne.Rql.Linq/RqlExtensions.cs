@@ -1,6 +1,11 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using SoftwareOne.Rql;
 using SoftwareOne.Rql.Abstractions;
+using SoftwareOne.Rql.Client;
 using SoftwareOne.Rql.Linq;
+using SoftwareOne.Rql.Linq.Client;
+using SoftwareOne.Rql.Linq.Client.Builder.Request;
+using SoftwareOne.Rql.Linq.Client.Core;
+using SoftwareOne.Rql.Linq.Client.Generator;
 using SoftwareOne.Rql.Linq.Core.Metadata;
 using SoftwareOne.Rql.Linq.Services.Filtering;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
@@ -9,15 +14,10 @@ using SoftwareOne.Rql.Linq.Services.Ordering;
 using SoftwareOne.Rql.Linq.Services.Projection;
 using SoftwareOne.Rql.Parsers.Linear.Domain.Services;
 using System.Reflection;
-using SoftwareOne.Rql.Client;
-using SoftwareOne.Rql.Linq.Client;
 using IOperator = SoftwareOne.Rql.Linq.Services.Filtering.Operators.IOperator;
-using SoftwareOne.Rql.Linq.Client.Core;
-using SoftwareOne.Rql.Linq.Client.Builder.Request;
-using SoftwareOne.Rql.Linq.Client.Generator;
 
 #pragma warning disable IDE0130
-namespace SoftwareOne.Rql;
+namespace Microsoft.Extensions.DependencyInjection;
 
 public static class RqlExtensions
 {
@@ -40,7 +40,7 @@ public static class RqlExtensions
         services.AddScoped(typeof(IFilteringService<>), typeof(FilteringService<>));
         services.AddScoped(typeof(IOrderingService<>), typeof(OrderingService<>));
         services.AddScoped(typeof(IProjectionService<>), typeof(ProjectionService<>));
-        
+
         services.AddSingleton<MetadataProvider>();
         services.AddSingleton<IMetadataProvider>(serviceProvider => serviceProvider.GetRequiredService<MetadataProvider>());
         services.AddSingleton<IRqlMetadataProvider>(serviceProvider =>
@@ -48,7 +48,7 @@ public static class RqlExtensions
 
         services.AddSingleton<IMetadataFactory, MetadataFactory>();
         services.AddSingleton(typeof(IPropertyNameProvider), options.PropertyMapperType ?? typeof(PropertyNameProvider));
-        
+
         RegisterClient(services);
         RegisterOperatorExpressions(services, options);
 
@@ -61,11 +61,11 @@ public static class RqlExtensions
     private static void RegisterClient(IServiceCollection services)
     {
         services.AddScoped<IPropertyVisitor, PropertyVisitor>();
-        services.AddSingleton<IOrderGenerator, OrderGenerator>();
-        services.AddSingleton<IFilterGenerator, FilterGenerator>();
-        services.AddSingleton<ISelectGenerator, SelectGenerator>();
-        services.AddSingleton<IRqlRequestGenerator, RqlRequestGenerator>();
-        services.AddSingleton<IRqlRequestBuilderProvider, RqlRequestBuilderProvider>();
+        services.AddScoped<IOrderGenerator, OrderGenerator>();
+        services.AddScoped<IFilterGenerator, FilterGenerator>();
+        services.AddScoped<ISelectGenerator, SelectGenerator>();
+        services.AddScoped<IRqlRequestGenerator, RqlRequestGenerator>();
+        services.AddScoped<IRqlRequestBuilderProvider, RqlRequestBuilderProvider>();
 
         services.AddScoped(typeof(IRqlRequestBuilder<>), typeof(RqlRequestBuilder<>));
         services.AddTransient(typeof(IRqlRequestBuilderContext<>), typeof(RqlRequestBuilderContext<>));

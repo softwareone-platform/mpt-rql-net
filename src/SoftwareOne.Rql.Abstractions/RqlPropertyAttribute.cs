@@ -40,5 +40,6 @@ namespace SoftwareOne.Rql
         public bool OperatorsSet { get; private set; }
 
         public bool IsCore { get; set; }
+        public bool IsHidden { get; set; }
     }
 }

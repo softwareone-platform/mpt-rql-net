@@ -20,7 +20,9 @@ internal static class RqlBinaryParser
         { Constants.RqlTerm.LessThan, RqlExpression.LessThan},
         { Constants.RqlTerm.LessThanOrEqual, RqlExpression.LessThanOrEqual},
         { Constants.RqlTerm.Like, RqlExpression.Like},
-        { Constants.RqlTerm.LikeCaseInsensitive, RqlExpression.LikeCaseInsensitive}
+        { Constants.RqlTerm.LikeCaseInsensitive, RqlExpression.LikeCaseInsensitive},
+        { Constants.RqlTerm.Any, RqlExpression.Any},
+        { Constants.RqlTerm.All, RqlExpression.All}
     };
 
     internal static RqlExpression Parse(string term, IList<ExpressionPair> innerExpressionPairs)

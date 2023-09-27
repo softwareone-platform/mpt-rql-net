@@ -1,7 +1,7 @@
 <Project>
     <PropertyGroup>
         <Nullable>enable</Nullable>
-        <VersionPrefix>0.8.0</VersionPrefix>
+        <VersionPrefix>0.9.0</VersionPrefix>
         <Authors>RQL Developmnet Group</Authors>
         <Company>SoftwareOne</Company>
         <Copyright>SoftwareOne © 2023</Copyright>

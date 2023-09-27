@@ -302,6 +302,34 @@ public class RqlParserTests
     }
 
     [Theory]
+    [InlineData("any(subcollection,id=1)")]
+    public void Parse_WithAnyExpression_ReturnsValidResult(string query)
+    {
+        // Act
+        var actualResult = _sut.Parse(query);
+
+        // Assert
+        var grp = Assert.IsAssignableFrom<RqlGroup>(actualResult);
+        var rqlAny = Assert.IsType<RqlAny>(grp.Items![0]);
+        Assert.IsType<RqlConstant>(rqlAny.Left);
+        Assert.IsType<RqlEqual>(rqlAny.Right);
+    }
+
+    [Theory]
+    [InlineData("all(subcollection,id=1)")]
+    public void Parse_WithAllExpression_ReturnsValidResult(string query)
+    {
+        // Act
+        var actualResult = _sut.Parse(query);
+
+        // Assert
+        var grp = Assert.IsAssignableFrom<RqlGroup>(actualResult);
+        var rqlAll = Assert.IsType<RqlAll>(grp.Items![0]);
+        Assert.IsType<RqlConstant>(rqlAll.Left);
+        Assert.IsType<RqlEqual>(rqlAll.Right);
+    }
+
+    [Theory]
     [InlineData("id=PRD-0000-0001&status=active|mode=1&mode=2")]
     [InlineData("(id=PRD-0000-0001&status=active)|mode=1&mode=2")]
     [InlineData("id=PRD-0000-0001&status=active|(mode=1&mode=2)")]

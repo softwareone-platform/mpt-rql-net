@@ -9,6 +9,8 @@ internal class RqlPropertyInfo : IRqlPropertyInfo
     public PropertyInfo Property { get; internal set; } = null!;
     public RqlPropertyType Type { get; internal set; }
     public bool IsCore { get; internal set; }
+    public bool IsHidden { get; internal set; }
     public RqlActions Actions { get; internal set; }
     public RqlOperators Operators { get; internal set; }
+    public Type? ElementType { get; internal set; }
 }

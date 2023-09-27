@@ -118,4 +118,25 @@ public class BasicFilterTests
     [InlineData("or(eq(id,3),eq(id,5),eq(name,Jewelry Widget))", false)]
     public void Or_Id_Name_Equals(string query, bool isHappyFlow = true)
        => _testExecutor.ResultMatch(t => t.Id == 1 || t.Id == 2 || t.Name == "Jewelry Widget", query, isHappyFlow: isHappyFlow);
+
+    [Theory]
+    [InlineData("any(orders,(id=1))")]
+    [InlineData("any(orders,eq(id,1))")]
+    [InlineData("any(orders,eq(id,999))", false)]
+    public void Any_Orders_Id_Equals(string query, bool isHappyFlow = true)
+       => _testExecutor.ResultMatch(t => t.Orders.Any(t => t.Id == 1), query, isHappyFlow: isHappyFlow);
+
+    [Theory]
+    [InlineData("any(orders,(id=1,id=1))")]
+    [InlineData("any(orders,and(eq(id,1),eq(id,1)))")]
+    [InlineData("any(orders,and(eq(id,999),eq(id,999)))", false)]
+    public void Complex_Any_Orders_Id_Equals(string query, bool isHappyFlow = true)
+      => _testExecutor.ResultMatch(t => t.Orders.Any(t => t.Id == 1), query, isHappyFlow: isHappyFlow);
+
+    [Theory]
+    [InlineData("all(orders,id=1)")]
+    [InlineData("all(orders,eq(id,1))")]
+    [InlineData("all(orders,eq(id,999))", false)]
+    public void All_Orders_Id_Equals(string query, bool isHappyFlow = true)
+       => _testExecutor.ResultMatch(t => t.Orders.All(t => t.Id == 1), query, isHappyFlow: isHappyFlow);
 }

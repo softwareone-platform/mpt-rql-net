@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+	<ItemGroup>
+		<InternalsVisibleTo Include="Rql.Tests.Integration" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Dapper" Version="2.0.123" />
+		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.1" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+		<PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.1" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\SoftwareOne.Rql.Linq\SoftwareOne.Rql.Linq.csproj" />
+		<ProjectReference Include="..\Rql.Sample.Application\Rql.Sample.Application.csproj" />
+		<ProjectReference Include="..\Rql.Sample.Contracts\Rql.Sample.Contracts.csproj" />
+		<ProjectReference Include="..\Rql.Sample.Infrastructure\Rql.Sample.Infrastructure.csproj" />
+	</ItemGroup>
+</Project>

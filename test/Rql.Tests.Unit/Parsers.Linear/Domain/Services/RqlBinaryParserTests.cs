@@ -138,6 +138,28 @@ public class RqlBinaryParserTests
     }
 
     [Fact]
+    public void Parse_WhenSuccessfulAnyInput_ResolvesToRqlAny()
+    {
+        // Act
+        var actualResult = RqlBinaryParser.Parse(Constants.RqlTerm.Any, RqlExpressionFactory.Default());
+
+        // Assert
+        Assert.Equal(typeof(RqlAny), actualResult.GetType());
+        Assert.Equal(typeof(RqlConstant), ((RqlAny)actualResult).Right.GetType());
+    }
+
+    [Fact]
+    public void Parse_WhenSuccessfulAllInput_ResolvesToRqlAll()
+    {
+        // Act
+        var actualResult = RqlBinaryParser.Parse(Constants.RqlTerm.All, RqlExpressionFactory.Default());
+
+        // Assert
+        Assert.Equal(typeof(RqlAll), actualResult.GetType());
+        Assert.Equal(typeof(RqlConstant), ((RqlAll)actualResult).Right.GetType());
+    }
+
+    [Fact]
     public void Parse_WhenInvalidExpression_ThrowsRqlBinaryParserException()
     {
         // Act and Assert

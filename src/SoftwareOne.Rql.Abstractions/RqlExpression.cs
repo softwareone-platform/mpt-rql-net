@@ -61,6 +61,12 @@ namespace SoftwareOne.Rql.Abstractions
         public static RqlListOut ListOut(RqlExpression left, RqlExpression right)
             => new RqlListOut(left, right);
 
+        public static RqlAny Any(RqlExpression left, RqlExpression right)
+            => new RqlAny(left, right);
+
+        public static RqlAll All(RqlExpression left, RqlExpression right)=> 
+            new RqlAll(left, right);
+
         #endregion
 
         #region Unary

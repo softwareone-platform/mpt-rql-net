@@ -86,11 +86,13 @@ internal class ProjectionService<TView> : RqlService, IProjectionService<TView>
             if (propertyNode!.Mode == SelectMode.None && propertyNode!.Children == null)
                 return result;
         }
+        // hidden properties are ignored unless requested explicitly
+        else if (rqlProperty.IsHidden)
+            return result;
+
         // all properties are skipped if parent is in subtract mode and no there is explicit property descriptor
         else if (parentNode.Mode == SelectMode.None)
-        {
             return result;
-        }
 
         // if parent in defaults mode skip all non reference props
         if (parentNode.Mode == SelectMode.Core && !rqlProperty.IsCore && (propertyNode == null || propertyNode.Mode != SelectMode.All))
