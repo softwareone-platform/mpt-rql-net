@@ -17,6 +17,7 @@ namespace Rql.Sample.Api.Mapping
               Price = t.StandardCost,
               ListPrice = t.ListPrice,
               Date = t.SellStartDate,
+              Status = (ViewProductStatus)t.Status,
               Category = new ProductCategoryView
               {
                   Id = t.ProductCategory!.ProductCategoryId,

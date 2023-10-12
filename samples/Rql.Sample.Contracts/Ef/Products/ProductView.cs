@@ -19,6 +19,7 @@ namespace Rql.Sample.Contracts.Ef.Products
         public decimal Price { get; set; }
 
         public decimal ListPrice { get; set; }
+        public ViewProductStatus Status { get; set; }
 
         public ProductCategoryView? Category { get; set; }
 
@@ -27,6 +28,14 @@ namespace Rql.Sample.Contracts.Ef.Products
 
         [RqlProperty(IsHidden = true)]
         public IEnumerable<ProductSaleOrder>? SaleDetails { get; set; }
+    }
+
+    public enum ViewProductStatus
+    {
+        Draft = 0,
+        Active = 1,
+        Updating = 2,
+        Unlisted = 3
     }
 
     public class ProductCategoryView

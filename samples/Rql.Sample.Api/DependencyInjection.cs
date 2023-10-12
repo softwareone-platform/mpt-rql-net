@@ -1,5 +1,7 @@
+using Microsoft.Extensions.Options;
 using Rql.Sample.Api.Extensions.Core;
 using SoftwareOne.Rql;
+using System.Text.Json.Serialization;
 
 namespace Rql.Sample.Api;
 
@@ -9,7 +11,8 @@ public static class DependencyInjection
     {
         services.AddControllers().AddJsonOptions(json =>
         {
-            json.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault;
+            json.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
+            json.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             json.JsonSerializerOptions.WriteIndented = true;
         });
 

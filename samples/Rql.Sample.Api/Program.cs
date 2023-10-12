@@ -5,6 +5,8 @@ namespace Rql.Sample.Api
 {
     public static class Program
     {
+        private const string CorsPolicyName = "__cors_policy";
+
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -14,7 +16,14 @@ namespace Rql.Sample.Api
                 .AddApplication()
                 .AddInfrastructure();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy(name: CorsPolicyName, b => b.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            });
+
+
             var app = builder.Build();
+            app.UseCors(CorsPolicyName);
             app.UseSwagger();
             app.UseSwaggerUI();
             app.UseAuthorization();
