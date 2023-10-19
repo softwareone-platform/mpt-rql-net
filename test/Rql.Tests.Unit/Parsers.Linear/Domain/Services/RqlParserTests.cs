@@ -416,6 +416,27 @@ public class RqlParserTests
         Assert.Equal("-id", Assert.IsType<RqlConstant>(grp.Items[2]).Value);
     }
 
+    [Theory]
+    [InlineData("(ilike(number,'*HL*')|ilike(name,'*HL*'))&order=id&offset=0&limit=30")]
+    public void Parse_WithILikeEscapeSpecialCharacters_ReturnsValidResult(string query)
+    {
+        // Act
+        var actualResult = _sut.Parse(query);
+
+        // Assert
+        var andExpression = Assert.IsType<RqlAnd>(actualResult);
+
+        var orILikeExpression = Assert.IsType<RqlOr>(andExpression.Items?[0]);
+        var iLikeExpression1 = Assert.IsType<RqlLikeCaseInsensitive>(orILikeExpression.Items?[0]);
+        var iLikeExpression2 = Assert.IsType<RqlLikeCaseInsensitive>(orILikeExpression.Items?[1]);
+
+        Assert.Equal("*HL*", ((RqlConstant)iLikeExpression1.Right).Value);
+        Assert.Equal("*HL*", ((RqlConstant)iLikeExpression2.Right).Value);
+        Assert.IsType<RqlEqual>(andExpression.Items?[1]);
+        Assert.IsType<RqlEqual>(andExpression.Items?[2]); 
+        Assert.IsType<RqlEqual>(andExpression.Items?[3]);
+    }
+
     private static void CheckListOfConstantComparisons<TComparison>(IReadOnlyList<RqlExpression> items, int index, string prop, string value)
         where TComparison : RqlBinary
     {

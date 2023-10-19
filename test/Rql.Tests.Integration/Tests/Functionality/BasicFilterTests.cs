@@ -59,6 +59,8 @@ public class BasicFilterTests
 
     [Theory]
     [InlineData("like(name,Jewelry*)")]
+    [InlineData("ilike(name,'*Jewelry*')")]
+    [InlineData("(ilike(name,'*ewelr*')|ilike(name,'*Jewelry*'))")]
     [InlineData("like(name,WRONG_DATA*)", false)]
     public void Like_Name_StartsWith(string query, bool isHappyFlow = true)
         => _testExecutor.ResultMatch(t => t.Name.StartsWith("Jewelry"), query, isHappyFlow: isHappyFlow);

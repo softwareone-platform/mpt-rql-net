@@ -97,8 +97,10 @@ public class RqlParser : IRqlParser
     private static void HandleDelimiterEnd(char currentSymbol, int currentIndex, ref Word word)
     {
         if (currentSymbol == word.WrapSymbol)
+        {
             word.WrapEnd = currentIndex;
-
+            word.WrapSymbol = null;
+        }
         word.WordLength++;
     }
 
