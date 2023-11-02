@@ -1,9 +1,10 @@
 ﻿using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Binary;
-using SoftwareOne.Rql.Abstractions.Constant;
+using SoftwareOne.Rql.Abstractions.Argument;
 using SoftwareOne.Rql.Abstractions.Group;
 using SoftwareOne.Rql.Parsers.Linear.Domain.Core.Enumerations;
 using SoftwareOne.Rql.Parsers.Linear.Domain.Core.ValueTypes;
+using System.Data.SqlTypes;
 
 namespace Rql.Tests.Unit.Factory;
 
@@ -37,7 +38,7 @@ internal static class RqlExpressionFactory
                 new List<RqlExpression> {
                     new RqlConstant("listItem1"),
                     new RqlConstant("listItem2") }))
-        }; 
+        };
     }
 
     internal static List<ExpressionPair> DefaultMultiple()
@@ -81,7 +82,7 @@ internal static class RqlExpressionFactory
         // Represents '(field1=value1|field2=value2)&(field3=value3|field4=value4)'
         return new List<ExpressionPair>()
         {
-            new ExpressionPair(GroupType.None, 
+            new ExpressionPair(GroupType.None,
                 new RqlOr(
                     new List<RqlExpression> {
                         new RqlEqual(new RqlConstant("field1"), new RqlConstant("value1")),
@@ -92,6 +93,21 @@ internal static class RqlExpressionFactory
                         new RqlEqual(new RqlConstant("field3"), new RqlConstant("value3")),
                         new RqlEqual(new RqlConstant("field4"), new RqlConstant("value4")) }))
         };
+    }
+
+    internal static List<ExpressionPair> EmptyList()
+    {
+        return new List<ExpressionPair>();
+    }
+
+    internal static List<ExpressionPair> FromSingleItem(RqlExpression expression)
+    {
+        return new List<ExpressionPair>() { new ExpressionPair { Expression = expression, Type = GroupType.None } };
+    }
+
+    internal static List<ExpressionPair> ConstantList(int count)
+    {
+        return Enumerable.Range(0, count).Select(s => new ExpressionPair(GroupType.None, RqlExpression.Constant($"constant_{s}"))).ToList();
     }
 
     internal static List<ExpressionPair> InvalidOnlySingleExpression()

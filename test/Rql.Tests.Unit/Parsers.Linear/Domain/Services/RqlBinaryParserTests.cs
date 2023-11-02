@@ -1,11 +1,11 @@
 ﻿using Xunit;
 using SoftwareOne.Rql.Abstractions.Binary;
-using SoftwareOne.Rql.Abstractions.Constant;
 using SoftwareOne.Rql.Abstractions.Group;
 using SoftwareOne.Rql.Parsers.Linear;
 using Rql.Tests.Unit.Factory;
 using SoftwareOne.Rql.Parsers.Linear.Domain.Core;
 using SoftwareOne.Rql.Abstractions.Exception;
+using SoftwareOne.Rql.Abstractions.Argument;
 
 namespace Rql.Tests.Unit.Parsers.Linear.Domain.Services;
 

@@ -1,4 +1,4 @@
-﻿namespace SoftwareOne.Rql.Abstractions.Constant
+﻿namespace SoftwareOne.Rql.Abstractions.Argument
 {
     public class RqlEmpty : RqlArgument
     {

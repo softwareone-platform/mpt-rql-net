@@ -1,6 +1,6 @@
 ﻿using SoftwareOne.Rql.Abstractions;
+using SoftwareOne.Rql.Abstractions.Argument;
 using SoftwareOne.Rql.Abstractions.Binary;
-using SoftwareOne.Rql.Abstractions.Constant;
 using SoftwareOne.Rql.Abstractions.Exception;
 using SoftwareOne.Rql.Parsers.Linear.Domain.Core;
 using SoftwareOne.Rql.Parsers.Linear.Domain.Core.ValueTypes;

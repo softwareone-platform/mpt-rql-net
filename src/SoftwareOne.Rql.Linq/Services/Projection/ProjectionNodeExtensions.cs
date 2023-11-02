@@ -1,5 +1,5 @@
 ﻿using SoftwareOne.Rql.Abstractions;
-using SoftwareOne.Rql.Abstractions.Constant;
+using SoftwareOne.Rql.Abstractions.Argument;
 using SoftwareOne.Rql.Abstractions.Group;
 using SoftwareOne.Rql.Linq.Core;
 

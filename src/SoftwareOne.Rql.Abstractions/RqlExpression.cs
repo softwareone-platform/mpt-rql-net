@@ -1,5 +1,6 @@
-﻿using SoftwareOne.Rql.Abstractions.Binary;
-using SoftwareOne.Rql.Abstractions.Constant;
+﻿using SoftwareOne.Rql.Abstractions.Argument;
+using SoftwareOne.Rql.Abstractions.Argument.Pointer;
+using SoftwareOne.Rql.Abstractions.Binary;
 using SoftwareOne.Rql.Abstractions.Group;
 using SoftwareOne.Rql.Abstractions.Unary;
 
@@ -86,6 +87,13 @@ namespace SoftwareOne.Rql.Abstractions
 
         public static RqlEmpty Empty()
             => new();
+
+        #endregion
+
+        #region Pointers
+
+        public static RqlSelf Self(RqlExpression? inner = null)
+            => new(inner);
 
         #endregion
     }

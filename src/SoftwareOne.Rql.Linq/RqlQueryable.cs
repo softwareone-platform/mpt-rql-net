@@ -1,4 +1,5 @@
 ﻿using ErrorOr;
+using Microsoft.Extensions.DependencyInjection;
 using SoftwareOne.Rql.Linq.Services.Filtering;
 using SoftwareOne.Rql.Linq.Services.Mapping;
 using SoftwareOne.Rql.Linq.Services.Ordering;
@@ -8,32 +9,16 @@ namespace SoftwareOne.Rql.Linq;
 
 internal class RqlQueryable<TStorage> : RqlQueryableLinq<TStorage, TStorage>, IRqlQueryable<TStorage>
 {
-    public RqlQueryable(IMappingService<TStorage, TStorage> mapping,
-        IFilteringService<TStorage> filter,
-        IOrderingService<TStorage> order,
-        IProjectionService<TStorage> projection)
-        : base(mapping, filter, order, projection)
-    {
-    }
+    public RqlQueryable(IServiceProvider serviceProvider) : base(serviceProvider) { }
 }
 
 internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView>
 {
-    private readonly IMappingService<TStorage, TView> _mapping;
-    private readonly IFilteringService<TView> _filter;
-    private readonly IOrderingService<TView> _order;
-    private readonly IProjectionService<TView> _projection;
+    private readonly IServiceProvider _serviceProvider;
 
-    public RqlQueryableLinq(
-        IMappingService<TStorage, TView> mapping,
-        IFilteringService<TView> filter,
-        IOrderingService<TView> order,
-        IProjectionService<TView> projection)
+    public RqlQueryableLinq(IServiceProvider serviceProvider)
     {
-        _mapping = mapping;
-        _filter = filter;
-        _order = order;
-        _projection = projection;
+        _serviceProvider = serviceProvider;
     }
 
     public ErrorOr<IQueryable<TView>> Transform(IQueryable<TStorage> source, Action<RqlRequest> configure)
@@ -46,12 +31,15 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
     public ErrorOr<IQueryable<TView>> Transform(IQueryable<TStorage> source, RqlRequest request)
     {
         var errors = new List<Error>();
+        using var scope = _serviceProvider.CreateScope();
+        var query = GetService<IMappingService<TStorage, TView>>(scope).Apply(source);
 
-        var query = _mapping.Apply(source);
-        _filter.Apply(query, request.Filter).Switch(q => query = q, errors.AddRange);
-        _order.Apply(query, request.Order).Switch(q => query = q, errors.AddRange);
-        _projection.Apply(query, request.Select).Switch(q => query = q, errors.AddRange);
+        GetService<IFilteringService<TView>>(scope).Apply(query, request.Filter).Switch(q => query = q, errors.AddRange);
+        GetService<IOrderingService<TView>>(scope).Apply(query, request.Order).Switch(q => query = q, errors.AddRange);
+        GetService<IProjectionService<TView>>(scope).Apply(query, request.Select).Switch(q => query = q, errors.AddRange);
 
         return errors.Any() ? errors : ErrorOrFactory.From(query);
+
+        static T GetService<T>(IServiceScope scope) where T : notnull => scope.ServiceProvider.GetRequiredService<T>();
     }
 }

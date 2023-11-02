@@ -11,7 +11,7 @@ internal static class RqlNodeParser
     {
         return word.ToLower(CultureInfo.InvariantCulture) switch
         {
-            Constants.RqlTerm.Empty => RqlExpressionReducer.Reduce(expressionPairList),
+            Constants.RqlTerm.NoName => RqlExpressionReducer.Reduce(expressionPairList),
             Constants.RqlTerm.And => RqlExpression.And(ConvertToIEnumerableCollection(expressionPairList)),
             Constants.RqlTerm.Or => RqlExpression.Or(ConvertToIEnumerableCollection(expressionPairList)),
             Constants.RqlTerm.Not => RqlUnaryParser.Parse(Constants.RqlTerm.Not, expressionPairList),
@@ -27,6 +27,9 @@ internal static class RqlNodeParser
             Constants.RqlTerm.LikeCaseInsensitive => RqlBinaryParser.Parse(Constants.RqlTerm.LikeCaseInsensitive, expressionPairList),
             Constants.RqlTerm.Any => RqlBinaryParser.Parse(Constants.RqlTerm.Any, expressionPairList),
             Constants.RqlTerm.All => RqlBinaryParser.Parse(Constants.RqlTerm.All, expressionPairList),
+            Constants.RqlTerm.Self => RqlPointerParser.Parse(Constants.RqlTerm.Self, expressionPairList),
+            Constants.RqlTerm.Empty => RqlArgumentParser.Parse(Constants.RqlTerm.Empty, expressionPairList),
+            Constants.RqlTerm.Null => RqlArgumentParser.Parse(Constants.RqlTerm.Null, expressionPairList),
             var any => RqlExpression.Group(any, expressionPairList.Select(s => s.Expression))
         };
     }

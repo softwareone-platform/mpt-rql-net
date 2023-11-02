@@ -1,6 +1,7 @@
 using SoftwareOne.Rql.Abstractions;
+using SoftwareOne.Rql.Abstractions.Argument;
+using SoftwareOne.Rql.Abstractions.Argument.Pointer;
 using SoftwareOne.Rql.Abstractions.Binary;
-using SoftwareOne.Rql.Abstractions.Constant;
 using SoftwareOne.Rql.Abstractions.Exception;
 using SoftwareOne.Rql.Abstractions.Group;
 using SoftwareOne.Rql.Abstractions.Unary;
@@ -83,7 +84,7 @@ public class RqlParserTests
     public void Parse_WithInvalidTooManyDelimiters_ThrowsRqlExpressionMapperException(string query)
     {
         // Act and Assert
-        Assert.Throws<RqlExpressionMapperException>(() => _sut.Parse(query));
+        Assert.Throws<RqlParserException>(() => _sut.Parse(query));
     }
 
     [Theory]
@@ -384,8 +385,8 @@ public class RqlParserTests
     }
 
     [Theory]
-    [InlineData(@"product.name='i am ""happy"" is quoted here'")]
-    [InlineData(@"eq(product.name,'i am ""happy"" is quoted here')")]
+    [InlineData(@"product.name='i am ""happy"" is =quoted here='")]
+    [InlineData(@"eq(product.name,'i am ""happy"" is =quoted here=')")]
     public void Parse_WithSpecialQuoteCharacterQuery_ReturnsValidResult(string query)
     {
         // Act
@@ -396,7 +397,7 @@ public class RqlParserTests
         var member = Assert.IsType<RqlConstant>(eq.Left);
         Assert.Equal("product.name", member.Value);
         var constant = Assert.IsType<RqlConstant>(eq.Right);
-        Assert.Equal(@"i am ""happy"" is quoted here", constant.Value);
+        Assert.Equal(@"i am ""happy"" is =quoted here=", constant.Value);
     }
 
     [Fact]
@@ -435,6 +436,52 @@ public class RqlParserTests
         Assert.IsType<RqlEqual>(andExpression.Items?[1]);
         Assert.IsType<RqlEqual>(andExpression.Items?[2]); 
         Assert.IsType<RqlEqual>(andExpression.Items?[3]);
+    }
+
+    [Fact]
+    public void Parse_WithParameterlessSelfPointer_ReturnsValidResult()
+    {
+        // Act
+        var actualResult = _sut.Parse("eq(self(),3)");
+
+        // Assert
+        var eq = Assert.IsType<RqlEqual>(actualResult.Items![0]);
+        var pointer = Assert.IsType<RqlSelf>(eq.Left);
+        Assert.Null(pointer.Inner);
+        var constant = Assert.IsType<RqlConstant>(eq.Right);
+        Assert.Equal("3", constant.Value);
+    }
+
+
+    [Fact]
+    public void Parse_WithParameterizedSelfPointer_ReturnsValidResult()
+    {
+        // Act
+        var actualResult = _sut.Parse("eq(self(id),3)");
+
+        // Assert
+        var eq = Assert.IsType<RqlEqual>(actualResult.Items![0]);
+        var pointer = Assert.IsType<RqlSelf>(eq.Left);
+        var inner = Assert.IsType<RqlConstant>(pointer.Inner);
+        Assert.Equal("id", inner.Value);
+        var constant = Assert.IsType<RqlConstant>(eq.Right);
+        Assert.Equal("3", constant.Value);
+    }
+
+    [Fact]
+    public void Parse_WithDoubleParameterizedSelfPointer_ReturnsValidResult()
+    {
+        // Act
+        var actualResult = _sut.Parse("eq(self(self(id)),3)");
+
+        // Assert
+        var eq = Assert.IsType<RqlEqual>(actualResult.Items![0]);
+        var pointer1 = Assert.IsType<RqlSelf>(eq.Left);
+        var pointer2 = Assert.IsType<RqlSelf>(pointer1.Inner);
+        var inner = Assert.IsType<RqlConstant>(pointer2.Inner);
+        Assert.Equal("id", inner.Value);
+        var constant = Assert.IsType<RqlConstant>(eq.Right);
+        Assert.Equal("3", constant.Value);
     }
 
     private static void CheckListOfConstantComparisons<TComparison>(IReadOnlyList<RqlExpression> items, int index, string prop, string value)
