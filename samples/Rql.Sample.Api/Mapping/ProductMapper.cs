@@ -43,7 +43,8 @@ namespace Rql.Sample.Api.Mapping
                   SalesOrderId = s.SalesOrderId,
                   AddressLine1 = s.SalesOrder.BillToAddress!.AddressLine1,
                   City = s.SalesOrder.BillToAddress.City
-              })
+              }),
+              SaleDetailIds = t.SalesOrderDetails.Select(s => s.SalesOrderDetailId)
           };
     }
 }

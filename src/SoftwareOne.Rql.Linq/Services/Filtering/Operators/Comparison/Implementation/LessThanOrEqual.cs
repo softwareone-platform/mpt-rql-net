@@ -6,8 +6,7 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implement
 
 internal class LessThanOrEqual : ComparisonOperator, ILessThanOrEqual
 {
-    public ErrorOr<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, string? value)
-        => MakeBinaryExpression(propertyInfo, member, value, Expression.LessThanOrEqual);
-
     protected override RqlOperators Operator => RqlOperators.Le;
+
+    internal override Func<Expression, Expression, BinaryExpression> Handler => Expression.LessThanOrEqual;
 }

@@ -7,14 +7,14 @@ namespace SoftwareOne.Rql.Linq.Core.Metadata;
 internal class MetadataProvider : IMetadataProvider, IRqlMetadataProvider
 {
     private readonly IPropertyNameProvider _propertyNameProvider;
-    private readonly IMetadataFactory _metadataProvider;
+    private readonly IMetadataFactory _metadataFactory;
     private readonly ConcurrentDictionary<Type, Dictionary<string, RqlPropertyInfo>> _cache;
 
-    public MetadataProvider(IPropertyNameProvider propertyNameProvider, IMetadataFactory metadataProvider)
+    public MetadataProvider(IPropertyNameProvider propertyNameProvider, IMetadataFactory metadataFactory)
     {
         _cache = new ConcurrentDictionary<Type, Dictionary<string, RqlPropertyInfo>>();
         _propertyNameProvider = propertyNameProvider;
-        _metadataProvider = metadataProvider;
+        _metadataFactory = metadataFactory;
     }
 
     IEnumerable<IRqlPropertyInfo> IRqlMetadataProvider.GetPropertiesByDeclaringType(Type type)
@@ -36,7 +36,7 @@ internal class MetadataProvider : IMetadataProvider, IRqlMetadataProvider
             foreach (var property in properties)
             {
                 var name = _propertyNameProvider.GetName(property);
-                props.Add(name, _metadataProvider.MakeRqlPropertyInfo(name, property));
+                props.Add(name, _metadataFactory.MakeRqlPropertyInfo(name, property));
             }
             return props;
         });

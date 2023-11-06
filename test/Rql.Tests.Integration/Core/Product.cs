@@ -23,7 +23,10 @@ namespace Rql.Tests.Integration.Core
         public Product Reference { get; set; } = null!;
 
         public List<Product> Collection { get; set; } = null!;
+
         public List<ProductOrder> Orders { get; set; } = null!;
+        
+        public List<int> OrdersIds { get; set; } = null!;
     }
 
     public class ProductOrder

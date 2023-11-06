@@ -6,5 +6,5 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison;
 
 public interface IComparisonOperator : IOperator
 {
-    ErrorOr<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, string? value);
+    ErrorOr<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, Expression accessor, string? value);
 }

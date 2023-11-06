@@ -1,7 +1,6 @@
 ﻿using System.Linq.Expressions;
-using SoftwareOne.Rql.Linq.Client.Builder.Order;
 
-namespace SoftwareOne.Rql.Linq.Client.Order;
+namespace SoftwareOne.Rql.Linq.Client.Builder.Order;
 
 internal class OrderContext<T> : IOrderContext<T>, IOrderDefinitionProvider where T : class
 {

@@ -50,7 +50,7 @@ internal class MetadataFactory : IMetadataFactory
 
     private static RqlOperators GetOperatorsForSimpleProperty(RqlPropertyInfo propertyInfo)
     {
-        Type propType = propertyInfo.Property.PropertyType;
+        Type propType = propertyInfo.Property!.PropertyType;
         var innerType = Nullable.GetUnderlyingType(propType);
         propType = innerType ?? propType;
 
@@ -85,19 +85,17 @@ internal class MetadataFactory : IMetadataFactory
 
     private static RqlPropertyType GetRqlPropertyType(PropertyInfo property)
     {
-        if (IsUserComplexType(property.PropertyType))
-        {
-            return typeof(IEnumerable).IsAssignableFrom(property.PropertyType) ? RqlPropertyType.Collection : RqlPropertyType.Reference;
-        }
+        var type = property.PropertyType;
 
-        return property.PropertyType == typeof(byte[]) ? RqlPropertyType.Binary : RqlPropertyType.Primitive;
-    }
+        if (typeof(IEnumerable).IsAssignableFrom(type) && type.IsGenericType)
+            return RqlPropertyType.Collection;
 
-    private static bool IsUserComplexType(Type type)
-    {
-        return
-            type.IsClass
-            && !type.FullName!.StartsWith("System.")
-            || typeof(IEnumerable).IsAssignableFrom(type) && type.IsGenericType && IsUserComplexType(type.GetGenericArguments()[0]);
+        if (TypeHelper.IsUserComplexType(type))
+            return RqlPropertyType.Reference;
+
+        if (type == typeof(byte[]))
+            return RqlPropertyType.Binary;
+
+        return RqlPropertyType.Primitive;
     }
 }

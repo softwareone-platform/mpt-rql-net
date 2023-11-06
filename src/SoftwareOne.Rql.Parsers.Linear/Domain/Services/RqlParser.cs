@@ -82,7 +82,21 @@ public class RqlParser : IRqlParser
 
     private static void HandleEqualsShortcut(ReadOnlyMemory<char> query, ref int currentIndex, ref Word word, List<ExpressionPair> expressions)
     {
-        var left = RqlExpressionMapper.MapFromWord(word);
+        RqlExpression? left;
+        
+        var replaceLastExpression = word.WordLength == 0 && expressions.Count > 0;
+
+        if (replaceLastExpression)
+        {
+            var lastPair = expressions[^1];
+            left = lastPair.Expression;
+            expressions.Remove(lastPair);
+        }
+        else
+        {
+            left = RqlExpressionMapper.MapFromWord(word);
+        }
+
         var rightNodes = ParseInternal(query, currentIndex + 1, out currentIndex, true);
         if (rightNodes.Count != 1 || rightNodes[0].Expression is not RqlArgument)
             throw new RqlParserException("Invalid equals shortcut expression");

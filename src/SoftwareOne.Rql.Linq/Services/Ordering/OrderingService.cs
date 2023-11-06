@@ -2,22 +2,22 @@
 using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Argument;
 using SoftwareOne.Rql.Linq.Core;
-using SoftwareOne.Rql.Linq.Core.Metadata;
+using SoftwareOne.Rql.Linq.Services.Filtering;
 using System.Linq.Expressions;
 using System.Reflection;
 
 namespace SoftwareOne.Rql.Linq.Services.Ordering;
 
-internal sealed class OrderingService<TView> : RqlService, IOrderingService<TView>
+internal sealed class OrderingService<TView> : IOrderingService<TView>
 {
+    private readonly IOrderingPathInfoBuilder _pathBuilder;
     private readonly IRqlParser _parser;
 
-    public OrderingService(IMetadataProvider typeMetadataProvider, IRqlParser parser) : base(typeMetadataProvider)
+    public OrderingService(IRqlParser parser, IOrderingPathInfoBuilder pathBuilder)
     {
         _parser = parser;
+        _pathBuilder = pathBuilder;
     }
-
-    protected override string ErrorPrefix => "order";
 
     public ErrorOr<IQueryable<TView>> Apply(IQueryable<TView> query, string? order)
     {
@@ -28,7 +28,7 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
 
         var orderProperties = node.Items!.OfType<RqlConstant>().ToList();
         if (!orderProperties.Any())
-            return Error.Validation(MakeErrorCode("no_props"), "No valid ordering properties were detected");
+            return Error.Validation("no_props", "No valid ordering properties were detected");
 
         var isFirst = true;
         var param = Expression.Parameter(typeof(TView));
@@ -38,7 +38,7 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
         foreach (var property in orderProperties)
         {
             var (path, isAsc) = StringHelper.ExtractSign(property.Value);
-            var member = MakeOrderingMemberAccess(param, path.ToString());
+            var member = _pathBuilder.Build(param, path.ToString());
 
             if (member.IsError)
             {
@@ -54,16 +54,6 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
         }
 
         return errors.Any() ? errors : ErrorOrFactory.From(query);
-    }
-
-    private ErrorOr<MemberPathInfo> MakeOrderingMemberAccess(ParameterExpression param, string path)
-    {
-        return MakeMemberAccess(param, path.ToString(), path =>
-        {
-            if (!path.PropertyInfo.Actions.HasFlag(RqlActions.Order))
-                return Error.Validation(MakeErrorCode(path.Path.ToString()), "Ordering is not permitted.");
-            return Result.Success;
-        });
     }
 
     private static MethodInfo MakeOrderingMethod(Expression member, bool isAsc, bool isFirst)

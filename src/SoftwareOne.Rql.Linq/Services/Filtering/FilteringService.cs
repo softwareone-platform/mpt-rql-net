@@ -1,10 +1,9 @@
 ﻿using ErrorOr;
 using SoftwareOne.Rql.Abstractions;
-using SoftwareOne.Rql.Abstractions.Argument;
 using SoftwareOne.Rql.Abstractions.Binary;
 using SoftwareOne.Rql.Abstractions.Group;
 using SoftwareOne.Rql.Abstractions.Unary;
-using SoftwareOne.Rql.Linq.Core.Metadata;
+using SoftwareOne.Rql.Linq.Core;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Collection;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison;
@@ -17,20 +16,22 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering;
 
 internal delegate BinaryExpression LogicalExpression(Expression left, Expression right);
 
-internal sealed class FilteringService<TView> : RqlService, IFilteringService<TView>
+internal sealed class FilteringService<TView> : IFilteringService<TView>
 {
     private readonly IOperatorHandlerProvider _operatorHandlerProvider;
+    private readonly IBinaryExpressionBuilder _binaryExpressionBuilder;
+    private readonly IFilteringPathInfoBuilder _pathBuilder;
     private readonly IRqlParser _parser;
 
     public FilteringService(IOperatorHandlerProvider operatorHandlerProvider,
-        IMetadataProvider typeMetadataProvider,
-        IRqlParser parser) : base(typeMetadataProvider)
+        IFilteringPathInfoBuilder pathBuilder,
+        IBinaryExpressionBuilder binaryExpressionBuilder, IRqlParser parser)
     {
         _operatorHandlerProvider = operatorHandlerProvider;
+        _binaryExpressionBuilder = binaryExpressionBuilder;
+        _pathBuilder = pathBuilder;
         _parser = parser;
     }
-
-    protected override string ErrorPrefix => "query";
 
     public ErrorOr<IQueryable<TView>> Apply(IQueryable<TView> query, string? filter)
     {
@@ -62,7 +63,7 @@ internal sealed class FilteringService<TView> : RqlService, IFilteringService<TV
             RqlGroup group => MakeGroupExpression(pe, group),
             RqlBinary binary => MakeBinaryExpression(pe, binary),
             RqlUnary unary => MakeUnaryExpression(pe, unary),
-            _ => MakeInternalError()
+            _ => FilteringError.Internal
         };
     }
 
@@ -72,8 +73,8 @@ internal sealed class FilteringService<TView> : RqlService, IFilteringService<TV
         {
             RqlAnd => (ErrorOr<LogicalExpression>)Expression.AndAlso,
             RqlOr => (ErrorOr<LogicalExpression>)Expression.OrElse,
-            RqlGenericGroup genGroup => Error.Validation(MakeErrorCode(genGroup.Name), "Unknown expression group."),
-            _ => MakeInternalError()
+            RqlGenericGroup genGroup => Error.Validation(genGroup.Name, "Unknown expression group."),
+            _ => FilteringError.Internal
         };
 
         if (handler.IsError)
@@ -102,45 +103,37 @@ internal sealed class FilteringService<TView> : RqlService, IFilteringService<TV
     {
         var handler = _operatorHandlerProvider.GetOperatorHandler(node.GetType())!;
 
-        if (node.Left is not RqlConstant memberConstant)
-            return Error.Validation(MakeErrorCode("unknown"), "Unknown property were used for binary expression.");
-
-        var memberInfo = MakeMemberAccess(pe, memberConstant.Value, static path =>
-        {
-            if (!path.PropertyInfo.Actions.HasFlag(RqlActions.Filter))
-                return Error.Validation(description: "Filtering is not permitted");
-            return Result.Success;
-        });
+        var memberInfo = _pathBuilder.Build(pe, node.Left);
 
         if (memberInfo.IsError)
-            return AssignErrorCode(memberInfo.Errors, MakeErrorCode(memberConstant.Value));
+            return memberInfo.Errors;
 
         var property = memberInfo.Value.PropertyInfo;
-        var member = (MemberExpression)memberInfo.Value.Expression;
+        var accessor = memberInfo.Value.Expression;
 
         var expression = handler switch
         {
-            IComparisonOperator comp => BinaryExpressionFactory.MakeComparison(node, property, member, comp),
-            ISearchOperator search => BinaryExpressionFactory.MakeSearch(node, property, member, search),
-            IListOperator list => BinaryExpressionFactory.MakeList(node, property, member, list),
-            ICollectionOperator sub => MakeCollectionExpression(node, property, member, sub),
-            _ => MakeInternalError()
+            IComparisonOperator comp => _binaryExpressionBuilder.MakeComparison(pe, node, property, accessor, comp),
+            ISearchOperator search => _binaryExpressionBuilder.MakeSearch(node, property, accessor, search),
+            IListOperator list => _binaryExpressionBuilder.MakeList(node, property, accessor, list),
+            ICollectionOperator sub => MakeCollectionExpression(node, property, accessor, sub),
+            _ => FilteringError.Internal
         };
 
-        return expression.IsError ? AssignErrorCode(expression.Errors, MakeErrorCode(memberConstant.Value)) : expression;
-
-        static List<Error> AssignErrorCode(IEnumerable<Error> errors, string code)
-            => errors.Select(s => Error.Validation(code, s.Description)).ToList();
+        return expression.IsError ? expression.Errors : expression;
     }
 
-    private ErrorOr<Expression> MakeCollectionExpression(RqlBinary node, Core.RqlPropertyInfo propertyInfo, MemberExpression member, ICollectionOperator handler)
+    private ErrorOr<Expression> MakeCollectionExpression(RqlBinary node, RqlPropertyInfo propertyInfo, Expression accessor, ICollectionOperator handler)
     {
+        if (accessor is not MemberExpression member)
+            return Error.Failure(description: "Collection operations work with properties only");
+
         if (propertyInfo.ElementType == null)
             return Error.Failure(description: "Collection property has incompatible type");
 
         var param = Expression.Parameter(propertyInfo.ElementType);
         var innerExpression = MakeFilterExpression(param, node.Right);
-        
+
         if (innerExpression.IsError)
             return innerExpression.Errors;
 
@@ -155,6 +148,4 @@ internal sealed class FilteringService<TView> : RqlService, IFilteringService<TV
         var expression = MakeFilterExpression(pe, node.Nested);
         return expression.Match(handler.MakeExpression, errors => errors);
     }
-
-    private Error MakeInternalError() => Error.Failure(MakeErrorCode("internal"), "Internal filtering error occurred. Please contact RQL package maintainer.");
 }

@@ -92,7 +92,7 @@ public class MetadataProviderTest
         // Assert
         Assert.NotEmpty(props);
 
-        var propertyInfo = props.FirstOrDefault(e => e.Property.Name == propertyName);
+        var propertyInfo = props.FirstOrDefault(e => e.Property!.Name == propertyName);
         Assert.NotNull(propertyInfo);
         var toCompare = rqlOperator ^ propertyInfo.Operators;
 

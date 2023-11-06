@@ -18,8 +18,9 @@ public class FilteringServiceTests
         // Arrange
         var parserMock = RqlParserFactory.RqlEqual();
         var operatorHandlerProviderMock = OperatorHandlerProviderFactory.Equal();
-        var typeMetadataProvider = MetadataProviderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, typeMetadataProvider, parserMock);
+        var pathBuilder = PathBuilderFactory.Internal();
+        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
+        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -36,8 +37,9 @@ public class FilteringServiceTests
         // Arrange
         var parserMock = RqlParserFactory.RqlNotEqual();
         var operatorHandlerProviderMock = OperatorHandlerProviderFactory.NotEqual();
-        var typeMetadataProvider = MetadataProviderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, typeMetadataProvider, parserMock);
+        var pathBuilder = PathBuilderFactory.Internal();
+        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
+        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), "ne(name,Jewelry Widget)");
@@ -56,8 +58,9 @@ public class FilteringServiceTests
         // Arrange
         var parserMock = RqlParserFactory.RqlGreaterThan(value);
         var operatorHandlerProviderMock = OperatorHandlerProviderFactory.GreaterThan();
-        var typeMetadataProvider = MetadataProviderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, typeMetadataProvider, parserMock);
+        var pathBuilder = PathBuilderFactory.Internal();
+        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
+        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -76,8 +79,9 @@ public class FilteringServiceTests
         // Arrange
         var parserMock = RqlParserFactory.RqlGreaterThan(value);
         var operatorHandlerProviderMock = OperatorHandlerProviderFactory.GreaterThan();
-        var typeMetadataProvider = MetadataProviderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, typeMetadataProvider, parserMock);
+        var pathBuilder = PathBuilderFactory.Internal();
+        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
+        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -95,8 +99,9 @@ public class FilteringServiceTests
         // Arrange
         var parserMock = RqlParserFactory.RqlGreaterEqualThan(value);
         var operatorHandlerProviderMock = OperatorHandlerProviderFactory.GreaterEqualThan();
-        var typeMetadataProvider = MetadataProviderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, typeMetadataProvider, parserMock);
+        var pathBuilder = PathBuilderFactory.Internal();
+        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
+        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -115,8 +120,9 @@ public class FilteringServiceTests
         // Arrange
         var parserMock = RqlParserFactory.RqlGreaterThan(value);
         var operatorHandlerProviderMock = OperatorHandlerProviderFactory.GreaterThan();
-        var typeMetadataProvider = MetadataProviderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, typeMetadataProvider, parserMock);
+        var pathBuilder = PathBuilderFactory.Internal();
+        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
+        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -135,7 +141,9 @@ public class FilteringServiceTests
         var parserMock = RqlParserFactory.RqlLessThan(value);
         var operatorHandlerProviderMock = OperatorHandlerProviderFactory.LessThan();
         var typeMetadataProvider = MetadataProviderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, typeMetadataProvider, parserMock);
+        var pathBuilder = PathBuilderFactory.Internal();
+        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
+        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -154,8 +162,9 @@ public class FilteringServiceTests
         // Arrange
         var parserMock = RqlParserFactory.RqlLessThan(value);
         var operatorHandlerProviderMock = OperatorHandlerProviderFactory.LessThan();
-        var typeMetadataProvider = MetadataProviderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, typeMetadataProvider, parserMock);
+        var pathBuilder = PathBuilderFactory.Internal();
+        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
+        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -173,8 +182,9 @@ public class FilteringServiceTests
         // Arrange
         var parserMock = RqlParserFactory.RqlLessEqualThan(value);
         var operatorHandlerProviderMock = OperatorHandlerProviderFactory.LessEqualThan();
-        var typeMetadataProvider = MetadataProviderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, typeMetadataProvider, parserMock);
+        var pathBuilder = PathBuilderFactory.Internal();
+        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
+        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -193,8 +203,9 @@ public class FilteringServiceTests
         // Arrange
         var parserMock = RqlParserFactory.RqlLessEqualThan(value);
         var operatorHandlerProviderMock = OperatorHandlerProviderFactory.LessEqualThan();
-        var typeMetadataProvider = MetadataProviderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, typeMetadataProvider, parserMock);
+        var pathBuilder = PathBuilderFactory.Internal();
+        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
+        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -212,8 +223,9 @@ public class FilteringServiceTests
         // Arrange
         var parserMock = RqlParserFactory.RqlLike(searchString);
         var operatorHandlerProviderMock = OperatorHandlerProviderFactory.Like();
-        var typeMetadataProvider = MetadataProviderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, typeMetadataProvider, parserMock);
+        var pathBuilder = PathBuilderFactory.Internal();
+        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
+        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -234,8 +246,9 @@ public class FilteringServiceTests
         // Arrange
         var parserMock = RqlParserFactory.RqlILike(searchString);
         var operatorHandlerProviderMock = OperatorHandlerProviderFactory.ILike();
-        var typeMetadataProvider = MetadataProviderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, typeMetadataProvider, parserMock);
+        var pathBuilder = PathBuilderFactory.Internal();
+        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
+        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -252,8 +265,9 @@ public class FilteringServiceTests
         // Arrange
         var parserMock = RqlParserFactory.RqlEqual("id", "13");
         var operatorHandlerProviderMock = OperatorHandlerProviderFactory.Equal();
-        var typeMetadataProvider = MetadataProviderFactory.Internal();
-        var sut = new FilteringService<SampleEntityViewOperatorTest>(operatorHandlerProviderMock, typeMetadataProvider, parserMock);
+        var pathBuilder = PathBuilderFactory.Internal();
+        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
+        var sut = new FilteringService<SampleEntityViewOperatorTest>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Operators().AsQueryable(), $"id=13");
@@ -271,8 +285,9 @@ public class FilteringServiceTests
         // Arrange
         var parserMock = RqlParserFactory.RqlList(isIn, "id", "13", "14", "15");
         var operatorHandlerProviderMock = isIn ? OperatorHandlerProviderFactory.ListIn() : OperatorHandlerProviderFactory.ListOut();
-        var typeMetadataProvider = MetadataProviderFactory.Internal();
-        var sut = new FilteringService<SampleEntityViewOperatorTest>(operatorHandlerProviderMock, typeMetadataProvider, parserMock);
+        var pathBuilder = PathBuilderFactory.Internal();
+        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
+        var sut = new FilteringService<SampleEntityViewOperatorTest>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
         var keyword = isIn ? "in" : "out";
 
         // Act
@@ -291,8 +306,9 @@ public class FilteringServiceTests
         // Arrange
         var parserMock = RqlParserFactory.RqlLike("id", "13*", insensitive);
         var operatorHandlerProviderMock = insensitive ? OperatorHandlerProviderFactory.ILike() : OperatorHandlerProviderFactory.Like();
-        var typeMetadataProvider = MetadataProviderFactory.Internal();
-        var sut = new FilteringService<SampleEntityViewOperatorTest>(operatorHandlerProviderMock, typeMetadataProvider, parserMock);
+        var pathBuilder = PathBuilderFactory.Internal();
+        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
+        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
         var keyword = insensitive ? "ilike" : "like";
 
         // Act

@@ -4,26 +4,23 @@ using SoftwareOne.Rql.Linq.Configuration;
 using SoftwareOne.Rql.Linq.Core;
 using SoftwareOne.Rql.Linq.Core.Metadata;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace SoftwareOne.Rql.Linq.Services.Projection;
 
 delegate ErrorOr<Expression?> ComplexPropertyProcessor(MemberExpression member, ProjectionNode node, int depth);
 
-internal class ProjectionService<TView> : RqlService, IProjectionService<TView>
+internal class ProjectionService<TView> : IProjectionService<TView>
 {
     private readonly IRqlSettings _settings;
     private readonly IMetadataProvider _typeMetadataProvider;
     private readonly IRqlParser _parser;
 
-    public ProjectionService(IRqlSettings settings, IMetadataProvider typeMetadataProvider, IRqlParser parser) : base(typeMetadataProvider)
+    public ProjectionService(IRqlSettings settings, IMetadataProvider typeMetadataProvider, IRqlParser parser)
     {
         _settings = settings;
         _typeMetadataProvider = typeMetadataProvider;
         _parser = parser;
     }
-
-    protected override string ErrorPrefix => "select";
 
     public ErrorOr<IQueryable<TView>> Apply(IQueryable<TView> query, string? projection)
     {
@@ -51,6 +48,9 @@ internal class ProjectionService<TView> : RqlService, IProjectionService<TView>
 
         foreach (var rqlProperty in properties)
         {
+            if (rqlProperty.Property == null)
+                continue;
+
             var propertyInit = MakePropertyInit(param, node, rqlProperty, depth);
 
             if (propertyInit.IsError)
@@ -114,13 +114,13 @@ internal class ProjectionService<TView> : RqlService, IProjectionService<TView>
     {
         _ = propertyNode;
         _ = depth;
-        return Expression.MakeMemberAccess(param, propertyInfo.Property);
+        return Expression.MakeMemberAccess(param, propertyInfo.Property!);
     }
 
     protected ErrorOr<Expression?> MakeReferencePropertyInit(Expression param, ProjectionNode? propertyNode, RqlPropertyInfo propertyInfo, int depth)
     {
         propertyNode = EnsureComplexPropertyNode(propertyNode, propertyInfo, depth);
-        var memberAccess = Expression.MakeMemberAccess(param, propertyInfo.Property);
+        var memberAccess = Expression.MakeMemberAccess(param, propertyInfo.Property!);
 
         var selector = GetSelector(memberAccess, propertyNode, depth + 1);
 
@@ -139,9 +139,13 @@ internal class ProjectionService<TView> : RqlService, IProjectionService<TView>
     protected ErrorOr<Expression?> MakeCollectionPropertyInit(Expression param, ProjectionNode? propertyNode, RqlPropertyInfo propertyInfo, int depth)
     {
         propertyNode = EnsureComplexPropertyNode(propertyNode, propertyInfo, depth);
-        var memberAccess = Expression.MakeMemberAccess(param, propertyInfo.Property);
+        var memberAccess = Expression.MakeMemberAccess(param, propertyInfo.Property!);
 
         var itemType = memberAccess.Type.GenericTypeArguments[0];
+
+        if (!TypeHelper.IsUserComplexType(itemType))
+            return memberAccess;
+
         var innerParam = Expression.Parameter(itemType);
         var selector = GetSelector(innerParam, propertyNode, depth + 1);
 

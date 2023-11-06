@@ -6,8 +6,7 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implement
 
 internal class Equal : ComparisonOperator, IEqual
 {
-    public ErrorOr<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, string? value)
-        => MakeBinaryExpression(propertyInfo, member, value, Expression.Equal);
-
     protected override RqlOperators Operator => RqlOperators.Eq;
+
+    internal override Func<Expression, Expression, BinaryExpression> Handler => Expression.Equal;
 }

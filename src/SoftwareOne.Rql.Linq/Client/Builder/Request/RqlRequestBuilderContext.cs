@@ -4,9 +4,6 @@ using SoftwareOne.Rql.Linq.Client.Builder.Order;
 using SoftwareOne.Rql.Linq.Client.Builder.Select;
 using SoftwareOne.Rql.Linq.Client.Generator;
 using System.Linq.Expressions;
-using SoftwareOne.Rql.Linq.Client.Order;
-using SoftwareOne.Rql.Linq.Client.Request;
-using SoftwareOne.Rql.Linq.Client.Select;
 
 namespace SoftwareOne.Rql.Linq.Client.Builder.Request;
 

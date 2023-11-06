@@ -5,7 +5,7 @@ namespace SoftwareOne.Rql.Abstractions;
 public interface IRqlPropertyInfo
 {
     string Name { get; }
-    PropertyInfo Property { get; }
+    PropertyInfo? Property { get; }
     bool IsCore { get; }
     bool IsHidden { get; }
     RqlActions Actions { get; }

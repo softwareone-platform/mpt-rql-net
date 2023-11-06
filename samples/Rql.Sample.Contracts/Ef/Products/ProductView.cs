@@ -28,6 +28,9 @@ namespace Rql.Sample.Contracts.Ef.Products
 
         [RqlProperty(IsHidden = true)]
         public IEnumerable<ProductSaleOrder>? SaleDetails { get; set; }
+
+        [RqlProperty(IsHidden = true)]
+        public IEnumerable<int>? SaleDetailIds { get; set; }
     }
 
     public enum ViewProductStatus

@@ -4,9 +4,12 @@ using System.Linq.Expressions;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation
 {
-    internal abstract class ComparisonOperator
+    internal abstract class ComparisonOperator : IComparisonOperator
     {
-        protected ErrorOr<Expression> MakeBinaryExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, string? value, Func<Expression, Expression, BinaryExpression> method)
+        public ErrorOr<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, Expression accessor, string? value)
+        => MakeBinaryExpression(propertyInfo, accessor, value);
+
+        protected ErrorOr<Expression> MakeBinaryExpression(IRqlPropertyInfo propertyInfo, Expression accessor, string? value)
         {
             var validationResult = ValidationHelper.ValidateOperatorApplicability(propertyInfo, Operator);
             if (validationResult.IsError)
@@ -15,21 +18,23 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implement
             if (value == null)
             {
                 // check if member type is nullable
-                if (member.Type.IsValueType && Nullable.GetUnderlyingType(member.Type) == null)
+                if (accessor.Type.IsValueType && Nullable.GetUnderlyingType(accessor.Type) == null)
                     return Error.Validation(description: $"Cannot compare non nullable property with null");
 
-                return method(member, Expression.Constant(null, member.Type));
+                return Handler(accessor, Expression.Constant(null, accessor.Type));
             }
 
-            var converted = ConstantHelper.ChangeType(value, member.Type);
+            var converted = ConstantHelper.ChangeType(value, accessor.Type);
             if (converted.IsError)
                 return converted.Errors;
 
-            ConstantExpression constant = Expression.Constant(converted.Value, member.Type);
+            ConstantExpression constant = Expression.Constant(converted.Value, accessor.Type);
 
-            return method(member, constant);
+            return Handler(accessor, constant);
         }
 
         protected abstract RqlOperators Operator { get; }
+
+        internal abstract Func<Expression, Expression, BinaryExpression> Handler { get; }
     }
 }

@@ -3,6 +3,7 @@ namespace SoftwareOne.Rql;
 
 public enum RqlPropertyType
 {
+    Root,
     Primitive,
     Binary,
     Reference,

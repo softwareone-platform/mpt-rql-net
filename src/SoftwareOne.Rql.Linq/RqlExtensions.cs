@@ -2,7 +2,6 @@
 using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Client;
 using SoftwareOne.Rql.Linq;
-using SoftwareOne.Rql.Linq.Client;
 using SoftwareOne.Rql.Linq.Client.Builder.Request;
 using SoftwareOne.Rql.Linq.Client.Core;
 using SoftwareOne.Rql.Linq.Client.Generator;
@@ -14,7 +13,6 @@ using SoftwareOne.Rql.Linq.Services.Ordering;
 using SoftwareOne.Rql.Linq.Services.Projection;
 using SoftwareOne.Rql.Parsers.Linear.Domain.Services;
 using System.Reflection;
-using IOperator = SoftwareOne.Rql.Linq.Services.Filtering.Operators.IOperator;
 
 #pragma warning disable IDE0130
 namespace Microsoft.Extensions.DependencyInjection;
@@ -37,8 +35,14 @@ public static class RqlExtensions
         services.AddScoped(typeof(IRqlQueryable<,>), typeof(RqlQueryableLinq<,>));
 
         services.AddScoped(typeof(IMappingService<,>), typeof(MappingService<,>));
+
         services.AddScoped(typeof(IFilteringService<>), typeof(FilteringService<>));
+        services.AddSingleton<IBinaryExpressionBuilder, BinaryExpressionBuilder>();
+        services.AddSingleton<IFilteringPathInfoBuilder, FilteringPathInfoBuilder>();
+
         services.AddScoped(typeof(IOrderingService<>), typeof(OrderingService<>));
+        services.AddSingleton<IOrderingPathInfoBuilder, OrderingPathInfoBuilder>();
+
         services.AddScoped(typeof(IProjectionService<>), typeof(ProjectionService<>));
 
         services.AddSingleton<MetadataProvider>();
@@ -76,7 +80,7 @@ public static class RqlExtensions
     private static void RegisterOperatorExpressions(IServiceCollection services, RqlConfiguration options)
     {
         var expMapping = new OperatorHandlerMapper();
-        var producerType = typeof(IOperator);
+        var producerType = typeof(SoftwareOne.Rql.Linq.Services.Filtering.Operators.IOperator);
         var types =
             producerType.Assembly.GetTypes().Where(t => t.IsInterface && producerType.IsAssignableFrom(t) && t != producerType).ToList();
 

@@ -1,8 +1,7 @@
 ﻿using SoftwareOne.Rql.Client;
-using SoftwareOne.Rql.Linq.Client.Builder.Select;
 using System.Linq.Expressions;
 
-namespace SoftwareOne.Rql.Linq.Client.Select;
+namespace SoftwareOne.Rql.Linq.Client.Builder.Select;
 
 internal class SelectContext<T> : ISelectDefinitionProvider, ISelectContext<T> where T : class
 {
@@ -27,7 +26,7 @@ internal class SelectContext<T> : ISelectDefinitionProvider, ISelectContext<T> w
         {
             _excluded.Add(new SelectDefinition<T, object>(expression));
         }
-        
+
         return this;
     }
 

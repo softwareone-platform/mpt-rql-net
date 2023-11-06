@@ -1,4 +1,4 @@
-namespace SoftwareOne.Rql.Linq.Client.Request;
+namespace SoftwareOne.Rql.Linq.Client.Builder.Request;
 
 public interface IRqlRequestBuilder
 {

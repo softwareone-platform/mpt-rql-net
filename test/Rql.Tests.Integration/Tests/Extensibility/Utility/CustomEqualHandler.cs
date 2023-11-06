@@ -7,7 +7,7 @@ namespace Rql.Tests.Integration.Tests.Extensibility.Utility
 {
     internal class CustomEqualHandler : IEqual
     {
-        public ErrorOr<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, string? value)
+        public ErrorOr<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, Expression member, string? value)
         {
             throw new NotImplementedException();
         }

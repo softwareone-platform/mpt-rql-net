@@ -52,6 +52,12 @@ public class BasicFilterTests
         => _testExecutor.ResultMatch(t => t.Price < 150.1M, query, isHappyFlow: isHappyFlow);
 
     [Theory]
+    [InlineData("lt(self(price),150.1)")]
+    [InlineData("lt(self(price),-10000)", false)]
+    public void Lt_Price_With_Self_LessThan(string query, bool isHappyFlow = true)
+        => _testExecutor.ResultMatch(t => t.Price < 150.1M, query, isHappyFlow: isHappyFlow);
+
+    [Theory]
     [InlineData("le(price,205.15)")]
     [InlineData("le(price,-1000)", false)]
     public void Le_Price_LessThanOrEqual(string query, bool isHappyFlow = true)
@@ -108,6 +114,12 @@ public class BasicFilterTests
        => _testExecutor.ResultMatch(t => t.Desc == null, query, isHappyFlow: isHappyFlow);
 
     [Theory]
+    [InlineData("category=empty()")]
+    [InlineData("not(eq(category,empty()))", false)]
+    public void Empty_Category_CategoryIsEmpty(string query, bool isHappyFlow = true)
+       => _testExecutor.ResultMatch(t => t.Category == string.Empty, query, isHappyFlow: isHappyFlow);
+
+    [Theory]
     [InlineData("and(eq(id,1),eq(name,Jewelry Widget))")]
     [InlineData("and(id=1,name=Jewelry Widget)")]
     [InlineData("and(eq(id,1),eq(id,2),eq(name,Jewelry Widget))", false)]
@@ -141,4 +153,11 @@ public class BasicFilterTests
     [InlineData("all(orders,eq(id,999))", false)]
     public void All_Orders_Id_Equals(string query, bool isHappyFlow = true)
        => _testExecutor.ResultMatch(t => t.Orders.All(t => t.Id == 1), query, isHappyFlow: isHappyFlow);
+
+    [Theory]
+    [InlineData("any(OrdersIds,self()=1)")]
+    [InlineData("any(OrdersIds,eq(self(),1))")]
+    [InlineData("any(OrdersIds,self()=222)", false)]
+    public void Any_SaleDetailIds_Equals(string query, bool isHappyFlow = true)
+       => _testExecutor.ResultMatch(t => t.OrdersIds.Any(t => t == 1), query, isHappyFlow: isHappyFlow);
 }

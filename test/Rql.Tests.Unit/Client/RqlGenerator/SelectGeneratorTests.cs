@@ -3,7 +3,6 @@ using Rql.Tests.Unit.Client.Models;
 using SoftwareOne.Rql.Linq.Client.Builder.Select;
 using SoftwareOne.Rql.Linq.Client.Core;
 using SoftwareOne.Rql.Linq.Client.Generator;
-using SoftwareOne.Rql.Linq.Client.Select;
 using SoftwareOne.Rql.Linq.Core.Metadata;
 using Xunit;
 
