@@ -3,7 +3,7 @@ using SoftwareOne.Rql.Abstractions.Exception;
 using SoftwareOne.Rql.Abstractions.Unary;
 using SoftwareOne.Rql.Parsers.Linear.Domain.Core.ValueTypes;
 
-namespace SoftwareOne.Rql.Parsers.Linear;
+namespace SoftwareOne.Rql.Parsers.Linear.Domain.Services;
 
 internal static class RqlUnaryParser
 {

@@ -2,7 +2,7 @@
 using SoftwareOne.Rql.Parsers.Linear.Domain.Core.Enumerations;
 using SoftwareOne.Rql.Parsers.Linear.Domain.Core.ValueTypes;
 
-namespace SoftwareOne.Rql.Parsers.Linear;
+namespace SoftwareOne.Rql.Parsers.Linear.Domain.Services;
 
 /// <summary>
 /// This class is responsible for reducing multiple RqlAnd and RqlOr RqlExpressions down to a single RqlExpressions

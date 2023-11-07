@@ -2,8 +2,8 @@
 using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Argument;
 using SoftwareOne.Rql.Abstractions.Exception;
-using SoftwareOne.Rql.Parsers.Linear;
 using SoftwareOne.Rql.Parsers.Linear.Domain.Core;
+using SoftwareOne.Rql.Parsers.Linear.Domain.Services;
 using Xunit;
 
 namespace Rql.Tests.Unit.Parsers.Linear.Domain.Services;

@@ -1,11 +1,12 @@
 ﻿using Xunit;
 using SoftwareOne.Rql.Abstractions.Binary;
 using SoftwareOne.Rql.Abstractions.Group;
-using SoftwareOne.Rql.Parsers.Linear;
 using Rql.Tests.Unit.Factory;
 using SoftwareOne.Rql.Parsers.Linear.Domain.Core;
 using SoftwareOne.Rql.Abstractions.Exception;
 using SoftwareOne.Rql.Abstractions.Argument;
+using SoftwareOne.Rql.Abstractions.Collection;
+using SoftwareOne.Rql.Parsers.Linear.Domain.Services;
 
 namespace Rql.Tests.Unit.Parsers.Linear.Domain.Services;
 
@@ -135,28 +136,6 @@ public class RqlBinaryParserTests
         // Assert
         Assert.Equal(typeof(RqlLikeCaseInsensitive), actualResult.GetType());
         Assert.Equal(typeof(RqlConstant), ((RqlLikeCaseInsensitive)actualResult).Right.GetType());
-    }
-
-    [Fact]
-    public void Parse_WhenSuccessfulAnyInput_ResolvesToRqlAny()
-    {
-        // Act
-        var actualResult = RqlBinaryParser.Parse(Constants.RqlTerm.Any, RqlExpressionFactory.Default());
-
-        // Assert
-        Assert.Equal(typeof(RqlAny), actualResult.GetType());
-        Assert.Equal(typeof(RqlConstant), ((RqlAny)actualResult).Right.GetType());
-    }
-
-    [Fact]
-    public void Parse_WhenSuccessfulAllInput_ResolvesToRqlAll()
-    {
-        // Act
-        var actualResult = RqlBinaryParser.Parse(Constants.RqlTerm.All, RqlExpressionFactory.Default());
-
-        // Assert
-        Assert.Equal(typeof(RqlAll), actualResult.GetType());
-        Assert.Equal(typeof(RqlConstant), ((RqlAll)actualResult).Right.GetType());
     }
 
     [Fact]

@@ -2,13 +2,14 @@ using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Argument;
 using SoftwareOne.Rql.Abstractions.Argument.Pointer;
 using SoftwareOne.Rql.Abstractions.Binary;
+using SoftwareOne.Rql.Abstractions.Collection;
 using SoftwareOne.Rql.Abstractions.Exception;
 using SoftwareOne.Rql.Abstractions.Group;
 using SoftwareOne.Rql.Abstractions.Unary;
 using SoftwareOne.Rql.Parsers.Linear.Domain.Services;
 using Xunit;
 
-namespace Rql.Tests.Unit.Parsers.Linear;
+namespace Rql.Tests.Unit.Parsers.Linear.Domain.Services;
 
 public class RqlParserTests
 {
@@ -434,7 +435,7 @@ public class RqlParserTests
         Assert.Equal("*HL*", ((RqlConstant)iLikeExpression1.Right).Value);
         Assert.Equal("*HL*", ((RqlConstant)iLikeExpression2.Right).Value);
         Assert.IsType<RqlEqual>(andExpression.Items?[1]);
-        Assert.IsType<RqlEqual>(andExpression.Items?[2]); 
+        Assert.IsType<RqlEqual>(andExpression.Items?[2]);
         Assert.IsType<RqlEqual>(andExpression.Items?[3]);
     }
 

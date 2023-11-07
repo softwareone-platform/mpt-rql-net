@@ -1,4 +1,4 @@
-﻿using SoftwareOne.Rql.Abstractions.Binary;
+﻿using SoftwareOne.Rql.Abstractions.Collection;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Collection.Implementation;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Collection;

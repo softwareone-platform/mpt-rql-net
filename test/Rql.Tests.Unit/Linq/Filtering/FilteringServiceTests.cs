@@ -1,4 +1,5 @@
-﻿using Rql.Tests.Unit.Factory;
+﻿using Newtonsoft.Json.Linq;
+using Rql.Tests.Unit.Factory;
 using Rql.Tests.Unit.Utility;
 using SoftwareOne.Rql;
 using SoftwareOne.Rql.Linq.Services.Filtering;
@@ -16,11 +17,9 @@ public class FilteringServiceTests
     public void Apply_WithRqlEqual_ReturnsSingleFilteredResult(string query)
     {
         // Arrange
+        var builder = ExpressionBuilderFactory.GetBinary<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.Equal>();
         var parserMock = RqlParserFactory.RqlEqual();
-        var operatorHandlerProviderMock = OperatorHandlerProviderFactory.Equal();
-        var pathBuilder = PathBuilderFactory.Internal();
-        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
+        var sut = new FilteringService<SampleEntityView>(builder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -35,11 +34,9 @@ public class FilteringServiceTests
     public void Apply_WithRqlNotEqual_ReturnsAllButSingleResult()
     {
         // Arrange
+        var builder = ExpressionBuilderFactory.GetBinary<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.NotEqual>();
         var parserMock = RqlParserFactory.RqlNotEqual();
-        var operatorHandlerProviderMock = OperatorHandlerProviderFactory.NotEqual();
-        var pathBuilder = PathBuilderFactory.Internal();
-        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
+        var sut = new FilteringService<SampleEntityView>(builder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), "ne(name,Jewelry Widget)");
@@ -56,11 +53,9 @@ public class FilteringServiceTests
     public void Apply_WithRqlGreaterThan_ReturnsExpectedResult(string query, decimal value)
     {
         // Arrange
+        var builder = ExpressionBuilderFactory.GetBinary<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.GreaterThan>();
         var parserMock = RqlParserFactory.RqlGreaterThan(value);
-        var operatorHandlerProviderMock = OperatorHandlerProviderFactory.GreaterThan();
-        var pathBuilder = PathBuilderFactory.Internal();
-        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
+        var sut = new FilteringService<SampleEntityView>(builder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -77,11 +72,9 @@ public class FilteringServiceTests
     public void Apply_WithRqlGreaterThanTooHigh_ReturnsEmptyResult(string query, decimal value)
     {
         // Arrange
+        var builder = ExpressionBuilderFactory.GetBinary<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.GreaterThan>();
         var parserMock = RqlParserFactory.RqlGreaterThan(value);
-        var operatorHandlerProviderMock = OperatorHandlerProviderFactory.GreaterThan();
-        var pathBuilder = PathBuilderFactory.Internal();
-        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
+        var sut = new FilteringService<SampleEntityView>(builder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -97,11 +90,9 @@ public class FilteringServiceTests
     public void Apply_WithRqlGreaterEqualThan_ReturnsExpectedResult(string query, decimal value)
     {
         // Arrange
+        var builder = ExpressionBuilderFactory.GetBinary<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.GreaterThanOrEqual>();
         var parserMock = RqlParserFactory.RqlGreaterEqualThan(value);
-        var operatorHandlerProviderMock = OperatorHandlerProviderFactory.GreaterEqualThan();
-        var pathBuilder = PathBuilderFactory.Internal();
-        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
+        var sut = new FilteringService<SampleEntityView>(builder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -118,11 +109,9 @@ public class FilteringServiceTests
     public void Apply_WithRqlGreaterEqualThanTooHigh_ReturnsEmptyResult(string query, decimal value)
     {
         // Arrange
-        var parserMock = RqlParserFactory.RqlGreaterThan(value);
-        var operatorHandlerProviderMock = OperatorHandlerProviderFactory.GreaterThan();
-        var pathBuilder = PathBuilderFactory.Internal();
-        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
+        var builder = ExpressionBuilderFactory.GetBinary<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.GreaterThanOrEqual>();
+        var parserMock = RqlParserFactory.RqlGreaterEqualThan(value);
+        var sut = new FilteringService<SampleEntityView>(builder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -138,12 +127,9 @@ public class FilteringServiceTests
     public void Apply_WithRqlLessThan_ReturnsExpectedResult(string query, decimal value)
     {
         // Arrange
+        var builder = ExpressionBuilderFactory.GetBinary<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.LessThan>();
         var parserMock = RqlParserFactory.RqlLessThan(value);
-        var operatorHandlerProviderMock = OperatorHandlerProviderFactory.LessThan();
-        var typeMetadataProvider = MetadataProviderFactory.Internal();
-        var pathBuilder = PathBuilderFactory.Internal();
-        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
+        var sut = new FilteringService<SampleEntityView>(builder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -160,11 +146,9 @@ public class FilteringServiceTests
     public void Apply_WithRqlLessThanThanTooLow_ReturnsEmptyResult(string query, decimal value)
     {
         // Arrange
+        var builder = ExpressionBuilderFactory.GetBinary<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.LessThan>();
         var parserMock = RqlParserFactory.RqlLessThan(value);
-        var operatorHandlerProviderMock = OperatorHandlerProviderFactory.LessThan();
-        var pathBuilder = PathBuilderFactory.Internal();
-        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
+        var sut = new FilteringService<SampleEntityView>(builder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -180,11 +164,9 @@ public class FilteringServiceTests
     public void Apply_WithRqlLessEqualThan_ReturnsExpectedResult(string query, decimal value)
     {
         // Arrange
+        var builder = ExpressionBuilderFactory.GetBinary<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.LessThanOrEqual>();
         var parserMock = RqlParserFactory.RqlLessEqualThan(value);
-        var operatorHandlerProviderMock = OperatorHandlerProviderFactory.LessEqualThan();
-        var pathBuilder = PathBuilderFactory.Internal();
-        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
+        var sut = new FilteringService<SampleEntityView>(builder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -201,11 +183,9 @@ public class FilteringServiceTests
     public void Apply_WithRqlLessEqualThanTooLow_ReturnsEmptyResult(string query, decimal value)
     {
         // Arrange
+        var builder = ExpressionBuilderFactory.GetBinary<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.LessThanOrEqual>();
         var parserMock = RqlParserFactory.RqlLessEqualThan(value);
-        var operatorHandlerProviderMock = OperatorHandlerProviderFactory.LessEqualThan();
-        var pathBuilder = PathBuilderFactory.Internal();
-        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
+        var sut = new FilteringService<SampleEntityView>(builder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -221,11 +201,9 @@ public class FilteringServiceTests
     public void Apply_WithRqlLikeMatch_ReturnsExpectedResult(string query, string searchString, int expectedCount)
     {
         // Arrange
+        var builder = ExpressionBuilderFactory.GetBinary<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search.Implementation.Like>();
         var parserMock = RqlParserFactory.RqlLike(searchString);
-        var operatorHandlerProviderMock = OperatorHandlerProviderFactory.Like();
-        var pathBuilder = PathBuilderFactory.Internal();
-        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
+        var sut = new FilteringService<SampleEntityView>(builder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -244,11 +222,9 @@ public class FilteringServiceTests
         // is case sensitive. Kept this test in at a unit level for clarity however
 
         // Arrange
-        var parserMock = RqlParserFactory.RqlILike(searchString);
-        var operatorHandlerProviderMock = OperatorHandlerProviderFactory.ILike();
-        var pathBuilder = PathBuilderFactory.Internal();
-        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
+        var builder = ExpressionBuilderFactory.GetBinary<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search.Implementation.Like>();
+        var parserMock = RqlParserFactory.RqlLike(searchString);
+        var sut = new FilteringService<SampleEntityView>(builder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Default().AsQueryable(), query);
@@ -263,11 +239,9 @@ public class FilteringServiceTests
     public void Apply_WithRqlEqual_OperatorProhibited()
     {
         // Arrange
+        var builder = ExpressionBuilderFactory.GetBinary<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation.Equal>();
         var parserMock = RqlParserFactory.RqlEqual("id", "13");
-        var operatorHandlerProviderMock = OperatorHandlerProviderFactory.Equal();
-        var pathBuilder = PathBuilderFactory.Internal();
-        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
-        var sut = new FilteringService<SampleEntityViewOperatorTest>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
+        var sut = new FilteringService<SampleEntityViewOperatorTest>(builder, parserMock);
 
         // Act
         var actualResult = sut.Apply(QueryableSampleEntityCollection.Operators().AsQueryable(), $"id=13");
@@ -283,11 +257,10 @@ public class FilteringServiceTests
     public void Apply_WithRqlList_OperatorProhibited(bool isIn)
     {
         // Arrange
+        var builder = isIn ? ExpressionBuilderFactory.GetBinary<SoftwareOne.Rql.Linq.Services.Filtering.Operators.List.Implementation.ListIn>()
+            : ExpressionBuilderFactory.GetBinary<SoftwareOne.Rql.Linq.Services.Filtering.Operators.List.Implementation.ListOut>();
         var parserMock = RqlParserFactory.RqlList(isIn, "id", "13", "14", "15");
-        var operatorHandlerProviderMock = isIn ? OperatorHandlerProviderFactory.ListIn() : OperatorHandlerProviderFactory.ListOut();
-        var pathBuilder = PathBuilderFactory.Internal();
-        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
-        var sut = new FilteringService<SampleEntityViewOperatorTest>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
+        var sut = new FilteringService<SampleEntityViewOperatorTest>(builder, parserMock);
         var keyword = isIn ? "in" : "out";
 
         // Act
@@ -304,11 +277,10 @@ public class FilteringServiceTests
     public void Apply_WithRqlLike_OperatorProhibited(bool insensitive)
     {
         // Arrange
+        var builder = insensitive ? ExpressionBuilderFactory.GetBinary<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search.Implementation.LikeInsensitive>()
+            : ExpressionBuilderFactory.GetBinary<SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search.Implementation.Like>();
         var parserMock = RqlParserFactory.RqlLike("id", "13*", insensitive);
-        var operatorHandlerProviderMock = insensitive ? OperatorHandlerProviderFactory.ILike() : OperatorHandlerProviderFactory.Like();
-        var pathBuilder = PathBuilderFactory.Internal();
-        var binaryExpressionBuilder = BinaryExpressionBuilderFactory.Internal();
-        var sut = new FilteringService<SampleEntityView>(operatorHandlerProviderMock, pathBuilder, binaryExpressionBuilder, parserMock);
+        var sut = new FilteringService<SampleEntityView>(builder, parserMock);
         var keyword = insensitive ? "ilike" : "like";
 
         // Act

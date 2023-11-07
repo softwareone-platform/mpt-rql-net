@@ -3,7 +3,8 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Collection.Implement
 
 internal interface ICollectionFunctions
 {
-    MethodInfo GetAny();
+    MethodInfo GetAnyWithPredicate();
+    MethodInfo GetAnyWithNoPredicate();
     MethodInfo GetAll();
 }
 
@@ -15,7 +16,13 @@ internal class CollectionFunctions<T> : ICollectionFunctions
         return func.Method;
     }
 
-    public MethodInfo GetAny()
+    public MethodInfo GetAnyWithNoPredicate()
+    {
+        Func<IEnumerable<T>, bool> func = Enumerable.Any;
+        return func.Method;
+    }
+
+    public MethodInfo GetAnyWithPredicate()
     {
         Func<IEnumerable<T>, Func<T, bool>, bool> func = Enumerable.Any;
         return func.Method;

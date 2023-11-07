@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using SoftwareOne.Rql;
 using SoftwareOne.Rql.Client;
 using SoftwareOne.Rql.Linq.Client.Builder.Request;
@@ -14,7 +13,7 @@ internal class TestRqlRequestBuilderProvider : IRqlRequestBuilderProvider
     public IRqlRequestBuilder<T> GetBuilder<T>() where T : class
     {
         var services = new ServiceCollection();
-        services.AddSingleton<IPropertyNameProvider,PropertyNameProvider>();
+        services.AddSingleton<IPropertyNameProvider, PropertyNameProvider>();
         services.AddScoped<IPropertyVisitor, PropertyVisitor>();
         services.AddSingleton<IOrderGenerator, OrderGenerator>();
         services.AddSingleton<IFilterGenerator, FilterGenerator>();

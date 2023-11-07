@@ -4,33 +4,52 @@ using SoftwareOne.Rql.Abstractions.Argument;
 using SoftwareOne.Rql.Abstractions.Argument.Pointer;
 using SoftwareOne.Rql.Abstractions.Binary;
 using SoftwareOne.Rql.Abstractions.Group;
+using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.List;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search;
 using System.Linq.Expressions;
 
-namespace SoftwareOne.Rql.Linq.Services.Filtering;
+namespace SoftwareOne.Rql.Linq.Services.Filtering.Builders;
 
-internal interface IBinaryExpressionBuilder
-{
-    ErrorOr<Expression> MakeComparison(ParameterExpression parameter, RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, IComparisonOperator comparison);
-
-    ErrorOr<Expression> MakeSearch(RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, ISearchOperator search);
-
-    ErrorOr<Expression> MakeList(RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, IListOperator list);
-}
-
-internal class BinaryExpressionBuilder : IBinaryExpressionBuilder
+internal class BinaryExpressionBuilder : IConcreteExpressionBuilder<RqlBinary>
 {
     private readonly IFilteringPathInfoBuilder _pathBuilder;
+    private readonly IOperatorHandlerProvider _operatorHandlerProvider;
 
-    public BinaryExpressionBuilder(IFilteringPathInfoBuilder pathBuilder)
+    public BinaryExpressionBuilder(IOperatorHandlerProvider operatorHandlerProvider, IFilteringPathInfoBuilder pathBuilder)
     {
         _pathBuilder = pathBuilder;
+        _operatorHandlerProvider = operatorHandlerProvider;
     }
 
-    public ErrorOr<Expression> MakeComparison(ParameterExpression parameter, RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, IComparisonOperator comparison)
+
+    public ErrorOr<Expression> Build(ParameterExpression pe, RqlBinary node)
+    {
+        var handler = _operatorHandlerProvider.GetOperatorHandler(node.GetType())!;
+
+        var memberInfo = _pathBuilder.Build(pe, node.Left);
+
+        if (memberInfo.IsError)
+            return memberInfo.Errors;
+
+        var property = memberInfo.Value.PropertyInfo;
+        var accessor = memberInfo.Value.Expression;
+
+        var expression = handler switch
+        {
+            IComparisonOperator comp => MakeComparison(pe, node, property, accessor, comp),
+            ISearchOperator search => BinaryExpressionBuilder.MakeSearch(node, property, accessor, search),
+            IListOperator list => BinaryExpressionBuilder.MakeList(node, property, accessor, list),
+            _ => FilteringError.Internal
+        };
+
+        return expression.IsError ? expression.Errors : expression;
+    }
+
+
+    private ErrorOr<Expression> MakeComparison(ParameterExpression parameter, RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, IComparisonOperator comparison)
     {
         if (node.Right is RqlPointer pointer)
         {
@@ -47,7 +66,7 @@ internal class BinaryExpressionBuilder : IBinaryExpressionBuilder
         }
     }
 
-    public ErrorOr<Expression> MakeSearch(RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, ISearchOperator search)
+    private static ErrorOr<Expression> MakeSearch(RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, ISearchOperator search)
     {
         if (accessor is not MemberExpression member)
             return Error.Failure(description: "Search operations work with properties only");
@@ -56,7 +75,7 @@ internal class BinaryExpressionBuilder : IBinaryExpressionBuilder
         return search.MakeExpression(propertyInfo, member, arg.Value!);
     }
 
-    public ErrorOr<Expression> MakeList(RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, IListOperator list)
+    private static ErrorOr<Expression> MakeList(RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, IListOperator list)
     {
         if (accessor is not MemberExpression member)
             return Error.Failure(description: "List operations work with properties only");

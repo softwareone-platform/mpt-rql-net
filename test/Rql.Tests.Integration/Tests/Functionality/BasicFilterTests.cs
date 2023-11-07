@@ -148,6 +148,11 @@ public class BasicFilterTests
       => _testExecutor.ResultMatch(t => t.Orders.Any(t => t.Id == 1), query, isHappyFlow: isHappyFlow);
 
     [Theory]
+    [InlineData("any(orders)")]
+    public void Any_Orders(string query, bool isHappyFlow = true)
+       => _testExecutor.ResultMatch(t => t.Orders.Any(), query, isHappyFlow: isHappyFlow);
+
+    [Theory]
     [InlineData("all(orders,id=1)")]
     [InlineData("all(orders,eq(id,1))")]
     [InlineData("all(orders,eq(id,999))", false)]

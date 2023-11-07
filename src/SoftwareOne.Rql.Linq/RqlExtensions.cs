@@ -1,5 +1,9 @@
 ﻿using SoftwareOne.Rql;
 using SoftwareOne.Rql.Abstractions;
+using SoftwareOne.Rql.Abstractions.Binary;
+using SoftwareOne.Rql.Abstractions.Collection;
+using SoftwareOne.Rql.Abstractions.Group;
+using SoftwareOne.Rql.Abstractions.Unary;
 using SoftwareOne.Rql.Client;
 using SoftwareOne.Rql.Linq;
 using SoftwareOne.Rql.Linq.Client.Builder.Request;
@@ -7,6 +11,7 @@ using SoftwareOne.Rql.Linq.Client.Core;
 using SoftwareOne.Rql.Linq.Client.Generator;
 using SoftwareOne.Rql.Linq.Core.Metadata;
 using SoftwareOne.Rql.Linq.Services.Filtering;
+using SoftwareOne.Rql.Linq.Services.Filtering.Builders;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
 using SoftwareOne.Rql.Linq.Services.Mapping;
 using SoftwareOne.Rql.Linq.Services.Ordering;
@@ -37,7 +42,11 @@ public static class RqlExtensions
         services.AddScoped(typeof(IMappingService<,>), typeof(MappingService<,>));
 
         services.AddScoped(typeof(IFilteringService<>), typeof(FilteringService<>));
-        services.AddSingleton<IBinaryExpressionBuilder, BinaryExpressionBuilder>();
+        services.AddScoped<IExpressionBuilder, ExpressionBuilder>();
+        services.AddScoped<IConcreteExpressionBuilder<RqlBinary>, BinaryExpressionBuilder>();
+        services.AddScoped<IConcreteExpressionBuilder<RqlCollection>, CollectionExpressionBuilder>();
+        services.AddScoped<IConcreteExpressionBuilder<RqlGroup>, GroupExpressionBuilder>();
+        services.AddScoped<IConcreteExpressionBuilder<RqlUnary>, UnaryExpressionBuilder>();
         services.AddSingleton<IFilteringPathInfoBuilder, FilteringPathInfoBuilder>();
 
         services.AddScoped(typeof(IOrderingService<>), typeof(OrderingService<>));

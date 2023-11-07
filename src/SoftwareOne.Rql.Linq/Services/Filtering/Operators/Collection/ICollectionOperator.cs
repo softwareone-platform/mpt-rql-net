@@ -6,5 +6,5 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Collection;
 
 public interface ICollectionOperator : IOperator
 {
-    ErrorOr<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, LambdaExpression inner);
+    ErrorOr<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, LambdaExpression? inner);
 }

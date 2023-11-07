@@ -5,6 +5,7 @@ using SoftwareOne.Rql.Client;
 using SoftwareOne.Rql.Linq.Core.Metadata;
 using Xunit;
 using SoftwareOne.Rql.Linq.Client.Core;
+using Rql.Tests.Unit.Client.Samples;
 
 namespace Rql.Tests.Unit.Client;
 

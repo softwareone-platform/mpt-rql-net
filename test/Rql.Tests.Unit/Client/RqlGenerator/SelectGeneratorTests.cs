@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using Rql.Tests.Unit.Client.Models;
+using Rql.Tests.Unit.Client.Samples;
 using SoftwareOne.Rql.Linq.Client.Builder.Select;
 using SoftwareOne.Rql.Linq.Client.Core;
 using SoftwareOne.Rql.Linq.Client.Generator;

@@ -1,6 +1,7 @@
 ﻿using SoftwareOne.Rql.Abstractions.Argument;
 using SoftwareOne.Rql.Abstractions.Argument.Pointer;
 using SoftwareOne.Rql.Abstractions.Binary;
+using SoftwareOne.Rql.Abstractions.Collection;
 using SoftwareOne.Rql.Abstractions.Group;
 using SoftwareOne.Rql.Abstractions.Unary;
 
@@ -62,10 +63,10 @@ namespace SoftwareOne.Rql.Abstractions
         public static RqlListOut ListOut(RqlExpression left, RqlExpression right)
             => new RqlListOut(left, right);
 
-        public static RqlAny Any(RqlExpression left, RqlExpression right)
+        public static RqlAny Any(RqlExpression left, RqlExpression? right = null)
             => new RqlAny(left, right);
 
-        public static RqlAll All(RqlExpression left, RqlExpression right)=> 
+        public static RqlAll All(RqlExpression left, RqlExpression right) =>
             new RqlAll(left, right);
 
         #endregion

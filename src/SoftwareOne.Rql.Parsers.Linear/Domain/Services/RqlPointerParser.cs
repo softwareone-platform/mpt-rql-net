@@ -4,7 +4,7 @@ using SoftwareOne.Rql.Abstractions.Exception;
 using SoftwareOne.Rql.Parsers.Linear.Domain.Core;
 using SoftwareOne.Rql.Parsers.Linear.Domain.Core.ValueTypes;
 
-namespace SoftwareOne.Rql.Parsers.Linear;
+namespace SoftwareOne.Rql.Parsers.Linear.Domain.Services;
 
 internal static class RqlPointerParser
 {

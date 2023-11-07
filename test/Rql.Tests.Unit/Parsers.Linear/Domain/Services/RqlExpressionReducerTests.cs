@@ -1,10 +1,10 @@
 using Rql.Tests.Unit.Factory;
 using SoftwareOne.Rql.Abstractions.Binary;
 using SoftwareOne.Rql.Abstractions.Group;
-using SoftwareOne.Rql.Parsers.Linear;
+using SoftwareOne.Rql.Parsers.Linear.Domain.Services;
 using Xunit;
 
-namespace Rql.Tests.Unit.Parsers.Linear;
+namespace Rql.Tests.Unit.Parsers.Linear.Domain.Services;
 
 public class RqlExpressionReducerTests
 {

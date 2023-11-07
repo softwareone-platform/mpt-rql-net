@@ -1,6 +1,7 @@
-﻿using System.Text.Json.Serialization;
+﻿using Rql.Tests.Unit.Client.Models;
+using System.Text.Json.Serialization;
 
-namespace Rql.Tests.Unit.Client.Models;
+namespace Rql.Tests.Unit.Client.Samples;
 
 public class ExampleWithJson
 {

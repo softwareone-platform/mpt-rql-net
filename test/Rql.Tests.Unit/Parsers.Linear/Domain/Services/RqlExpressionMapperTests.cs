@@ -3,7 +3,7 @@ using SoftwareOne.Rql.Parsers.Linear.Domain.Core.ValueTypes;
 using SoftwareOne.Rql.Parsers.Linear.Domain.Services;
 using Xunit;
 
-namespace Rql.Tests.Unit.Parsers.Linear;
+namespace Rql.Tests.Unit.Parsers.Linear.Domain.Services;
 
 public class RqlExpressionMapperTests
 {

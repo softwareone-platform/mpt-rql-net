@@ -1,4 +1,4 @@
-﻿namespace Rql.Tests.Unit.Client.Models;
+﻿namespace Rql.Tests.Unit.Client.Samples;
 
 public enum TestEnum
 {

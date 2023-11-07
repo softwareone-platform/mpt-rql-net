@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using Rql.Tests.Unit.Client.Models;
+using Rql.Tests.Unit.Client.Samples;
 using Rql.Tests.Unit.Factory;
 using SoftwareOne.Rql.Client;
 using Xunit;

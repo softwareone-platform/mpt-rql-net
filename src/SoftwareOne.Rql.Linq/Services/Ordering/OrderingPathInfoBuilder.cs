@@ -2,7 +2,7 @@
 using SoftwareOne.Rql.Linq.Core;
 using SoftwareOne.Rql.Linq.Core.Metadata;
 
-namespace SoftwareOne.Rql.Linq.Services.Filtering
+namespace SoftwareOne.Rql.Linq.Services.Ordering
 {
     internal interface IOrderingPathInfoBuilder : IPathInfoBuilder { }
 

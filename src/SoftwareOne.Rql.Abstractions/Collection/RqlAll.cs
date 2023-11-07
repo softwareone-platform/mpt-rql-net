@@ -1,6 +1,6 @@
-﻿namespace SoftwareOne.Rql.Abstractions.Binary;
+﻿namespace SoftwareOne.Rql.Abstractions.Collection;
 
-public class RqlAll : RqlBinary
+public class RqlAll : RqlCollection
 {
     internal RqlAll(RqlExpression left, RqlExpression right) : base(left, right) { }
 }
