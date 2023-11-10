@@ -4,7 +4,7 @@ namespace SoftwareOne.Rql.Linq.Configuration
 {
     public interface IRqlSelectSettings
     {
-        SelectMode Mode { get; set; }
+        RqlSelectMode Mode { get; set; }
         int? MaxDepth { get; set; }
     }
 }

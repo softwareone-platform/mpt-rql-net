@@ -80,23 +80,28 @@ internal class ProjectionService<TView> : IProjectionService<TView>
         if (!rqlProperty.Actions.HasFlag(RqlActions.Select))
             return result;
 
-        if (parentNode.TryGetChild(rqlProperty.Name, out var propertyNode))
+        parentNode.TryGetChild(rqlProperty.Name, out var propertyNode);
+
+        if (parentNode.Mode != RqlSelectMode.All)
         {
-            // subtracted properties are skipped unless they have children
-            if (propertyNode!.Mode == SelectMode.None && propertyNode!.Children == null)
+            if (propertyNode != null)
+            {
+                // subtracted properties are skipped unless they have children
+                if (propertyNode!.Mode == RqlSelectMode.None && propertyNode!.Children == null)
+                    return result;
+            }
+            // hidden properties are ignored unless requested explicitly
+            else if (rqlProperty.SelectMode == RqlSelectMode.None)
+                return result;
+
+            // all properties are skipped if parent is in subtract mode and no there is explicit property descriptor
+            else if (parentNode.Mode == RqlSelectMode.None)
+                return result;
+
+            // if parent in core mode - skip all non reference props
+            if (parentNode.Mode == RqlSelectMode.Core && !rqlProperty.IsCore && (propertyNode == null || propertyNode.Mode != RqlSelectMode.All))
                 return result;
         }
-        // hidden properties are ignored unless requested explicitly
-        else if (rqlProperty.IsHidden)
-            return result;
-
-        // all properties are skipped if parent is in subtract mode and no there is explicit property descriptor
-        else if (parentNode.Mode == SelectMode.None)
-            return result;
-
-        // if parent in defaults mode skip all non reference props
-        if (parentNode.Mode == SelectMode.Core && !rqlProperty.IsCore && (propertyNode == null || propertyNode.Mode != SelectMode.All))
-            return result;
 
         result = rqlProperty.Type switch
         {
@@ -120,6 +125,10 @@ internal class ProjectionService<TView> : IProjectionService<TView>
     protected ErrorOr<Expression?> MakeReferencePropertyInit(Expression param, ProjectionNode? propertyNode, RqlPropertyInfo propertyInfo, int depth)
     {
         propertyNode = EnsureComplexPropertyNode(propertyNode, propertyInfo, depth);
+
+        if (propertyNode.Mode == RqlSelectMode.None)
+            return default(Expression);
+
         var memberAccess = Expression.MakeMemberAccess(param, propertyInfo.Property!);
 
         var selector = GetSelector(memberAccess, propertyNode, depth + 1);
@@ -139,6 +148,10 @@ internal class ProjectionService<TView> : IProjectionService<TView>
     protected ErrorOr<Expression?> MakeCollectionPropertyInit(Expression param, ProjectionNode? propertyNode, RqlPropertyInfo propertyInfo, int depth)
     {
         propertyNode = EnsureComplexPropertyNode(propertyNode, propertyInfo, depth);
+
+        if (propertyNode.Mode == RqlSelectMode.None)
+            return default(Expression);
+
         var memberAccess = Expression.MakeMemberAccess(param, propertyInfo.Property!);
 
         var itemType = memberAccess.Type.GenericTypeArguments[0];
@@ -165,11 +178,15 @@ internal class ProjectionService<TView> : IProjectionService<TView>
 
     protected ProjectionNode EnsureComplexPropertyNode(ProjectionNode? propertyNode, RqlPropertyInfo propertyInfo, int depth)
     {
-        propertyNode ??= new ProjectionNode { Value = propertyInfo.Name.AsMemory(), Mode = SelectMode.Core };
+        var undefined = propertyNode == null;
+        propertyNode ??= new ProjectionNode { Value = propertyInfo.Name.AsMemory(), Mode = RqlSelectMode.Core };
 
         // treat every complex property deeper than max select depth as a default reference
-        if (depth >= _settings.Select.MaxDepth)
-            propertyNode.Mode = SelectMode.Core;
+        if (depth >= _settings.Select.MaxDepth && propertyNode.Mode != RqlSelectMode.None)
+            propertyNode.Mode = RqlSelectMode.Core;
+
+        if (undefined)
+            propertyNode.Mode = propertyInfo.SelectMode;
 
         return propertyNode;
     }

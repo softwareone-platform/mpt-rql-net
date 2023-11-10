@@ -26,10 +26,10 @@ namespace Rql.Sample.Contracts.Ef.Products
         [RqlProperty(IsCore = true)]
         public ProductModelView? Model { get; set; }
 
-        [RqlProperty(IsHidden = true)]
+        [RqlProperty(Select = RqlSelectMode.None)]
         public IEnumerable<ProductSaleOrder>? SaleDetails { get; set; }
 
-        [RqlProperty(IsHidden = true)]
+        [RqlProperty(Select = RqlSelectMode.None)]
         public IEnumerable<int>? SaleDetailIds { get; set; }
     }
 

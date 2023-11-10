@@ -1,10 +1,10 @@
 ﻿#pragma warning disable IDE0130
 namespace SoftwareOne.Rql
 {
-    public enum SelectMode
+    public enum RqlSelectMode
     {
-        None,
+        Core,
         All,
-        Core
+        None
     }
 }

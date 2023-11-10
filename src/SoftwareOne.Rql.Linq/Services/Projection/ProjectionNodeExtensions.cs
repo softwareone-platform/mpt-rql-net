@@ -72,5 +72,5 @@ internal static class ProjectionNodeExtensions
         }
     }
 
-    private static SelectMode SignToSelectMode(bool sign) => sign ? SelectMode.All : SelectMode.None;
+    private static RqlSelectMode SignToSelectMode(bool sign) => sign ? RqlSelectMode.All : RqlSelectMode.None;
 }

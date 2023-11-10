@@ -29,13 +29,15 @@ internal class MetadataFactory : IMetadataFactory
         if (attribute != null)
         {
             propertyInfo.IsCore = attribute.IsCore;
-            propertyInfo.IsHidden = attribute.IsHidden;
 
             if (attribute.ActionsSet)
                 propertyInfo.Actions = attribute.Actions;
 
             if (attribute.OperatorsSet)
                 propertyInfo.Operators = attribute.Operators;
+
+            if (attribute.SelectSet)
+                propertyInfo.SelectMode = attribute.Select;
         }
 
         propertyInfo.Operators &= propertyInfo.Type switch

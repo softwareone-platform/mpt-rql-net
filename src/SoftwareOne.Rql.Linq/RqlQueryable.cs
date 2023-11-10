@@ -32,7 +32,12 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
     {
         var errors = new List<Error>();
         using var scope = _serviceProvider.CreateScope();
-        var query = GetService<IMappingService<TStorage, TView>>(scope).Apply(source);
+        var queryResult = GetService<IMappingService<TStorage, TView>>(scope).Apply(source);
+
+        if (queryResult.IsError)
+            return queryResult.Errors;
+
+        var query = queryResult.Value;
 
         GetService<IFilteringService<TView>>(scope).Apply(query, request.Filter).Switch(q => query = q, errors.AddRange);
         GetService<IOrderingService<TView>>(scope).Apply(query, request.Order).Switch(q => query = q, errors.AddRange);

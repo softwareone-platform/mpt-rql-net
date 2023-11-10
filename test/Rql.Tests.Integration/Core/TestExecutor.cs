@@ -1,17 +1,33 @@
 ﻿using SoftwareOne.Rql;
 using System.Linq.Expressions;
+using System.Text.Json;
 using Xunit;
 
 namespace Rql.Tests.Integration.Core;
 
 public abstract class TestExecutor<TStorage> : TestExecutor<TStorage, TStorage> where TStorage : ITestEntity
 {
+    public void ShapeMatch(Action<TStorage> configure, string select)
+    {
+        var srcData = GetQuery().ToList();
+        var transformed = _rql.Transform(srcData.AsQueryable(), new RqlRequest { Select = select });
+        var targetJson = JsonSerializer.Serialize(transformed.Value.ToList());
+
+
+        foreach (var item in srcData)
+        {
+            configure(item);
+        }
+        var srcJson = JsonSerializer.Serialize(srcData);
+        Assert.Equal(srcJson, targetJson);
+    }
+
     protected override Expression<Func<TStorage, TStorage>> GetMapping() => t => t;
 }
 
 public abstract class TestExecutor<TStorage, TView> where TView : ITestEntity
 {
-    private readonly IRqlQueryable<TStorage, TView> _rql;
+    protected readonly IRqlQueryable<TStorage, TView> _rql;
 
     public TestExecutor()
     {

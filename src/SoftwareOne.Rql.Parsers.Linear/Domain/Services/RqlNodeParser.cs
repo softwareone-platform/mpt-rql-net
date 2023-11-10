@@ -9,7 +9,8 @@ internal static class RqlNodeParser
 {
     internal static RqlExpression Parse(string word, IList<ExpressionPair> expressionPairList)
     {
-        return word.ToLower(CultureInfo.InvariantCulture) switch
+        var loweredWord = word.ToLower(CultureInfo.InvariantCulture);
+        return loweredWord switch
         {
             Constants.RqlTerm.NoName => RqlExpressionReducer.Reduce(expressionPairList),
             Constants.RqlTerm.And => RqlExpression.And(ConvertToIEnumerableCollection(expressionPairList)),
@@ -30,7 +31,7 @@ internal static class RqlNodeParser
             Constants.RqlTerm.Self => RqlPointerParser.Parse(Constants.RqlTerm.Self, expressionPairList),
             Constants.RqlTerm.Empty => RqlArgumentParser.Parse(Constants.RqlTerm.Empty, expressionPairList),
             Constants.RqlTerm.Null => RqlArgumentParser.Parse(Constants.RqlTerm.Null, expressionPairList),
-            var any => RqlExpression.Group(any, expressionPairList.Select(s => s.Expression))
+            _ => RqlExpression.Group(loweredWord, expressionPairList.Select(s => s.Expression))
         };
     }
 

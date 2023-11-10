@@ -20,7 +20,7 @@ public static class RqlExtensions
         return services.AddRql(config =>
         {
             config.Settings.Select.MaxDepth = 1;
-            config.Settings.Select.Mode = SelectMode.All;
+            config.Settings.Select.Mode = RqlSelectMode.All;
             configure?.Invoke(config);
         });
     }

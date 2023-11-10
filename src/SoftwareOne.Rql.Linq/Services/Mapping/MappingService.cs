@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using ErrorOr;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace SoftwareOne.Rql.Linq.Services.Mapping;
 
@@ -11,16 +12,18 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
         _serviceProvider = serviceProvider;
     }
 
-    public IQueryable<TView> Apply(IQueryable<TStorage> query)
+    public ErrorOr<IQueryable<TView>> Apply(IQueryable<TStorage> query)
     {
         if (typeof(TStorage) == typeof(TView))
         {
-            return (IQueryable<TView>)query;
+            return ErrorOrFactory.From((IQueryable<TView>)query);
         }
-        
-        var map = _serviceProvider.GetService<IRqlMapper<TStorage, TView>>() 
-            ?? throw new Exception($"Mapping between '{typeof(TStorage)}' and '{typeof(TView)}' is required but not defined.");
-        
-        return query.Select(map.GetMapping());
+
+        var mapService = _serviceProvider.GetService<IRqlMapper<TStorage, TView>>();
+
+        if (mapService == null)
+            return Error.Failure(description: $"Mapping between '{typeof(TStorage)}' and '{typeof(TView)}' is required but not defined.");
+
+        return ErrorOrFactory.From(query.Select(mapService.GetMapping()));
     }
 }

@@ -17,7 +17,7 @@ public class RqlConfiguration
             DefaultActions = RqlActions.All,
             Select = new RqlSelectSettings
             {
-                Mode = SelectMode.All
+                Mode = RqlSelectMode.Core
             }
         };
     }

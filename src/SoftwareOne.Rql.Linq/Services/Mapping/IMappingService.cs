@@ -1,6 +1,8 @@
-﻿namespace SoftwareOne.Rql.Linq.Services.Mapping;
+﻿using ErrorOr;
 
-internal interface IMappingService<in TStorage, out TView>
+namespace SoftwareOne.Rql.Linq.Services.Mapping;
+
+internal interface IMappingService<in TStorage, TView>
 {
-    public IQueryable<TView> Apply(IQueryable<TStorage> query);
+    public ErrorOr<IQueryable<TView>> Apply(IQueryable<TStorage> query);
 }
