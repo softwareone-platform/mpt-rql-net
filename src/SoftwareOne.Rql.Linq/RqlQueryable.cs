@@ -1,5 +1,6 @@
 ﻿using ErrorOr;
 using Microsoft.Extensions.DependencyInjection;
+using SoftwareOne.Rql.Linq.Core;
 using SoftwareOne.Rql.Linq.Services.Filtering;
 using SoftwareOne.Rql.Linq.Services.Mapping;
 using SoftwareOne.Rql.Linq.Services.Ordering;
@@ -22,16 +23,28 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
     }
 
     public ErrorOr<IQueryable<TView>> Transform(IQueryable<TStorage> source, Action<RqlRequest> configure)
-    {
-        var request = new RqlRequest();
-        configure(request);
-        return Transform(source, request);
-    }
+        => Transform(source, MakeRequest(configure));
+
+    public ErrorOr<IQueryable<TView>> Transform(IQueryable<TStorage> source, Action<RqlRequest> configure, out RqlAuditContext auditContext)
+        => Transform(source, MakeRequest(configure), out auditContext);
 
     public ErrorOr<IQueryable<TView>> Transform(IQueryable<TStorage> source, RqlRequest request)
+        => TransformInternal(source, request, null);
+
+    public ErrorOr<IQueryable<TView>> Transform(IQueryable<TStorage> source, RqlRequest request, out RqlAuditContext auditContext)
+    {
+        auditContext = new RqlAuditContext();
+        return TransformInternal(source, request, auditContext);
+    }
+
+    private ErrorOr<IQueryable<TView>> TransformInternal(IQueryable<TStorage> source, RqlRequest request, RqlAuditContext? auditContext)
     {
         var errors = new List<Error>();
         using var scope = _serviceProvider.CreateScope();
+
+        if (auditContext != null)
+            GetService<IAuditContextAccessor>(scope).SetContext(auditContext);
+
         var queryResult = GetService<IMappingService<TStorage, TView>>(scope).Apply(source);
 
         if (queryResult.IsError)
@@ -46,5 +59,12 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
         return errors.Any() ? errors : ErrorOrFactory.From(query);
 
         static T GetService<T>(IServiceScope scope) where T : notnull => scope.ServiceProvider.GetRequiredService<T>();
+    }
+
+    private static RqlRequest MakeRequest(Action<RqlRequest> configure)
+    {
+        var request = new RqlRequest();
+        configure(request);
+        return request;
     }
 }

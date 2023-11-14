@@ -23,7 +23,7 @@ internal class RqlRequest<TStorage, TView> : IRqlRequest<TStorage, TView>
     {
         var httpContext = _httpContextAccessor.HttpContext!;
         var request = ExtractRqlRequest(httpContext.Request.Query);
-        var res = _rql.Transform(source, request);
+        var res = _rql.Transform(source, request, out var auditContext);
 
         if (res.IsError)
             return _errorResultProvider.Problem(res.Errors);
@@ -50,6 +50,8 @@ internal class RqlRequest<TStorage, TView> : IRqlRequest<TStorage, TView>
             data.Data = res.Value.Skip(offset).Take(limit).ToList();
             data.Pagination.Total = res.Value.Count();
         }
+        
+        data.Omitted = auditContext.Omitted.Where(s=> !s.Contains('.')).ToList();
 
         return new OkObjectResult(data);
 

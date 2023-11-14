@@ -4,6 +4,7 @@ using SoftwareOne.Rql;
 using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Linq.Configuration;
 using SoftwareOne.Rql.Linq.Core.Metadata;
+using System.Text.Json;
 using Xunit;
 
 namespace Rql.Tests.Unit.Linq;
@@ -39,9 +40,9 @@ public class MetadataProviderTest
         // Assert
         Assert.NotEmpty(props);
         Assert.True(props.All(e => e.Actions == (RqlActions.Filter | RqlActions.Order)));
-        Assert.Contains(props, e => e.Name == nameof(SampleEntity.Types) && e.Type == RqlPropertyType.Collection);
-        Assert.Contains(props, e => e.Name == nameof(SampleEntity.ModifiedDate) && e.Type == RqlPropertyType.Primitive);
-        Assert.Contains(props, e => e.Name == nameof(SampleEntity.Size) && e.Type == RqlPropertyType.Primitive);
+        Assert.Contains(props, e => e.Name == JsonNamingPolicy.CamelCase.ConvertName(nameof(SampleEntity.Types)) && e.Type == RqlPropertyType.Collection);
+        Assert.Contains(props, e => e.Name == JsonNamingPolicy.CamelCase.ConvertName(nameof(SampleEntity.ModifiedDate)) && e.Type == RqlPropertyType.Primitive);
+        Assert.Contains(props, e => e.Name == JsonNamingPolicy.CamelCase.ConvertName(nameof(SampleEntity.Size)) && e.Type == RqlPropertyType.Primitive);
     }
 
     [Theory]
@@ -62,11 +63,11 @@ public class MetadataProviderTest
 
         // Assert
         Assert.NotEmpty(props);
-        Assert.Contains(props, e => e.Name == nameof(MetadataActionTestEntity.OrderProp) && e.Actions == RqlActions.Order);
-        Assert.Contains(props, e => e.Name == nameof(MetadataActionTestEntity.AllProp) && e.Actions == RqlActions.All);
-        Assert.Contains(props, e => e.Name == nameof(MetadataActionTestEntity.FilterProp) && e.Actions == RqlActions.Filter);
-        Assert.Contains(props, e => e.Name == nameof(MetadataActionTestEntity.SelectProp) && e.Actions == RqlActions.Select);
-        Assert.Contains(props, e => e.Name == nameof(MetadataActionTestEntity.NoneProp) && e.Actions == RqlActions.None);
+        Assert.Contains(props, e => e.Name == JsonNamingPolicy.CamelCase.ConvertName(nameof(MetadataActionTestEntity.OrderProp)) && e.Actions == RqlActions.Order);
+        Assert.Contains(props, e => e.Name == JsonNamingPolicy.CamelCase.ConvertName(nameof(MetadataActionTestEntity.AllProp)) && e.Actions == RqlActions.All);
+        Assert.Contains(props, e => e.Name == JsonNamingPolicy.CamelCase.ConvertName(nameof(MetadataActionTestEntity.FilterProp)) && e.Actions == RqlActions.Filter);
+        Assert.Contains(props, e => e.Name == JsonNamingPolicy.CamelCase.ConvertName(nameof(MetadataActionTestEntity.SelectProp)) && e.Actions == RqlActions.Select);
+        Assert.Contains(props, e => e.Name == JsonNamingPolicy.CamelCase.ConvertName(nameof(MetadataActionTestEntity.NoneProp)) && e.Actions == RqlActions.None);
     }
 
 

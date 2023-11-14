@@ -12,13 +12,11 @@ public class BasicSelectTests
         _testExecutor = new ProductShapeTestExecutor();
     }
 
-
     [Fact]
     public void Shape_NoChange() => _testExecutor.ShapeMatch(t =>
     {
         t.HiddenCollection = null!;
     }, string.Empty);
-
 
     [Fact]
     public void Shape_HiddenCollection_Included() => _testExecutor.ShapeMatch(_ => { }, "HiddenCollection");
@@ -30,13 +28,10 @@ public class BasicSelectTests
         t.HiddenCollection = null!;
     }, "-Collection");
 
-
     [Fact]
     public void Shape_Reference_Excluded() => _testExecutor.ShapeMatch(t =>
     {
         t.Reference = null!;
         t.HiddenCollection = null!;
     }, "-Reference");
-
-
 }

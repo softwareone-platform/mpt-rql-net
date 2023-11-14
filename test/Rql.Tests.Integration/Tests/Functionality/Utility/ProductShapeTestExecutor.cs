@@ -12,5 +12,5 @@ public class ProductShapeTestExecutor : TestExecutor<ShapedProduct>
             t.Settings.Select.MaxDepth = 99;
         });
 
-    protected override IQueryable<ShapedProduct> GetQuery() => ShapedProductRepository.Query();
+    public override IQueryable<ShapedProduct> GetQuery() => ShapedProductRepository.Query();
 }

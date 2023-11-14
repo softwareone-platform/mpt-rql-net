@@ -27,7 +27,7 @@ public class PropertyVisitorTests
         var result = _propertyVisitor.GetPath(xx);
 
         // Assert
-        result.Should().Be("FirstName");
+        result.Should().Be("firstName");
     }
 
     [Fact]
@@ -40,7 +40,7 @@ public class PropertyVisitorTests
         var result =_propertyVisitor.GetPath(xx);
 
         // Assert
-        result.Should().Be("HomeAddress.Street");
+        result.Should().Be("homeAddress.street");
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public class PropertyVisitorTests
         var result = _propertyVisitor.GetPath(xx);
 
         // Assert
-        result.Should().Be("FirstName");
+        result.Should().Be("firstName");
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public class PropertyVisitorTests
         var result = _propertyVisitor.GetPath(xx);
 
         // Act & Assert
-        result.Should().Be("FirstName");
+        result.Should().Be("firstName");
     }
 
     [Fact]

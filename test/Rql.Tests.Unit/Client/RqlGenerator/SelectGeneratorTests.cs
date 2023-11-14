@@ -21,6 +21,6 @@ public class SelectGeneratorTests
         var result = new SelectGenerator(new PropertyVisitor(new PropertyNameProvider())).Generate(definition);
 
         // Assert
-        result.Should().Be("HomeAddress.Street,FirstName,LastName,-HomeAddress,-Id");
+        result.Should().Be("homeAddress.street,firstName,lastName,-homeAddress,-id");
     }
 }

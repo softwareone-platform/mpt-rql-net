@@ -36,7 +36,7 @@ public class QueryGeneratorTests
             .Build();
 
         // Assert
-        rql.Select.Should().Be("FirstName");
+        rql.Select.Should().Be("firstName");
         rql.Order.Should().Be(default);
         rql.Filter.Should().Be(default);
     }
@@ -50,7 +50,7 @@ public class QueryGeneratorTests
             .Build();
 
         // Assert
-        rql.Order.Should().Be("FirstName");
+        rql.Order.Should().Be("firstName");
         rql.Select.Should().Be(default);
         rql.Filter.Should().Be(default);
     }
@@ -64,7 +64,7 @@ public class QueryGeneratorTests
             .Build();
 
         // Assert
-        rql.Filter.Should().Be("eq(HomeAddress.Street,'abc')");
+        rql.Filter.Should().Be("eq(homeAddress.street,'abc')");
         rql.Select.Should().Be(default);
         rql.Order.Should().Be(default);
     }
@@ -79,8 +79,8 @@ public class QueryGeneratorTests
             .Build();
 
         // Assert
-        query.Filter.Should().Be("eq(HomeAddress.Street,'abc')");
-        query.Select.Should().Be("-LastName,-Id");
+        query.Filter.Should().Be("eq(homeAddress.street,'abc')");
+        query.Select.Should().Be("-lastName,-id");
     }
 
     [Fact]
@@ -93,8 +93,8 @@ public class QueryGeneratorTests
                 .Build();
 
         // Assert
-        rql.Filter.Should().Be("eq(HomeAddress.Street,'abc')");
-        rql.Select.Should().Be("HomeAddress,-OfficeAddress");
+        rql.Filter.Should().Be("eq(homeAddress.street,'abc')");
+        rql.Select.Should().Be("homeAddress,-officeAddress");
     }
 
   
@@ -109,9 +109,9 @@ public class QueryGeneratorTests
             .Build();
         
         // Assert
-        query.Filter.Should().Be("eq(HomeAddress.Street,'abc')");
-        query.Select.Should().Be("HomeAddress,-OfficeAddress");
-        query.Order.Should().Be("-FirstName,LastName");
+        query.Filter.Should().Be("eq(homeAddress.street,'abc')");
+        query.Select.Should().Be("homeAddress,-officeAddress");
+        query.Order.Should().Be("-firstName,lastName");
     }
 
     [Fact]
@@ -125,9 +125,9 @@ public class QueryGeneratorTests
             .Build();
 
         // Assert
-        query.Filter.Should().Be("eq(HomeAddress.Street,'abc')");
-        query.Select.Should().Be("HomeAddress,-OfficeAddress");
-        query.Order.Should().Be("-FirstName,LastName");
+        query.Filter.Should().Be("eq(homeAddress.street,'abc')");
+        query.Select.Should().Be("homeAddress,-officeAddress");
+        query.Order.Should().Be("-firstName,lastName");
     }
 
     [Fact]
@@ -145,8 +145,8 @@ public class QueryGeneratorTests
             .Build();
         
         // Assert
-        query.Filter.Should().Be("eq(PropWithoutAttribute,'abc')");
-        query.Select.Should().Be("IamAJsonTag,Address.CityWithoutProp,AddressWithOutAttribute.CityWithoutProp,Address.Street,AddressWithOutAttribute.Street,-PropWithoutAttribute");
-        query.Order.Should().Be("-IamAJsonTag,PropWithoutAttribute");
+        query.Filter.Should().Be("eq(propWithoutAttribute,'abc')");
+        query.Select.Should().Be("IamAJsonTag,Address.cityWithoutProp,addressWithOutAttribute.cityWithoutProp,Address.Street,addressWithOutAttribute.Street,-propWithoutAttribute");
+        query.Order.Should().Be("-IamAJsonTag,propWithoutAttribute");
     }
 }

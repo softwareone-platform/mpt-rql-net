@@ -8,5 +8,5 @@ public class ProductTestExecutor : TestExecutor<Product>
     protected override IRqlQueryable<Product, Product> MakeRql()
         => RqlFactory.Make<Product>();
 
-    protected override IQueryable<Product> GetQuery() => ProductRepository.Query();
+    public override IQueryable<Product> GetQuery() => ProductRepository.Query();
 }

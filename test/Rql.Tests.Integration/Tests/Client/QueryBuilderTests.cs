@@ -19,7 +19,7 @@ public class QueryBuilderTests
             .Where(e => e.Eq(f => f.Category, "a"))
             .Build();
 
-        rql.Filter.Should().Be("eq(Category,'a')");
+        rql.Filter.Should().Be("eq(category,'a')");
     }
 
     [Fact]
@@ -37,7 +37,7 @@ public class QueryBuilderTests
             .Select(e => e.Include(f => f.Category))
             
             .Build();
-        rql.Filter.Should().Be("eq(Category,'a')");
-        rql.Order.Should().Be("-Category,Name");
+        rql.Filter.Should().Be("eq(category,'a')");
+        rql.Order.Should().Be("-category,name");
     }
 }

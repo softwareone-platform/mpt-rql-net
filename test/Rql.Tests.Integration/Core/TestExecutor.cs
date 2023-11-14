@@ -10,7 +10,7 @@ public abstract class TestExecutor<TStorage> : TestExecutor<TStorage, TStorage> 
     public void ShapeMatch(Action<TStorage> configure, string select)
     {
         var srcData = GetQuery().ToList();
-        var transformed = _rql.Transform(srcData.AsQueryable(), new RqlRequest { Select = select });
+        var transformed = Rql.Transform(srcData.AsQueryable(), new RqlRequest { Select = select });
         var targetJson = JsonSerializer.Serialize(transformed.Value.ToList());
 
 
@@ -27,12 +27,14 @@ public abstract class TestExecutor<TStorage> : TestExecutor<TStorage, TStorage> 
 
 public abstract class TestExecutor<TStorage, TView> where TView : ITestEntity
 {
-    protected readonly IRqlQueryable<TStorage, TView> _rql;
-
     public TestExecutor()
     {
-        _rql = MakeRql();
+        Rql = MakeRql();
     }
+
+    public IRqlQueryable<TStorage, TView> Rql { get; init; }
+
+    public abstract IQueryable<TStorage> GetQuery();
 
     public void ResultMatch(Func<IQueryable<TView>, IQueryable<TView>> configure, string? filter = null, string? order = null, string? select = null, bool isHappyFlow = true)
         => ResultMatch(configure(GetQuery().Select(GetMapping())), filter, order, select, isHappyFlow: isHappyFlow);
@@ -42,7 +44,7 @@ public abstract class TestExecutor<TStorage, TView> where TView : ITestEntity
 
     public void ResultMatch(IEnumerable<TView> toCompare, string? filter = null, string? order = null, string? select = null, bool isHappyFlow = true)
     {
-        var transformed = _rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select });
+        var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select });
 
         Assert.False(transformed.IsError);
 
@@ -54,15 +56,13 @@ public abstract class TestExecutor<TStorage, TView> where TView : ITestEntity
 
     public void MustFailWithError(string? filter = null, string? order = null, string? select = null, string? errorDescription = null)
     {
-        var transformed = _rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select });
+        var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select });
         Assert.True(transformed.IsError);
         if (errorDescription != null)
             Assert.Equal(errorDescription, transformed.Errors[0].Description);
     }
 
     protected abstract IRqlQueryable<TStorage, TView> MakeRql();
-
-    protected abstract IQueryable<TStorage> GetQuery();
 
     protected abstract Expression<Func<TStorage, TView>> GetMapping();
 }

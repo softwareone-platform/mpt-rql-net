@@ -60,6 +60,8 @@ internal static class ProjectionNodeExtensions
         parent.Children ??= new Dictionary<string, ProjectionNode>(StringComparer.OrdinalIgnoreCase);
         var path = child.Value.ToString();
 
+        child.Parent = parent;
+
         if (parent.Children.TryGetValue(path, out var existing))
         {
             if (child.Children != null)

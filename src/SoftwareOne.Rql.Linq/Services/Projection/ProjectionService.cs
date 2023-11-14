@@ -9,17 +9,19 @@ namespace SoftwareOne.Rql.Linq.Services.Projection;
 
 delegate ErrorOr<Expression?> ComplexPropertyProcessor(MemberExpression member, ProjectionNode node, int depth);
 
-internal class ProjectionService<TView> : IProjectionService<TView>
+internal sealed class ProjectionService<TView> : IProjectionService<TView>
 {
     private readonly IRqlSettings _settings;
     private readonly IMetadataProvider _typeMetadataProvider;
     private readonly IRqlParser _parser;
+    private readonly IAuditContextAccessor _auditContextAccessor;
 
-    public ProjectionService(IRqlSettings settings, IMetadataProvider typeMetadataProvider, IRqlParser parser)
+    public ProjectionService(IRqlSettings settings, IMetadataProvider typeMetadataProvider, IRqlParser parser, IAuditContextAccessor auditContextAccessor)
     {
         _settings = settings;
         _typeMetadataProvider = typeMetadataProvider;
         _parser = parser;
+        _auditContextAccessor = auditContextAccessor;
     }
 
     public ErrorOr<IQueryable<TView>> Apply(IQueryable<TView> query, string? projection)
@@ -73,56 +75,75 @@ internal class ProjectionService<TView> : IProjectionService<TView>
         return Expression.MemberInit(Expression.New(param.Type.GetConstructor(Type.EmptyTypes)!), bindings);
     }
 
-    protected ErrorOr<Expression?> MakePropertyInit(Expression param, ProjectionNode parentNode, RqlPropertyInfo rqlProperty, int depth)
+    private ErrorOr<Expression?> MakePropertyInit(Expression param, ProjectionNode parentNode, RqlPropertyInfo rqlProperty, int depth)
     {
         var result = ErrorOrFactory.From<Expression?>(default);
 
         if (!rqlProperty.Actions.HasFlag(RqlActions.Select))
             return result;
 
-        parentNode.TryGetChild(rqlProperty.Name, out var propertyNode);
+        var (propertyNode, omitted) = GetPropertyNode(parentNode, rqlProperty);
 
-        if (parentNode.Mode != RqlSelectMode.All)
+        if (!omitted)
         {
-            if (propertyNode != null)
+            result = rqlProperty.Type switch
             {
-                // subtracted properties are skipped unless they have children
-                if (propertyNode!.Mode == RqlSelectMode.None && propertyNode!.Children == null)
-                    return result;
-            }
+                RqlPropertyType.Primitive => MakeSimplePropertyInit(param, propertyNode, rqlProperty, depth),
+                RqlPropertyType.Binary => MakeSimplePropertyInit(param, propertyNode, rqlProperty, depth),
+                RqlPropertyType.Reference => MakeReferencePropertyInit(param, propertyNode, rqlProperty, depth),
+                RqlPropertyType.Collection => MakeCollectionPropertyInit(param, propertyNode, rqlProperty, depth),
+                _ => throw new NotImplementedException("Unknown RQL property type"),
+            };
+        }
+
+        if (omitted || result.Value == null)
+        {
+            _auditContextAccessor.ReportOmittedPath(GetNodeFullPath);
+        }
+
+        return result;
+
+        string GetNodeFullPath()
+        {
+            var parentPath = parentNode.GetFullPath();
+            return string.IsNullOrEmpty(parentPath) ? rqlProperty.Name : $"{parentPath}.{rqlProperty.Name}";
+        }
+    }
+
+    private static (ProjectionNode? PropertyNode, bool IsOmitted) GetPropertyNode(ProjectionNode parentNode, RqlPropertyInfo rqlProperty)
+    {
+        bool omitted = false;
+        // subtracted properties are skipped unless they have children
+        if (parentNode.TryGetChild(rqlProperty.Name, out var propertyNode)
+            && propertyNode!.Mode == RqlSelectMode.None && propertyNode!.Children == null)
+            omitted = true;
+
+        if (!omitted && parentNode.Mode != RqlSelectMode.All)
+        {
             // hidden properties are ignored unless requested explicitly
-            else if (rqlProperty.SelectMode == RqlSelectMode.None)
-                return result;
+            if (rqlProperty.SelectMode == RqlSelectMode.None)
+                omitted = true;
 
             // all properties are skipped if parent is in subtract mode and no there is explicit property descriptor
             else if (parentNode.Mode == RqlSelectMode.None)
-                return result;
+                omitted = true;
 
             // if parent in core mode - skip all non reference props
-            if (parentNode.Mode == RqlSelectMode.Core && !rqlProperty.IsCore && (propertyNode == null || propertyNode.Mode != RqlSelectMode.All))
-                return result;
+            if (!omitted && parentNode.Mode == RqlSelectMode.Core && !rqlProperty.IsCore && (propertyNode == null || propertyNode.Mode != RqlSelectMode.All))
+                omitted = true;
         }
 
-        result = rqlProperty.Type switch
-        {
-            RqlPropertyType.Primitive => MakeSimplePropertyInit(param, propertyNode, rqlProperty, depth),
-            RqlPropertyType.Binary => MakeSimplePropertyInit(param, propertyNode, rqlProperty, depth),
-            RqlPropertyType.Reference => MakeReferencePropertyInit(param, propertyNode, rqlProperty, depth),
-            RqlPropertyType.Collection => MakeCollectionPropertyInit(param, propertyNode, rqlProperty, depth),
-            _ => throw new NotImplementedException("Unknown RQL property type"),
-        };
-
-        return result;
+        return (propertyNode, omitted);
     }
 
-    protected static ErrorOr<Expression?> MakeSimplePropertyInit(Expression param, ProjectionNode? propertyNode, RqlPropertyInfo propertyInfo, int depth)
+    private static ErrorOr<Expression?> MakeSimplePropertyInit(Expression param, ProjectionNode? propertyNode, RqlPropertyInfo propertyInfo, int depth)
     {
         _ = propertyNode;
         _ = depth;
         return Expression.MakeMemberAccess(param, propertyInfo.Property!);
     }
 
-    protected ErrorOr<Expression?> MakeReferencePropertyInit(Expression param, ProjectionNode? propertyNode, RqlPropertyInfo propertyInfo, int depth)
+    private ErrorOr<Expression?> MakeReferencePropertyInit(Expression param, ProjectionNode? propertyNode, RqlPropertyInfo propertyInfo, int depth)
     {
         propertyNode = EnsureComplexPropertyNode(propertyNode, propertyInfo, depth);
 
@@ -145,7 +166,7 @@ internal class ProjectionService<TView> : IProjectionService<TView>
             Expression.Constant(null, selector.Value.Type));
     }
 
-    protected ErrorOr<Expression?> MakeCollectionPropertyInit(Expression param, ProjectionNode? propertyNode, RqlPropertyInfo propertyInfo, int depth)
+    private ErrorOr<Expression?> MakeCollectionPropertyInit(Expression param, ProjectionNode? propertyNode, RqlPropertyInfo propertyInfo, int depth)
     {
         propertyNode = EnsureComplexPropertyNode(propertyNode, propertyInfo, depth);
 
@@ -176,7 +197,7 @@ internal class ProjectionService<TView> : IProjectionService<TView>
         return Expression.Call(null, functions.GetToList(), selectCall);
     }
 
-    protected ProjectionNode EnsureComplexPropertyNode(ProjectionNode? propertyNode, RqlPropertyInfo propertyInfo, int depth)
+    private ProjectionNode EnsureComplexPropertyNode(ProjectionNode? propertyNode, RqlPropertyInfo propertyInfo, int depth)
     {
         var undefined = propertyNode == null;
         propertyNode ??= new ProjectionNode { Value = propertyInfo.Name.AsMemory(), Mode = RqlSelectMode.Core };

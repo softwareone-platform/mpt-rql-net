@@ -42,6 +42,6 @@ public class OrderGeneratorTests
         var result = new OrderGenerator(_propertyVisitor).Generate(holder);
 
         // Assert
-        result.Should().Be("-FirstName,HomeAddress");
+        result.Should().Be("-firstName,homeAddress");
     }
 }

@@ -4,6 +4,7 @@ using SoftwareOne.Rql;
 using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Linq.Configuration;
 using SoftwareOne.Rql.Linq.Core.Metadata;
+using System.Text.Json;
 using Xunit;
 
 namespace Rql.Tests.Unit.Linq;
@@ -40,9 +41,9 @@ public class TypeDescriptionProviderTests
         // Assert
         Assert.NotEmpty(props);
         Assert.True(props.All(e => e.Actions == (RqlActions.Filter | RqlActions.Order)));
-        Assert.Contains(props, e => e.Name == nameof(SampleEntity.Types) && e.Type == RqlPropertyType.Collection);
-        Assert.Contains(props, e => e.Name == nameof(SampleEntity.ModifiedDate) && e.Type == RqlPropertyType.Primitive);
-        Assert.Contains(props, e => e.Name == nameof(SampleEntity.Size) && e.Type == RqlPropertyType.Primitive);
+        Assert.Contains(props, e => e.Name == JsonNamingPolicy.CamelCase.ConvertName(nameof(SampleEntity.Types)) && e.Type == RqlPropertyType.Collection);
+        Assert.Contains(props, e => e.Name == JsonNamingPolicy.CamelCase.ConvertName(nameof(SampleEntity.ModifiedDate)) && e.Type == RqlPropertyType.Primitive);
+        Assert.Contains(props, e => e.Name == JsonNamingPolicy.CamelCase.ConvertName(nameof(SampleEntity.Size)) && e.Type == RqlPropertyType.Primitive);
     }
 
     [Theory]
@@ -64,10 +65,10 @@ public class TypeDescriptionProviderTests
 
         // Assert
         Assert.NotEmpty(props);
-        Assert.Contains(props, e => e.Name == nameof(SampleTypeDescriptionEntity.OrderProp) && e.Actions == RqlActions.Order);
-        Assert.Contains(props, e => e.Name == nameof(SampleTypeDescriptionEntity.AllProp) && e.Actions == RqlActions.All);
-        Assert.Contains(props, e => e.Name == nameof(SampleTypeDescriptionEntity.FilterProp) && e.Actions == RqlActions.Filter);
-        Assert.Contains(props, e => e.Name == nameof(SampleTypeDescriptionEntity.SelectProp) && e.Actions == RqlActions.Select);
-        Assert.Contains(props, e => e.Name == nameof(SampleTypeDescriptionEntity.NoneProp)  && e.Actions == RqlActions.None);
+        Assert.Contains(props, e => e.Name == JsonNamingPolicy.CamelCase.ConvertName(nameof(SampleTypeDescriptionEntity.OrderProp)) && e.Actions == RqlActions.Order);
+        Assert.Contains(props, e => e.Name == JsonNamingPolicy.CamelCase.ConvertName(nameof(SampleTypeDescriptionEntity.AllProp)) && e.Actions == RqlActions.All);
+        Assert.Contains(props, e => e.Name == JsonNamingPolicy.CamelCase.ConvertName(nameof(SampleTypeDescriptionEntity.FilterProp)) && e.Actions == RqlActions.Filter);
+        Assert.Contains(props, e => e.Name == JsonNamingPolicy.CamelCase.ConvertName(nameof(SampleTypeDescriptionEntity.SelectProp)) && e.Actions == RqlActions.Select);
+        Assert.Contains(props, e => e.Name == JsonNamingPolicy.CamelCase.ConvertName(nameof(SampleTypeDescriptionEntity.NoneProp))  && e.Actions == RqlActions.None);
     }
 }

@@ -9,6 +9,7 @@ using SoftwareOne.Rql.Linq;
 using SoftwareOne.Rql.Linq.Client.Builder.Request;
 using SoftwareOne.Rql.Linq.Client.Core;
 using SoftwareOne.Rql.Linq.Client.Generator;
+using SoftwareOne.Rql.Linq.Core;
 using SoftwareOne.Rql.Linq.Core.Metadata;
 using SoftwareOne.Rql.Linq.Services.Filtering;
 using SoftwareOne.Rql.Linq.Services.Filtering.Builders;
@@ -53,6 +54,7 @@ public static class RqlExtensions
         services.AddSingleton<IOrderingPathInfoBuilder, OrderingPathInfoBuilder>();
 
         services.AddScoped(typeof(IProjectionService<>), typeof(ProjectionService<>));
+        services.AddScoped<IAuditContextAccessor, AuditContextAccessor>();
 
         services.AddSingleton<MetadataProvider>();
         services.AddSingleton<IMetadataProvider>(serviceProvider => serviceProvider.GetRequiredService<MetadataProvider>());
