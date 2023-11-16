@@ -1,10 +1,13 @@
 ﻿#pragma warning disable IDE0130
+using System.Text.Json.Serialization;
+
 namespace SoftwareOne.Rql;
 
 public class ListResponse<T>
 {
-    public PaginationMetadata Pagination { get; set; } = null!;
-    public List<string> Omitted { get; set; } = null!;
+    [JsonPropertyName("$meta")]
+    public ListResponseMetadata Metadata { get; set; } = null!;
 
+    [JsonPropertyName("data")]
     public List<T> Data { get; set; } = null!;
 }

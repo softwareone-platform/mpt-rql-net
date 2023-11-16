@@ -33,25 +33,28 @@ internal class RqlRequest<TStorage, TView> : IRqlRequest<TStorage, TView>
 
         var data = new ListResponse<TView>
         {
-            Pagination = new PaginationMetadata
+            Metadata = new ListResponseMetadata
             {
-                Limit = limit,
-                Offset = offset
+                Pagination = new PaginationMetadata
+                {
+                    Limit = limit,
+                    Offset = offset
+                }
             }
         };
 
         if (res.Value is IAsyncEnumerable<TView>) // efcore
         {
             data.Data = await res.Value.Skip(offset).Take(limit).ToListAsync();
-            data.Pagination.Total = await res.Value.CountAsync();
+            data.Metadata.Pagination.Total = await res.Value.CountAsync();
         }
         else // memory
         {
             data.Data = res.Value.Skip(offset).Take(limit).ToList();
-            data.Pagination.Total = res.Value.Count();
+            data.Metadata.Pagination.Total = res.Value.Count();
         }
-        
-        data.Omitted = auditContext.Omitted.Where(s=> !s.Contains('.')).ToList();
+
+        data.Metadata.Omitted = auditContext.Omitted.Where(s => !s.Contains('.')).ToList();
 
         return new OkObjectResult(data);
 
