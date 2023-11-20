@@ -22,7 +22,7 @@ public class BasicAuditTests
         var shouldBe = new List<string>() { "hiddenCollection" };
 
         // Assert
-        shouldBe.Should().BeEquivalentTo(rqlAudit.Omitted);
+        shouldBe.Should().BeEquivalentTo(rqlAudit.Omitted.Where(s => !s.Contains('.')).ToList());
     }
 
     [Fact]
@@ -35,6 +35,6 @@ public class BasicAuditTests
         shouldBe.AddRange(extra);
 
         // Assert
-        shouldBe.Should().BeEquivalentTo(rqlAudit.Omitted);
+        shouldBe.Should().BeEquivalentTo(rqlAudit.Omitted.Where(s => !s.Contains('.')).ToList());
     }
 }

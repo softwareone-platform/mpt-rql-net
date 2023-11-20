@@ -32,7 +32,6 @@ public static class DependencyInjection
 
             var selectSettings = t.Settings.Select;
             selectSettings.Mode = RqlSelectMode.All;
-            selectSettings.MaxDepth = 1;
         });
 
         return services;

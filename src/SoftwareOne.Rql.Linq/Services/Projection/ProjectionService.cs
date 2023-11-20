@@ -110,26 +110,14 @@ internal sealed class ProjectionService<TView> : IProjectionService<TView>
 
     private static (ProjectionNode? PropertyNode, bool IsOmitted) GetPropertyNode(ProjectionNode parentNode, RqlPropertyInfo rqlProperty)
     {
-        bool omitted = false;
-        // subtracted properties are skipped unless they have children
-        if (parentNode.TryGetChild(rqlProperty.Name, out var propertyNode)
-            && propertyNode!.Mode == RqlSelectMode.None && propertyNode!.Children == null)
+        // subtracted properties are skipped unless they have children otherwise parent mode decides
+        var omitted = parentNode.TryGetChild(rqlProperty.Name, out var propertyNode)
+            ? propertyNode!.Mode == RqlSelectMode.None && propertyNode.Children == null
+            : parentNode.Mode == RqlSelectMode.None;
+
+        // if parent in core mode - skip all non reference props
+        if (!omitted && parentNode.Mode == RqlSelectMode.Core && !rqlProperty.IsCore && (propertyNode == null || propertyNode.Mode != RqlSelectMode.All))
             omitted = true;
-
-        if (!omitted && parentNode.Mode != RqlSelectMode.All)
-        {
-            // hidden properties are ignored unless requested explicitly
-            if (rqlProperty.SelectMode == RqlSelectMode.None)
-                omitted = true;
-
-            // all properties are skipped if parent is in subtract mode and no there is explicit property descriptor
-            else if (parentNode.Mode == RqlSelectMode.None)
-                omitted = true;
-
-            // if parent in core mode - skip all non reference props
-            if (!omitted && parentNode.Mode == RqlSelectMode.Core && !rqlProperty.IsCore && (propertyNode == null || propertyNode.Mode != RqlSelectMode.All))
-                omitted = true;
-        }
 
         return (propertyNode, omitted);
     }
@@ -164,9 +152,6 @@ internal sealed class ProjectionService<TView> : IProjectionService<TView>
 
     private ErrorOr<Expression?> MakeReferencePropertyInit(Expression param, ProjectionNode propertyNode, RqlPropertyInfo propertyInfo, int depth)
     {
-        if (propertyNode.Mode == RqlSelectMode.None)
-            return default(Expression);
-
         var memberAccess = Expression.MakeMemberAccess(param, propertyInfo.Property!);
 
         var selector = GetSelector(memberAccess, propertyNode, depth + 1);
@@ -185,14 +170,11 @@ internal sealed class ProjectionService<TView> : IProjectionService<TView>
 
     private ErrorOr<Expression?> MakeCollectionPropertyInit(Expression param, ProjectionNode propertyNode, RqlPropertyInfo propertyInfo, int depth)
     {
-        if (propertyNode.Mode == RqlSelectMode.None)
-            return default(Expression);
-
         var memberAccess = Expression.MakeMemberAccess(param, propertyInfo.Property!);
 
         var itemType = memberAccess.Type.GenericTypeArguments[0];
 
-        if (!TypeHelper.IsUserComplexType(itemType))
+        if (!TypeHelper.IsUserComplexType(itemType) && propertyNode.Mode != RqlSelectMode.None)
             return memberAccess;
 
         var innerParam = Expression.Parameter(itemType);
