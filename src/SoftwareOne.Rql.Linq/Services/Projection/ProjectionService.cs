@@ -162,10 +162,7 @@ internal sealed class ProjectionService<TView> : IProjectionService<TView>
         if (selector.Value == null)
             return default(Expression);
 
-        return Expression.Condition(
-            Expression.NotEqual(memberAccess, Expression.Constant(null, memberAccess.Type)),
-            selector.Value,
-            Expression.Constant(null, selector.Value.Type));
+        return selector.Value;
     }
 
     private ErrorOr<Expression?> MakeCollectionPropertyInit(Expression param, ProjectionNode propertyNode, RqlPropertyInfo propertyInfo, int depth)
