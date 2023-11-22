@@ -162,6 +162,10 @@ internal sealed class ProjectionService<TView> : IProjectionService<TView>
         if (selector.Value == null)
             return default(Expression);
 
+        if (propertyInfo.IsNullable)
+            return Expression.Condition(Expression.NotEqual(memberAccess, Expression.Constant(null, memberAccess.Type)),
+                selector.Value, Expression.Constant(null, selector.Value.Type));
+
         return selector.Value;
     }
 

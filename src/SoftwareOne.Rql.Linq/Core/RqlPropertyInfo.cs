@@ -13,6 +13,7 @@ internal class RqlPropertyInfo : IRqlPropertyInfo
     public RqlActions Actions { get; internal set; }
     public RqlOperators Operators { get; internal set; }
     public Type? ElementType { get; internal set; }
+    public bool IsNullable { get; internal set; }
 
     public static RqlPropertyInfo Root { get; } = new RqlPropertyInfo { Type = RqlPropertyType.Root, Actions = RqlActions.All, Operators = RqlOperators.AllOperators };
 }

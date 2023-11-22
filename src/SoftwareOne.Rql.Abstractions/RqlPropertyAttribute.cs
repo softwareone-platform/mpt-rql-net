@@ -48,9 +48,14 @@ namespace SoftwareOne.Rql
         }
 
         public bool ActionsSet { get; private set; }
+        
         public bool OperatorsSet { get; private set; }
+        
         public bool SelectSet { get; private set; }
 
         public bool IsCore { get; set; }
+        
+        public bool IsNullable { get; set; }
+
     }
 }

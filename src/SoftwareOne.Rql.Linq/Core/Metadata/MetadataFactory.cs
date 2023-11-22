@@ -29,6 +29,7 @@ internal class MetadataFactory : IMetadataFactory
         if (attribute != null)
         {
             propertyInfo.IsCore = attribute.IsCore;
+            propertyInfo.IsNullable = attribute.IsNullable;
 
             if (attribute.ActionsSet)
                 propertyInfo.Actions = attribute.Actions;
