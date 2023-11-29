@@ -19,7 +19,7 @@ public class BasicExtensibilityTests
         var mapperType = typeof(IRqlMapper<,>).MakeGenericType(storage, view);
 
         // Act
-        var provider = RqlFactory.MakeProvider(config => config.ScanForMappers(typeof(ProductView).Assembly));
+        var provider = RqlFactory.MakeProvider(services => { }, config => config.ScanForMappers(typeof(ProductView).Assembly));
         var service = provider.GetService(mapperType);
 
         // Assert
@@ -40,7 +40,7 @@ public class BasicExtensibilityTests
     public void Operator_CustomEqualHandler_CheckRegistered(bool registered)
     {
         // Act
-        var provider = RqlFactory.MakeProvider(config =>
+        var provider = RqlFactory.MakeProvider(services => { }, config =>
         {
             if (registered)
                 config.SetComparisonHandler<IEqual, CustomEqualHandler>();
@@ -61,7 +61,7 @@ public class BasicExtensibilityTests
     public void Operator_CustomSearchHandler_CheckRegistered(bool registered)
     {
         // Act
-        var provider = RqlFactory.MakeProvider(config =>
+        var provider = RqlFactory.MakeProvider(services => { }, config =>
         {
             if (registered)
                 config.SetSearchHandler<ILike, CustomLikeHandler>();
@@ -82,7 +82,7 @@ public class BasicExtensibilityTests
     public void Operator_CustomListHandler_CheckRegistered(bool registered)
     {
         // Act
-        var provider = RqlFactory.MakeProvider(config =>
+        var provider = RqlFactory.MakeProvider(services => { }, config =>
         {
             if (registered)
                 config.SetListHandler<IListIn, CustomListHandler>();
@@ -103,7 +103,7 @@ public class BasicExtensibilityTests
     public void Provider_CustomPropertyName_CheckRegistered(bool registered)
     {
         // Act
-        var provider = RqlFactory.MakeProvider(config =>
+        var provider = RqlFactory.MakeProvider(services => { }, config =>
         {
             if (registered)
                 config.SetPropertyNameProvider<CustomPropertyNameProvider>();

@@ -1,4 +1,6 @@
 ﻿#pragma warning disable IDE0130
+using SoftwareOne.Rql.Abstractions.Exception;
+
 namespace SoftwareOne.Rql
 {
     [AttributeUsage(AttributeTargets.Property)]
@@ -55,7 +57,17 @@ namespace SoftwareOne.Rql
 
         public bool IsCore { get; set; }
         
+        /// <summary>
+        /// Specifies that property can be null
+        /// </summary>
         public bool IsNullable { get; set; }
+
+        /// <summary>
+        /// Type used to define property actions at runtime
+        /// Must implement <see cref="IActionStrategy">
+        /// </summary>
+        /// <exception cref="RqlInvalidActionStrategyException">Thrown when provided type does not implement <see cref="IActionStrategy"</exception>
+        public Type? ActionStrategy { get; set; }
 
     }
 }

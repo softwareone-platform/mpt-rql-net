@@ -8,13 +8,16 @@ namespace SoftwareOne.Rql.Linq.Services.Ordering
 
     internal class OrderingPathInfoBuilder : PathInfoBuilder, IOrderingPathInfoBuilder
     {
-        public OrderingPathInfoBuilder(IMetadataProvider metadataProvider) : base(metadataProvider)
+        private readonly IActionValidator _actionValidator;
+
+        public OrderingPathInfoBuilder(IActionValidator actionValidator, IMetadataProvider metadataProvider) : base(metadataProvider)
         {
+            _actionValidator = actionValidator;
         }
 
         protected override ErrorOr<Success> ValidatePath(MemberPathInfo pathInfo)
         {
-            if (!pathInfo.PropertyInfo.Actions.HasFlag(RqlActions.Order))
+            if (!_actionValidator.Validate(pathInfo.PropertyInfo, RqlActions.Order))
                 return Error.Validation(pathInfo.Path.ToString(), "Ordering is not permitted.");
             return Result.Success;
         }

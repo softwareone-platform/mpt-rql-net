@@ -56,6 +56,8 @@ public static class RqlExtensions
         services.AddScoped(typeof(IProjectionService<>), typeof(ProjectionService<>));
         services.AddScoped<IAuditContextAccessor, AuditContextAccessor>();
 
+        services.AddSingleton<IActionValidator, ActionValidator>();
+
         services.AddSingleton<MetadataProvider>();
         services.AddSingleton<IMetadataProvider>(serviceProvider => serviceProvider.GetRequiredService<MetadataProvider>());
         services.AddSingleton<IRqlMetadataProvider>(serviceProvider =>

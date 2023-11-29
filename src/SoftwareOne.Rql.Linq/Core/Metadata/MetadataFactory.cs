@@ -1,4 +1,5 @@
-﻿using SoftwareOne.Rql.Linq.Configuration;
+﻿using SoftwareOne.Rql.Abstractions.Exception;
+using SoftwareOne.Rql.Linq.Configuration;
 using System.Collections;
 using System.Reflection;
 
@@ -30,6 +31,17 @@ internal class MetadataFactory : IMetadataFactory
         {
             propertyInfo.IsCore = attribute.IsCore;
             propertyInfo.IsNullable = attribute.IsNullable;
+
+            if (attribute.ActionStrategy != null)
+            {
+                if (!typeof(IActionStrategy).IsAssignableFrom(attribute.ActionStrategy))
+                    throw new RqlInvalidActionStrategyException(
+                        $"Type {attribute.ActionStrategy.FullName} defined as action strategy for property " +
+                        $"({property.DeclaringType!.FullName}).{property.Name} " +
+                        $"does not implement {typeof(IActionStrategy).FullName}");
+
+                propertyInfo.ActionStrategy = attribute.ActionStrategy;
+            }
 
             if (attribute.ActionsSet)
                 propertyInfo.Actions = attribute.Actions;

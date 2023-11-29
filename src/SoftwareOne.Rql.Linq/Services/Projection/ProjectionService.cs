@@ -15,13 +15,16 @@ internal sealed class ProjectionService<TView> : IProjectionService<TView>
     private readonly IMetadataProvider _typeMetadataProvider;
     private readonly IRqlParser _parser;
     private readonly IAuditContextAccessor _auditContextAccessor;
+    private readonly IActionValidator _actionValidator;
 
-    public ProjectionService(IRqlSettings settings, IMetadataProvider typeMetadataProvider, IRqlParser parser, IAuditContextAccessor auditContextAccessor)
+    public ProjectionService(IRqlSettings settings, IMetadataProvider typeMetadataProvider,
+        IRqlParser parser, IAuditContextAccessor auditContextAccessor, IActionValidator actionValidator)
     {
         _settings = settings;
         _typeMetadataProvider = typeMetadataProvider;
         _parser = parser;
         _auditContextAccessor = auditContextAccessor;
+        _actionValidator = actionValidator;
     }
 
     public ErrorOr<IQueryable<TView>> Apply(IQueryable<TView> query, string? projection)
@@ -79,7 +82,7 @@ internal sealed class ProjectionService<TView> : IProjectionService<TView>
     {
         var result = ErrorOrFactory.From<Expression?>(default);
 
-        if (!rqlProperty.Actions.HasFlag(RqlActions.Select))
+        if (!_actionValidator.Validate(rqlProperty, RqlActions.Select))
             return result;
 
         var (propertyNode, omitted) = GetPropertyNode(parentNode, rqlProperty);

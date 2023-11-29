@@ -8,14 +8,17 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering
 
     internal class FilteringPathInfoBuilder : PathInfoBuilder, IFilteringPathInfoBuilder
     {
-        public FilteringPathInfoBuilder(IMetadataProvider metadataProvider) : base(metadataProvider)
+        private readonly IActionValidator _actionValidator;
+
+        public FilteringPathInfoBuilder(IActionValidator actionValidator, IMetadataProvider metadataProvider) : base(metadataProvider)
         {
+            _actionValidator = actionValidator;
         }
 
         protected override ErrorOr<Success> ValidatePath(MemberPathInfo pathInfo)
         {
-            if (!pathInfo.PropertyInfo.Actions.HasFlag(RqlActions.Filter))
-                return Error.Validation(description: "Filtering is not permitted");
+            if (!_actionValidator.Validate(pathInfo.PropertyInfo, RqlActions.Filter))
+                return Error.Validation(description: "Filtering is not permitted.");
             return Result.Success;
         }
     }

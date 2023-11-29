@@ -10,7 +10,7 @@ public class QueryBuilderTests
     [Fact]
     public void GetQueryBuilder_BuildQueryForProduct_ReturnsProperRequest()
     {
-        var provider = RqlFactory.MakeProvider();
+        var provider = RqlFactory.MakeProvider(services => { }, rql => { });
         var queryBuilder = (IRqlRequestBuilder<Product>)provider.GetService(typeof(IRqlRequestBuilder<Product>))!;
 
         Assert.NotNull(queryBuilder);
@@ -25,7 +25,7 @@ public class QueryBuilderTests
     [Fact]
     public void GetQueryBuilderProviderToInstantiateBuilder_ReturnsProperRequest()
     {
-        var provider = RqlFactory.MakeProvider();
+        var provider = RqlFactory.MakeProvider(services => { }, rql => { });
         var queryBuilder = (IRqlRequestBuilderProvider)provider.GetService(typeof(IRqlRequestBuilderProvider))!;
 
         Assert.NotNull(queryBuilder);
@@ -35,7 +35,7 @@ public class QueryBuilderTests
             .OrderByDescending(e => e.Category)
             .ThenBy(f => f.Name)
             .Select(e => e.Include(f => f.Category))
-            
+
             .Build();
         rql.Filter.Should().Be("eq(category,'a')");
         rql.Order.Should().Be("-category,name");

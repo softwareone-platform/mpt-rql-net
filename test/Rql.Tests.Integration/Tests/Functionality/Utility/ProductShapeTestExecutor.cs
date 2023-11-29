@@ -6,10 +6,10 @@ namespace Rql.Tests.Integration.Tests.Functionality.Utility;
 public class ProductShapeTestExecutor : TestExecutor<ShapedProduct>
 {
     protected override IRqlQueryable<ShapedProduct, ShapedProduct> MakeRql()
-        => RqlFactory.Make<ShapedProduct>(t =>
+        => RqlFactory.Make<ShapedProduct>(services => { }, rql =>
         {
-            t.Settings.Select.Mode = RqlSelectMode.All;
-            t.Settings.Select.MaxDepth = 99;
+            rql.Settings.Select.Mode = RqlSelectMode.All;
+            rql.Settings.Select.MaxDepth = 99;
         });
 
     public override IQueryable<ShapedProduct> GetQuery() => ShapedProductRepository.Query();

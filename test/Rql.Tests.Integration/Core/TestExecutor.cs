@@ -13,7 +13,6 @@ public abstract class TestExecutor<TStorage> : TestExecutor<TStorage, TStorage> 
         var transformed = Rql.Transform(srcData.AsQueryable(), new RqlRequest { Select = select });
         var targetJson = JsonSerializer.Serialize(transformed.Value.ToList());
 
-
         foreach (var item in srcData)
         {
             configure(item);
@@ -27,12 +26,9 @@ public abstract class TestExecutor<TStorage> : TestExecutor<TStorage, TStorage> 
 
 public abstract class TestExecutor<TStorage, TView> where TView : ITestEntity
 {
-    public TestExecutor()
-    {
-        Rql = MakeRql();
-    }
+    private IRqlQueryable<TStorage, TView>? _rql;
 
-    public IRqlQueryable<TStorage, TView> Rql { get; init; }
+    public IRqlQueryable<TStorage, TView> Rql => _rql ??= MakeRql();
 
     public abstract IQueryable<TStorage> GetQuery();
 

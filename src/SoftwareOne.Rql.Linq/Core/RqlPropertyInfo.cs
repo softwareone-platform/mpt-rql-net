@@ -12,6 +12,7 @@ internal class RqlPropertyInfo : IRqlPropertyInfo
     public RqlSelectMode SelectMode { get; internal set; }
     public RqlActions Actions { get; internal set; }
     public RqlOperators Operators { get; internal set; }
+    public Type? ActionStrategy { get; internal set; }
     public Type? ElementType { get; internal set; }
     public bool IsNullable { get; internal set; }
 

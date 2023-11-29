@@ -40,8 +40,8 @@ internal class BinaryExpressionBuilder : IConcreteExpressionBuilder<RqlBinary>
         var expression = handler switch
         {
             IComparisonOperator comp => MakeComparison(pe, node, property, accessor, comp),
-            ISearchOperator search => BinaryExpressionBuilder.MakeSearch(node, property, accessor, search),
-            IListOperator list => BinaryExpressionBuilder.MakeList(node, property, accessor, list),
+            ISearchOperator search => MakeSearch(node, property, accessor, search),
+            IListOperator list => MakeList(node, property, accessor, list),
             _ => FilteringError.Internal
         };
 

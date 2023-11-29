@@ -6,7 +6,7 @@ internal static class PathBuilderFactory
 {
     internal static IFilteringPathInfoBuilder Internal()
     {
-        return new FilteringPathInfoBuilder(MetadataProviderFactory.Internal());
+        return new FilteringPathInfoBuilder(new SimpleActionValidator(), MetadataProviderFactory.Internal());
     }
 }
 
