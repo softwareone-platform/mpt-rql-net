@@ -13,6 +13,7 @@ namespace Rql.Sample.Api.Mapping
               Id = t.ProductId,
               Number = t.ProductNumber,
               Name = t.Name,
+              InvisibleName = t.Name,
               FileName = t.ThumbnailPhotoFileName,
               Price = t.StandardCost,
               ListPrice = t.ListPrice,

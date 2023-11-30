@@ -14,11 +14,11 @@ public class BasicActionStrategyTests
     {
         _testExecutor = new ActionStrategyTestExecutor(services =>
         {
-            services.AddSingleton<AllowAllActionStrategy>();
-            services.AddSingleton<AllowNothingActionStrategy>();
-            services.AddSingleton<AllowOnlyFilterActionStrategy>();
-            services.AddSingleton<AllowOnlyOrderActionStrategy>();
-            services.AddSingleton<AllowOnlySelectActionStrategy>();
+            services.AddScoped<AllowAllActionStrategy>();
+            services.AddScoped<AllowNothingActionStrategy>();
+            services.AddScoped<AllowOnlyFilterActionStrategy>();
+            services.AddScoped<AllowOnlyOrderActionStrategy>();
+            services.AddScoped<AllowOnlySelectActionStrategy>();
         });
     }
 

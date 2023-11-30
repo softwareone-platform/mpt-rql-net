@@ -1,5 +1,7 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Rql.Sample.Api.Extensions.Core;
+using Rql.Sample.Contracts.Ef.Products;
 using SoftwareOne.Rql;
 using System.Text.Json.Serialization;
 
@@ -22,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<IErrorResultProvider, ErrorResultProvider>();
         services.AddScoped(typeof(IRqlRequest<>), typeof(RqlRequest<>));
         services.AddScoped(typeof(IRqlRequest<,>), typeof(RqlRequest<,>));
+        services.AddScoped<SelectNoneStrategy, SelectNoneStrategy>();
         services.AddHttpContextAccessor();
 
         services.AddRql(t =>

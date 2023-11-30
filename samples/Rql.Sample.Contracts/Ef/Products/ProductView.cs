@@ -32,6 +32,14 @@ namespace Rql.Sample.Contracts.Ef.Products
 
         [RqlProperty(Select = RqlSelectMode.None)]
         public IEnumerable<int>? SaleDetailIds { get; set; }
+
+        [RqlProperty(ActionStrategy = typeof(SelectNoneStrategy))]
+        public string InvisibleName { get; set; } = null!;
+    }
+
+    public class SelectNoneStrategy : IActionStrategy
+    {
+        public bool IsAllowed(RqlActions action) => action != RqlActions.Select;
     }
 
     public enum ViewProductStatus

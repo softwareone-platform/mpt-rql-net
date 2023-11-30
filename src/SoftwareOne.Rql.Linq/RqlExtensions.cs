@@ -48,15 +48,15 @@ public static class RqlExtensions
         services.AddScoped<IConcreteExpressionBuilder<RqlCollection>, CollectionExpressionBuilder>();
         services.AddScoped<IConcreteExpressionBuilder<RqlGroup>, GroupExpressionBuilder>();
         services.AddScoped<IConcreteExpressionBuilder<RqlUnary>, UnaryExpressionBuilder>();
-        services.AddSingleton<IFilteringPathInfoBuilder, FilteringPathInfoBuilder>();
+        services.AddScoped<IFilteringPathInfoBuilder, FilteringPathInfoBuilder>();
 
         services.AddScoped(typeof(IOrderingService<>), typeof(OrderingService<>));
-        services.AddSingleton<IOrderingPathInfoBuilder, OrderingPathInfoBuilder>();
+        services.AddScoped<IOrderingPathInfoBuilder, OrderingPathInfoBuilder>();
 
         services.AddScoped(typeof(IProjectionService<>), typeof(ProjectionService<>));
         services.AddScoped<IAuditContextAccessor, AuditContextAccessor>();
 
-        services.AddSingleton<IActionValidator, ActionValidator>();
+        services.AddScoped<IActionValidator, ActionValidator>();
 
         services.AddSingleton<MetadataProvider>();
         services.AddSingleton<IMetadataProvider>(serviceProvider => serviceProvider.GetRequiredService<MetadataProvider>());
