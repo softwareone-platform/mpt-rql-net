@@ -83,7 +83,10 @@ internal sealed class ProjectionService<TView> : IProjectionService<TView>
         var result = ErrorOrFactory.From<Expression?>(default);
 
         if (!_actionValidator.Validate(rqlProperty, RqlActions.Select))
+        {
+            _auditContextAccessor.ReportInvisiblePath(GetNodeFullPath);
             return result;
+        }
 
         var (propertyNode, omitted) = GetPropertyNode(parentNode, rqlProperty);
 

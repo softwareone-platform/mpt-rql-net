@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace SoftwareOne.Rql.Linq.Core
+﻿namespace SoftwareOne.Rql.Linq.Core
 {
     internal class AuditContextAccessor : IAuditContextAccessor
     {
@@ -11,5 +9,8 @@ namespace SoftwareOne.Rql.Linq.Core
 
         public void ReportOmittedPath(Func<string> setter)
             => _auditContext?.Omitted.Add(setter());
+
+        public void ReportInvisiblePath(Func<string> setter)
+            => _auditContext?.Invisible.Add(setter());
     }
 }

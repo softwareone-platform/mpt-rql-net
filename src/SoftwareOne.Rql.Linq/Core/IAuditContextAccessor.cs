@@ -4,5 +4,6 @@
     {
         void SetContext(RqlAuditContext auditContext);
         void ReportOmittedPath(Func<string> setter);
+        void ReportInvisiblePath(Func<string> setter);
     }
 }
