@@ -165,4 +165,8 @@ public class BasicFilterTests
     [InlineData("any(OrdersIds,self()=222)", false)]
     public void Any_SaleDetailIds_Equals(string query, bool isHappyFlow = true)
        => _testExecutor.ResultMatch(t => t.OrdersIds.Any(t => t == 1), query, isHappyFlow: isHappyFlow);
+
+    [Fact]
+    public void Equals_IsIgnored_ThrowsException()
+       => _testExecutor.MustFailWithError(filter: "ignored=true", errorDescription: "Invalid property path.");
 }

@@ -31,6 +31,7 @@ internal class MetadataFactory : IMetadataFactory
         {
             propertyInfo.IsCore = attribute.IsCore;
             propertyInfo.IsNullable = attribute.IsNullable;
+            propertyInfo.IsIgnored = attribute.IsIgnored;
 
             if (attribute.ActionStrategy != null)
             {

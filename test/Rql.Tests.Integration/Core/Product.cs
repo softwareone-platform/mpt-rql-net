@@ -1,4 +1,5 @@
-﻿using SoftwareOne.Rql;
+﻿using Newtonsoft.Json;
+using SoftwareOne.Rql;
 
 namespace Rql.Tests.Integration.Core
 {
@@ -25,8 +26,11 @@ namespace Rql.Tests.Integration.Core
         public List<Product> Collection { get; set; } = null!;
 
         public List<ProductOrder> Orders { get; set; } = null!;
-        
+
         public List<int> OrdersIds { get; set; } = null!;
+
+        [RqlProperty(IsIgnored = true)]
+        public bool Ignored { get; set; }
     }
 
     public class ProductOrder

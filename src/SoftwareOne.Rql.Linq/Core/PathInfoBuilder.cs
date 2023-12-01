@@ -53,7 +53,7 @@ namespace SoftwareOne.Rql.Linq.Core
                     var previousLength = current.Value.Path.Length;
                     var cumulativePath = current.Value.FullPath.AsMemory(0, (previousLength > 0 ? previousLength + 1 : previousLength) + segment.Length);
 
-                    if (!_metadataProvider.TryGetPropertyByDisplayName(current.Value.Expression.Type, segment, out var propInfo))
+                    if (!_metadataProvider.TryGetPropertyByDisplayName(current.Value.Expression.Type, segment, out var propInfo) || propInfo!.IsIgnored)
                         return Error.Validation(cumulativePath.ToString(), "Invalid property path.");
 
                     var expression = (Expression)Expression.MakeMemberAccess(current.Value!.Expression, propInfo!.Property!);

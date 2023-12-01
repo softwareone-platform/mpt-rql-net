@@ -56,7 +56,9 @@ namespace SoftwareOne.Rql
         public bool SelectSet { get; private set; }
 
         public bool IsCore { get; set; }
-        
+
+        public bool IsIgnored { get; set; }
+
         /// <summary>
         /// Specifies that property can be null
         /// </summary>

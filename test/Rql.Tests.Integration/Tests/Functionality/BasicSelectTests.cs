@@ -16,16 +16,18 @@ public class BasicSelectTests
     public void Shape_NoChange() => _testExecutor.ShapeMatch(t =>
     {
         t.HiddenCollection = null!;
+        t.Ignored = null!;
     }, string.Empty);
 
     [Fact]
-    public void Shape_HiddenCollection_Included() => _testExecutor.ShapeMatch(_ => { }, "HiddenCollection");
+    public void Shape_HiddenCollection_Included() => _testExecutor.ShapeMatch(t => { t.Ignored = null!; }, "HiddenCollection,Ignored");
 
     [Fact]
     public void Shape_Collection_Excluded() => _testExecutor.ShapeMatch(t =>
     {
         t.Collection = null!;
         t.HiddenCollection = null!;
+        t.Ignored = null!;
     }, "-Collection");
 
     [Fact]
@@ -33,5 +35,6 @@ public class BasicSelectTests
     {
         t.Reference = null!;
         t.HiddenCollection = null!;
+        t.Ignored = null!;
     }, "-Reference");
 }

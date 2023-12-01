@@ -17,6 +17,11 @@ public static class ShapedProductRepository
                     new() { Id = 2, Name = "Tony" },
                     new() { Id = 3, Name = "Isabel" },
                 },
+                Ignored = new ShapedProductReference
+                {
+                    Id = 1,
+                    Name = "Ignored"
+                },
                 Reference = new (){ Id = 1, Name = "Rajesh" }
             }
         }).AsQueryable();

@@ -53,7 +53,7 @@ internal sealed class ProjectionService<TView> : IProjectionService<TView>
 
         foreach (var rqlProperty in properties)
         {
-            if (rqlProperty.Property == null)
+            if (rqlProperty.Property == null || rqlProperty.IsIgnored)
                 continue;
 
             var propertyInit = MakePropertyInit(param, node, rqlProperty, depth);

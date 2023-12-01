@@ -6,6 +6,7 @@ namespace SoftwareOne.Rql.Linq.Core;
 internal class RqlPropertyInfo : IRqlPropertyInfo
 {
     public string Name { get; internal set; } = null!;
+    public bool IsIgnored { get; internal set; }
     public PropertyInfo? Property { get; internal set; }
     public RqlPropertyType Type { get; internal set; }
     public bool IsCore { get; internal set; }

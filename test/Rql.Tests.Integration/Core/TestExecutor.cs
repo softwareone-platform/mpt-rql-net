@@ -50,6 +50,13 @@ public abstract class TestExecutor<TStorage, TView> where TView : ITestEntity
         Assert.Equal(isHappyFlow, data.SequenceEqual(toCompare.OfType<ITestEntity>(), new TestEntityEqualityComparer()));
     }
 
+    public IQueryable<TView> Transform(string? filter = null, string? order = null, string? select = null)
+    {
+        var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select });
+        Assert.False(transformed.IsError);
+        return transformed.Value;
+    }
+
     public void MustFailWithError(string? filter = null, string? order = null, string? select = null, string? errorDescription = null)
     {
         var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select });

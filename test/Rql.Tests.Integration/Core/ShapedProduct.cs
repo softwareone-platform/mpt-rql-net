@@ -22,6 +22,9 @@ namespace Rql.Tests.Integration.Core
 
         [RqlProperty(Select = RqlSelectMode.None)]
         public List<ShapedProductReference> HiddenCollection { get; set; } = null!;
+
+        [RqlProperty(IsIgnored = true)]
+        public ShapedProductReference? Ignored { get; set; } = null!;
     }
 
     public class ShapedProductReference
