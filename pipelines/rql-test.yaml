@@ -49,7 +49,6 @@ stages:
 
   - stage: deploy
     displayName: "Deploy nuget package"
-    condition: and(succeeded(), eq(variables.isMain, true))
     jobs:
       - job:
         displayName: Deploy to nuget
