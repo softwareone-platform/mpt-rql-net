@@ -137,9 +137,6 @@ internal sealed class ProjectionService<TView> : IProjectionService<TView>
 
     private ErrorOr<Expression?> MakeComplexPropertyInit(Expression param, ProjectionNode parentNode, ProjectionNode? propertyNode, RqlPropertyInfo propertyInfo, int depth)
     {
-        if (_auditContextAccessor.IsCircularReference(propertyInfo))
-            return default(Expression);
-
         var undefined = propertyNode == null;
         propertyNode ??= new ProjectionNode { Value = propertyInfo.Name.AsMemory(), Mode = RqlSelectMode.Core, Parent = parentNode };
 

@@ -29,12 +29,6 @@ namespace Rql.Sample.Api.Mapping
                       Id = t.ProductCategory.ParentProductCategory!.ProductCategoryId,
                       Name = t.ProductCategory.ParentProductCategory.Name,
                       RowGuid = t.ProductCategory.ParentProductCategory.Rowguid,
-                      Parent = new ProductCategoryView
-                      {
-                          Id = t.ProductCategory.ParentProductCategory!.ProductCategoryId,
-                          Name = t.ProductCategory.ParentProductCategory.Name,
-                          RowGuid = t.ProductCategory.ParentProductCategory.Rowguid,
-                      }
                   }
               },
               Model = new ProductModelView
