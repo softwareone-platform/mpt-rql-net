@@ -1,6 +1,4 @@
-﻿using SoftwareOne.Rql.Linq.Client.Core;
-
-namespace SoftwareOne.Rql.Linq.Client.Builder.Select;
+﻿namespace SoftwareOne.Rql.Linq.Client.Builder.Select;
 
 internal interface ISelectDefinition
 {

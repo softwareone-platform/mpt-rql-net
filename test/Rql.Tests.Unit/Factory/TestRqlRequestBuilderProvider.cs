@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SoftwareOne.Rql;
 using SoftwareOne.Rql.Client;
+using SoftwareOne.Rql.Linq.Client;
 using SoftwareOne.Rql.Linq.Client.Builder.Request;
 using SoftwareOne.Rql.Linq.Client.Core;
 using SoftwareOne.Rql.Linq.Client.Generator;

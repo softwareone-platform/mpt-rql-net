@@ -7,8 +7,8 @@ namespace SoftwareOne.Rql.Linq.Core.Metadata;
 
 internal class MetadataFactory : IMetadataFactory
 {
-    private readonly IRqlSettings _settings;
-    public MetadataFactory(IRqlSettings settings)
+    private readonly IRqlGeneralSettings _settings;
+    public MetadataFactory(IRqlGeneralSettings settings)
     {
         _settings = settings;
     }

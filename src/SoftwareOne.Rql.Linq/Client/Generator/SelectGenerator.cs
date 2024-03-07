@@ -1,6 +1,5 @@
 ﻿using SoftwareOne.Rql.Client;
 using SoftwareOne.Rql.Linq.Client.Builder.Select;
-using SoftwareOne.Rql.Linq.Client.Core;
 
 namespace SoftwareOne.Rql.Linq.Client.Generator;
 
@@ -12,6 +11,7 @@ internal class SelectGenerator : ISelectGenerator
     {
         _propertyVisitor = propertyVisitor;
     }
+
     public string? Generate(ISelectDefinitionProvider? select)
     {
         if (select == null)
@@ -21,7 +21,7 @@ internal class SelectGenerator : ISelectGenerator
 
         var concat = ProcessList(definition.Included, false).Concat(ProcessList(definition.Excluded, true)).ToList();
 
-        if (!concat.Any())
+        if (concat.Count == 0)
             return default;
 
         return string.Join(',', concat);

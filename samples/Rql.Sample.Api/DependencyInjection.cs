@@ -30,11 +30,8 @@ public static class DependencyInjection
         services.AddRql(t =>
         {
             t.ScanForMappers(typeof(Program).Assembly);
-
-            t.Settings.DefaultActions = RqlActions.All;
-
-            var selectSettings = t.Settings.Select;
-            selectSettings.Mode = RqlSelectMode.All;
+            t.General.DefaultActions = RqlActions.All;
+            t.Select.Mode = RqlSelectMode.All;
         });
 
         return services;

@@ -10,7 +10,7 @@ public abstract class TestExecutor<TStorage> : TestExecutor<TStorage, TStorage> 
     public void ShapeMatch(Action<TStorage> configure, string select)
     {
         var srcData = GetQuery().ToList();
-        var transformed = Rql.Transform(srcData.AsQueryable(), new RqlRequest { Select = select });
+        var transformed = Rql.Transform(srcData.AsQueryable(), new RqlRequest { Select = select, Customization = GetCustomisation() });
         var targetJson = JsonSerializer.Serialize(transformed.Value.ToList());
 
         foreach (var item in srcData)
@@ -40,26 +40,26 @@ public abstract class TestExecutor<TStorage, TView> where TView : ITestEntity
 
     public void ResultMatch(IEnumerable<TView> toCompare, string? filter = null, string? order = null, string? select = null, bool isHappyFlow = true)
     {
-        var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select });
+        var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select, Customization = GetCustomisation() });
 
         Assert.False(transformed.IsError);
 
         var data = transformed.Value.OfType<ITestEntity>().ToList();
 
-        Assert.True(isHappyFlow == false || data.Any());
+        Assert.True(isHappyFlow == false || data.Count > 0);
         Assert.Equal(isHappyFlow, data.SequenceEqual(toCompare.OfType<ITestEntity>(), new TestEntityEqualityComparer()));
     }
 
     public IQueryable<TView> Transform(string? filter = null, string? order = null, string? select = null)
     {
-        var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select });
+        var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select, Customization = GetCustomisation() });
         Assert.False(transformed.IsError);
         return transformed.Value;
     }
 
     public void MustFailWithError(string? filter = null, string? order = null, string? select = null, string? errorDescription = null)
     {
-        var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select });
+        var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select, Customization = GetCustomisation() });
         Assert.True(transformed.IsError);
         if (errorDescription != null)
             Assert.Equal(errorDescription, transformed.Errors[0].Description);
@@ -68,4 +68,6 @@ public abstract class TestExecutor<TStorage, TView> where TView : ITestEntity
     protected abstract IRqlQueryable<TStorage, TView> MakeRql();
 
     protected abstract Expression<Func<TStorage, TView>> GetMapping();
+
+    protected virtual RqlCustomization? GetCustomisation() { return null; }
 }

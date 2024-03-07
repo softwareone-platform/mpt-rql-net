@@ -32,7 +32,7 @@ public class MetadataProviderTest
         // Arrange
         IRqlMetadataProvider provider = new MetadataProvider(
             new PropertyNameProvider(),
-            new MetadataFactory(new RqlSettings { DefaultActions = RqlActions.Filter | RqlActions.Order }));
+            new MetadataFactory(new RqlGeneralSettings { DefaultActions = RqlActions.Filter | RqlActions.Order }));
 
         // Act 
         var props = provider.GetPropertiesByDeclaringType(typeof(SampleEntity));
@@ -56,7 +56,7 @@ public class MetadataProviderTest
         // Arrange
         IRqlMetadataProvider provider = new MetadataProvider(
             new PropertyNameProvider(),
-            new MetadataFactory(new RqlSettings { DefaultActions = globalAction }));
+            new MetadataFactory(new RqlGeneralSettings { DefaultActions = globalAction }));
 
         // Act 
         var props = provider.GetPropertiesByDeclaringType(typeof(MetadataActionTestEntity));
@@ -85,7 +85,7 @@ public class MetadataProviderTest
         // Arrange
         IRqlMetadataProvider provider = new MetadataProvider(
             new PropertyNameProvider(),
-            new MetadataFactory(new RqlSettings()));
+            new MetadataFactory(new RqlGeneralSettings()));
 
         // Act 
         var props = provider.GetPropertiesByDeclaringType(typeof(MetadataOperatorTestEntity));

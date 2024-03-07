@@ -1,5 +1,4 @@
 ﻿using SoftwareOne.Rql.Linq.Client.Builder.Order;
-using SoftwareOne.Rql.Linq.Client.Core;
 
 namespace SoftwareOne.Rql.Linq.Client.Generator;
 

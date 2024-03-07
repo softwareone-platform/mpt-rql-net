@@ -12,13 +12,15 @@ public class RqlConfiguration
     public RqlConfiguration()
     {
         OperatorOverrides = new Dictionary<Type, Type>();
-        Settings = new RqlSettings
+        General = new RqlGeneralSettings
         {
             DefaultActions = RqlActions.All,
-            Select = new RqlSelectSettings
-            {
-                Mode = RqlSelectMode.Core
-            }
+            
+        };
+
+        Select = new RqlSelectSettings
+        {
+            Mode = RqlSelectMode.Core
         };
     }
 
@@ -26,7 +28,9 @@ public class RqlConfiguration
     internal Type? PropertyMapperType { get; private set; }
     internal Dictionary<Type, Type> OperatorOverrides { get; init; }
     
-    public IRqlSettings Settings { get; init; }
+    public IRqlGeneralSettings General { get; init; }
+
+    public IRqlSelectSettings Select { get; init; }
 
     public RqlConfiguration SetComparisonHandler<TOperator, THandler>() where TOperator : IComparisonOperator, IActualOperator where THandler : TOperator
         => SetOperatorInternal<TOperator, THandler>();

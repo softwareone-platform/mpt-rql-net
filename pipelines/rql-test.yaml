@@ -30,9 +30,26 @@ stages:
           - template: templates/build_and_pack.yaml
             parameters:
               nugetArtifactsName: ${{ variables.nugetArtifactsName }}
+          - template: templates/run_tests.yaml
+            parameters: 
+              resultsDir: ${{ variables.testResultsDir }}
+              coverageReportFile: coverage_unit.xml
+              filter: Unit
+          - template: templates/run_tests.yaml
+            parameters:
+              resultsDir: ${{ variables.testResultsDir }}
+              coverageReportFile: coverage_integration.xml
+              filter: Integration
+          - task: SonarCloudAnalyze@1
+            displayName: Run SonarCloud Analysis
+          - task: SonarCloudPublish@1
+            displayName: Publish SonarCloud report
+            inputs:
+              pollingTimeoutSec: '300'
 
   - stage: deploy
     displayName: "Deploy nuget package"
+    condition: and(succeeded(), eq(variables.isMain, true))
     jobs:
       - job:
         displayName: Deploy to nuget

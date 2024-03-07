@@ -1,6 +1,4 @@
-﻿using SoftwareOne.Rql.Linq.Client.Core;
-
-namespace SoftwareOne.Rql.Linq.Client.Builder.Order;
+﻿namespace SoftwareOne.Rql.Linq.Client.Builder.Order;
 
 internal interface IOrderDefinition
 {

@@ -1,5 +1,6 @@
 ﻿using ErrorOr;
 using Microsoft.Extensions.DependencyInjection;
+using SoftwareOne.Rql.Linq.Configuration;
 using SoftwareOne.Rql.Linq.Core;
 using SoftwareOne.Rql.Linq.Services.Filtering;
 using SoftwareOne.Rql.Linq.Services.Mapping;
@@ -45,6 +46,15 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
         if (auditContext != null)
             GetService<IAuditContextAccessor>(scope).SetContext(auditContext);
 
+        var selectCustomization = request.Customization?.Select;
+        if (selectCustomization == null)
+        {
+            var defaultSettings = GetService<IRqlDefaultSettings>(scope);
+            selectCustomization = defaultSettings.Select;
+        }
+
+        GetService<IRqlSelectSettings>(scope).Apply(selectCustomization);
+
         var queryResult = GetService<IMappingService<TStorage, TView>>(scope).Apply(source);
 
         if (queryResult.IsError)
@@ -56,7 +66,7 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
         GetService<IOrderingService<TView>>(scope).Apply(query, request.Order).Switch(q => query = q, errors.AddRange);
         GetService<IProjectionService<TView>>(scope).Apply(query, request.Select).Switch(q => query = q, errors.AddRange);
 
-        return errors.Any() ? errors : ErrorOrFactory.From(query);
+        return errors.Count != 0 ? errors : ErrorOrFactory.From(query);
 
         static T GetService<T>(IServiceScope scope) where T : notnull => scope.ServiceProvider.GetRequiredService<T>();
     }

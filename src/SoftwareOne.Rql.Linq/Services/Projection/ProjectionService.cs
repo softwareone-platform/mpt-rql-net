@@ -11,16 +11,16 @@ delegate ErrorOr<Expression?> ComplexPropertyProcessor(MemberExpression member, 
 
 internal sealed class ProjectionService<TView> : IProjectionService<TView>
 {
-    private readonly IRqlSettings _settings;
+    private readonly IRqlSelectSettings _selectSettings;
     private readonly IMetadataProvider _typeMetadataProvider;
     private readonly IRqlParser _parser;
     private readonly IAuditContextAccessor _auditContextAccessor;
     private readonly IActionValidator _actionValidator;
 
-    public ProjectionService(IRqlSettings settings, IMetadataProvider typeMetadataProvider,
+    public ProjectionService(IRqlSelectSettings selectSettings, IMetadataProvider typeMetadataProvider,
         IRqlParser parser, IAuditContextAccessor auditContextAccessor, IActionValidator actionValidator)
     {
-        _settings = settings;
+        _selectSettings = selectSettings;
         _typeMetadataProvider = typeMetadataProvider;
         _parser = parser;
         _auditContextAccessor = auditContextAccessor;
@@ -30,7 +30,7 @@ internal sealed class ProjectionService<TView> : IProjectionService<TView>
     public ErrorOr<IQueryable<TView>> Apply(IQueryable<TView> query, string? projection)
     {
         var node = !string.IsNullOrEmpty(projection) ? _parser.Parse(projection).ToProjection() : new();
-        node.Mode = _settings.Select.Mode;
+        node.Mode = _selectSettings.Mode;
 
         var param = Expression.Parameter(typeof(TView));
         var selector = GetSelector(param, node, 0);
@@ -68,11 +68,11 @@ internal sealed class ProjectionService<TView> : IProjectionService<TView>
                 bindings.Add(Expression.Bind(rqlProperty.Property, propertyInit.Value));
         }
 
-        if (errors.Any())
+        if (errors.Count != 0)
             return errors;
 
         // produce null for non zero depth
-        if (!bindings.Any() && depth != 0)
+        if (bindings.Count == 0 && depth != 0)
             return default(MemberInitExpression);
 
         return Expression.MemberInit(Expression.New(param.Type.GetConstructor(Type.EmptyTypes)!), bindings);
@@ -141,7 +141,7 @@ internal sealed class ProjectionService<TView> : IProjectionService<TView>
         propertyNode ??= new ProjectionNode { Value = propertyInfo.Name.AsMemory(), Mode = RqlSelectMode.Core, Parent = parentNode };
 
         // treat every complex property deeper than max select depth as a default reference
-        if (depth >= _settings.Select.MaxDepth && propertyNode.Mode != RqlSelectMode.None)
+        if (depth >= _selectSettings.MaxDepth && propertyNode.Mode != RqlSelectMode.None)
             propertyNode.Mode = RqlSelectMode.Core;
 
         if (undefined)

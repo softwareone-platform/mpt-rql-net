@@ -6,9 +6,11 @@ using SoftwareOne.Rql.Abstractions.Group;
 using SoftwareOne.Rql.Abstractions.Unary;
 using SoftwareOne.Rql.Client;
 using SoftwareOne.Rql.Linq;
+using SoftwareOne.Rql.Linq.Client;
 using SoftwareOne.Rql.Linq.Client.Builder.Request;
 using SoftwareOne.Rql.Linq.Client.Core;
 using SoftwareOne.Rql.Linq.Client.Generator;
+using SoftwareOne.Rql.Linq.Configuration;
 using SoftwareOne.Rql.Linq.Core;
 using SoftwareOne.Rql.Linq.Core.Metadata;
 using SoftwareOne.Rql.Linq.Services.Filtering;
@@ -33,7 +35,15 @@ public static class RqlExtensions
         var options = new RqlConfiguration();
         configure?.Invoke(options);
 
-        services.AddSingleton(options.Settings);
+        var defaultSettings = new RqlDefaultSettings
+        {
+            General = options.General,
+            Select = options.Select,
+        };
+
+        services.AddSingleton<IRqlDefaultSettings>(defaultSettings);
+        services.AddSingleton(defaultSettings.General);
+        services.AddScoped<IRqlSelectSettings, RqlSelectSettings>();
 
         services.AddSingleton<IRqlParser, RqlParser>();
 

@@ -1,6 +1,5 @@
 ﻿using SoftwareOne.Rql.Client;
 using SoftwareOne.Rql.Linq.Client.Builder.Operators;
-using SoftwareOne.Rql.Linq.Client.Core;
 
 namespace SoftwareOne.Rql.Linq.Client.Generator;
 

@@ -5,9 +5,9 @@ namespace Rql.Tests.Unit.Factory;
 
 internal static class RqlSettingsFactory
 {
-    internal static RqlSettings Default()
+    internal static RqlGeneralSettings Default()
     {
-        var rqlSettings = new RqlSettings { DefaultActions = RqlActions.Filter };
+        var rqlSettings = new RqlGeneralSettings { DefaultActions = RqlActions.Filter };
 
         return rqlSettings;
     }

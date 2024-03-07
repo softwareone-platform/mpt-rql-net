@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+		<TargetFrameworks>net7.0;net8.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Description>RQL implementation for .Net.</Description>
 		<IsPackable>true</IsPackable>
@@ -10,12 +10,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="ErrorOr" Version="1.2.1" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+		<PackageReference Include="ErrorOr" Version="1.10.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="Rql.Tests.Unit" />
+		<InternalsVisibleTo Include="Rql.Tests.Integration" />
 	</ItemGroup>
 
 	<ItemGroup>
