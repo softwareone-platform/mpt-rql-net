@@ -2,7 +2,7 @@
 {
     internal class RqlSelectSettings : IRqlSelectSettings
     {
-        public RqlSelectMode Mode { get; set; }
+        public RqlSelectModes Mode { get; set; }
         public int? MaxDepth { get; set; }
     }
 }

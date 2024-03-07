@@ -94,7 +94,7 @@ internal sealed class ProjectionService<TView> : IProjectionService<TView>
         {
             result = rqlProperty.Type switch
             {
-                RqlPropertyType.Primitive or RqlPropertyType.Binary => MakeSimplePropertyInit(param, propertyNode, rqlProperty, depth),
+                RqlPropertyType.Primitive => MakeSimplePropertyInit(param, propertyNode, rqlProperty, depth),
                 RqlPropertyType.Reference or RqlPropertyType.Collection => MakeComplexPropertyInit(param, parentNode, propertyNode, rqlProperty, depth),
                 _ => throw new NotImplementedException("Unknown RQL property type"),
             };
@@ -118,15 +118,32 @@ internal sealed class ProjectionService<TView> : IProjectionService<TView>
     {
         // subtracted properties are skipped unless they have children otherwise parent mode decides
         var omitted = parentNode.TryGetChild(rqlProperty.Name, out var propertyNode)
-            ? propertyNode!.Mode == RqlSelectMode.None && propertyNode.Children == null
-            : parentNode.Mode == RqlSelectMode.None;
+            ? propertyNode!.Mode == RqlSelectModes.None && propertyNode.Children == null
+            : parentNode.Mode == RqlSelectModes.None;
 
-        // if parent in core mode - skip all non reference props
-        if (!omitted && parentNode.Mode == RqlSelectMode.Core && !rqlProperty.IsCore && (propertyNode == null || propertyNode.Mode != RqlSelectMode.All))
-            omitted = true;
+        if (!omitted)
+            omitted = ShouldOmit(parentNode.Mode, rqlProperty);
 
         return (propertyNode, omitted);
     }
+
+    private static bool ShouldOmit(RqlSelectModes currentMode, RqlPropertyInfo rqlProperty)
+    {
+        if (currentMode.HasFlag(RqlSelectModes.Core) && rqlProperty.IsCore)
+            return false;
+
+        var effectiveType = rqlProperty.TypeOverride ?? rqlProperty.Type;
+
+        return effectiveType switch
+        {
+            RqlPropertyType.Root => false,
+            RqlPropertyType.Primitive => !currentMode.HasFlag(RqlSelectModes.Primitive),
+            RqlPropertyType.Reference => !currentMode.HasFlag(RqlSelectModes.Reference),
+            RqlPropertyType.Collection => !currentMode.HasFlag(RqlSelectModes.Collection),
+            _ => throw new NotImplementedException("Unknown RQL property type"),
+        };
+    }
+
 
     private static ErrorOr<Expression?> MakeSimplePropertyInit(Expression param, ProjectionNode? propertyNode, RqlPropertyInfo propertyInfo, int depth)
     {
@@ -138,11 +155,11 @@ internal sealed class ProjectionService<TView> : IProjectionService<TView>
     private ErrorOr<Expression?> MakeComplexPropertyInit(Expression param, ProjectionNode parentNode, ProjectionNode? propertyNode, RqlPropertyInfo propertyInfo, int depth)
     {
         var undefined = propertyNode == null;
-        propertyNode ??= new ProjectionNode { Value = propertyInfo.Name.AsMemory(), Mode = RqlSelectMode.Core, Parent = parentNode };
+        propertyNode ??= new ProjectionNode { Value = propertyInfo.Name.AsMemory(), Mode = RqlSelectModes.Core, Parent = parentNode };
 
         // treat every complex property deeper than max select depth as a default reference
-        if (depth >= _selectSettings.MaxDepth && propertyNode.Mode != RqlSelectMode.None)
-            propertyNode.Mode = RqlSelectMode.Core;
+        if (depth >= _selectSettings.MaxDepth && propertyNode.Mode != RqlSelectModes.None)
+            propertyNode.Mode = RqlSelectModes.Core;
 
         if (undefined)
             propertyNode.Mode = propertyInfo.SelectMode;
@@ -181,7 +198,7 @@ internal sealed class ProjectionService<TView> : IProjectionService<TView>
 
         var itemType = memberAccess.Type.GenericTypeArguments[0];
 
-        if (!TypeHelper.IsUserComplexType(itemType) && propertyNode.Mode != RqlSelectMode.None)
+        if (!TypeHelper.IsUserComplexType(itemType) && propertyNode.Mode != RqlSelectModes.None)
             return memberAccess;
 
         var innerParam = Expression.Parameter(itemType);

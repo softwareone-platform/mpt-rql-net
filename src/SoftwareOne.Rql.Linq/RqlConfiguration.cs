@@ -20,7 +20,7 @@ public class RqlConfiguration
 
         Select = new RqlSelectSettings
         {
-            Mode = RqlSelectMode.Core
+            Mode = RqlSelectModes.Core
         };
     }
 

@@ -14,13 +14,13 @@ namespace Rql.Tests.Integration.Core
 
         public DateTime ListDate { get; set; }
 
-        [RqlProperty(Select = RqlSelectMode.All)]
+        [RqlProperty(Select = RqlSelectModes.All)]
         public ShapedProductReference? Reference { get; set; } = null!;
 
-        [RqlProperty(Select = RqlSelectMode.All)]
+        [RqlProperty(Select = RqlSelectModes.All)]
         public List<ShapedProductReference> Collection { get; set; } = null!;
 
-        [RqlProperty(Select = RqlSelectMode.None)]
+        [RqlProperty(Select = RqlSelectModes.None)]
         public List<ShapedProductReference> HiddenCollection { get; set; } = null!;
 
         [RqlProperty(IsIgnored = true)]

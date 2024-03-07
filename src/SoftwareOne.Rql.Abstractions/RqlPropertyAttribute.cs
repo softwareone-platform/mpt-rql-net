@@ -8,7 +8,8 @@ namespace SoftwareOne.Rql
     {
         private RqlActions? _actionFlags;
         private RqlOperators? _operatorFlags;
-        private RqlSelectMode? _select;
+        private RqlSelectModes? _select;
+        private RqlPropertyType? _treatAs;
 
         public RqlPropertyAttribute()
         {
@@ -39,13 +40,23 @@ namespace SoftwareOne.Rql
             }
         }
 
-        public RqlSelectMode Select
+        public RqlSelectModes Select
         {
-            get => _select ?? RqlSelectMode.None;
+            get => _select ?? RqlSelectModes.None;
             set
             {
                 _select = value;
                 SelectSet = true;
+            }
+        }
+
+        public RqlPropertyType TreatAs
+        {
+            get => _treatAs ?? RqlPropertyType.Primitive;
+            set
+            {
+                _treatAs = value;
+                TreatAsSet = true;
             }
         }
 
@@ -54,6 +65,8 @@ namespace SoftwareOne.Rql
         public bool OperatorsSet { get; private set; }
         
         public bool SelectSet { get; private set; }
+
+        public bool TreatAsSet { get; private set; }
 
         public bool IsCore { get; set; }
 

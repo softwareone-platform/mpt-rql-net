@@ -22,7 +22,8 @@ internal class MetadataFactory : IMetadataFactory
             Type = GetRqlPropertyType(property),
             Actions = _settings.DefaultActions,
             Operators = _settings.AllowedOperators,
-            ElementType = GetCollectionElementType(property.PropertyType)
+            ElementType = GetCollectionElementType(property.PropertyType),
+            SelectMode = RqlSelectModes.Core
         };
 
         var attribute = property.GetCustomAttributes<RqlPropertyAttribute>(true).FirstOrDefault();
@@ -52,6 +53,9 @@ internal class MetadataFactory : IMetadataFactory
 
             if (attribute.SelectSet)
                 propertyInfo.SelectMode = attribute.Select;
+
+            if (attribute.TreatAsSet)
+                propertyInfo.TypeOverride = attribute.TreatAs;
         }
 
         propertyInfo.Operators &= propertyInfo.Type switch
@@ -108,9 +112,6 @@ internal class MetadataFactory : IMetadataFactory
 
         if (TypeHelper.IsUserComplexType(type))
             return RqlPropertyType.Reference;
-
-        if (type == typeof(byte[]))
-            return RqlPropertyType.Binary;
 
         return RqlPropertyType.Primitive;
     }

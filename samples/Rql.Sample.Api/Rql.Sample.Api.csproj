@@ -11,7 +11,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.1" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-		<PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+		<PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.1" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\SoftwareOne.Rql.Linq\SoftwareOne.Rql.Linq.csproj" />

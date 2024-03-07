@@ -5,7 +5,6 @@ public enum RqlPropertyType
 {
     Root,
     Primitive,
-    Binary,
     Reference,
     Collection
 }

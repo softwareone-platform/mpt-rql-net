@@ -27,10 +27,10 @@ namespace Rql.Sample.Contracts.Ef.Products
         [RqlProperty(IsCore = true)]
         public ProductModelView? Model { get; set; }
 
-        [RqlProperty(Select = RqlSelectMode.None)]
+        [RqlProperty(Select = RqlSelectModes.None)]
         public IEnumerable<ProductSaleOrder>? SaleDetails { get; set; }
 
-        [RqlProperty(Select = RqlSelectMode.None)]
+        [RqlProperty(Select = RqlSelectModes.None)]
         public IEnumerable<int>? SaleDetailIds { get; set; }
 
         [RqlProperty(ActionStrategy = typeof(SelectNoneStrategy))]

@@ -9,8 +9,9 @@ internal class RqlPropertyInfo : IRqlPropertyInfo
     public bool IsIgnored { get; internal set; }
     public PropertyInfo? Property { get; internal set; }
     public RqlPropertyType Type { get; internal set; }
+    public RqlPropertyType? TypeOverride { get; internal set; }
     public bool IsCore { get; internal set; }
-    public RqlSelectMode SelectMode { get; internal set; }
+    public RqlSelectModes SelectMode { get; internal set; }
     public RqlActions Actions { get; internal set; }
     public RqlOperators Operators { get; internal set; }
     public Type? ActionStrategy { get; internal set; }
