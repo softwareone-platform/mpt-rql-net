@@ -121,7 +121,7 @@ internal sealed class ProjectionService<TView> : IProjectionService<TView>
             ? propertyNode!.Mode == RqlSelectModes.None && propertyNode.Children == null
             : parentNode.Mode == RqlSelectModes.None;
 
-        if (!omitted)
+        if (!omitted && (propertyNode == null || propertyNode.Mode != RqlSelectModes.All))
             omitted = ShouldOmit(parentNode.Mode, rqlProperty);
 
         return (propertyNode, omitted);
