@@ -20,7 +20,7 @@ public class BasicSelectTests
     }, string.Empty);
 
     [Fact]
-    public void Shape_HiddenCollection_Included() => TestExecutor.ShapeMatch(t => { t.Ignored = null!; }, "HiddenCollection,Ignored");
+    public void Shape_HiddenCollection_Included() => TestExecutor.ShapeMatch(t => { t.Ignored = null!; }, "HiddenCollection,-Ignored");
 
     [Fact]
     public void Shape_Collection_Excluded() => TestExecutor.ShapeMatch(t =>

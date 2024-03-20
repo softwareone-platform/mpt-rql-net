@@ -1,11 +1,12 @@
 ﻿using ErrorOr;
 using Microsoft.Extensions.DependencyInjection;
 using SoftwareOne.Rql.Linq.Configuration;
-using SoftwareOne.Rql.Linq.Core;
+using SoftwareOne.Rql.Linq.Services.Context;
 using SoftwareOne.Rql.Linq.Services.Filtering;
 using SoftwareOne.Rql.Linq.Services.Mapping;
 using SoftwareOne.Rql.Linq.Services.Ordering;
 using SoftwareOne.Rql.Linq.Services.Projection;
+using System.Diagnostics;
 
 namespace SoftwareOne.Rql.Linq;
 
@@ -23,52 +24,46 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
         _serviceProvider = serviceProvider;
     }
 
-    public ErrorOr<IQueryable<TView>> Transform(IQueryable<TStorage> source, Action<RqlRequest> configure)
+    public RqlResponse<TView> Transform(IQueryable<TStorage> source, Action<RqlRequest> configure)
         => Transform(source, MakeRequest(configure));
 
-    public ErrorOr<IQueryable<TView>> Transform(IQueryable<TStorage> source, Action<RqlRequest> configure, out RqlAuditContext auditContext)
-        => Transform(source, MakeRequest(configure), out auditContext);
+    public RqlResponse<TView> Transform(IQueryable<TStorage> source, RqlRequest request)
+        => TransformInternal(source, request);
 
-    public ErrorOr<IQueryable<TView>> Transform(IQueryable<TStorage> source, RqlRequest request)
-        => TransformInternal(source, request, null);
-
-    public ErrorOr<IQueryable<TView>> Transform(IQueryable<TStorage> source, RqlRequest request, out RqlAuditContext auditContext)
+    private RqlResponse<TView> TransformInternal(IQueryable<TStorage> source, RqlRequest request)
     {
-        auditContext = new RqlAuditContext();
-        return TransformInternal(source, request, auditContext);
-    }
-
-    private ErrorOr<IQueryable<TView>> TransformInternal(IQueryable<TStorage> source, RqlRequest request, RqlAuditContext? auditContext)
-    {
-        var errors = new List<Error>();
         using var scope = _serviceProvider.CreateScope();
-
-        if (auditContext != null)
-            GetService<IAuditContextAccessor>(scope).SetContext(auditContext);
 
         var selectCustomization = request.Customization?.Select;
         if (selectCustomization == null)
         {
-            var defaultSettings = GetService<IRqlDefaultSettings>(scope);
+            var defaultSettings = GetService<IRqlDefaultSettings>();
             selectCustomization = defaultSettings.Select;
         }
 
-        GetService<IRqlSelectSettings>(scope).Apply(selectCustomization);
+        var context = GetService<IQueryContext<TView>>();
 
-        var queryResult = GetService<IMappingService<TStorage, TView>>(scope).Apply(source);
+        GetService<IRqlSelectSettings>().Apply(selectCustomization);
+        GetService<IFilteringService<TView>>().Process(request.Filter);
+        GetService<IOrderingService<TView>>().Process(request.Order);
+        GetService<IProjectionService<TView>>().Process(request.Select);
+        GetService<IProjectionGraphBuilder<TView>>().BuildDefaults();
 
-        if (queryResult.IsError)
-            return queryResult.Errors;
+        var query = GetService<IMappingService<TStorage, TView>>().Apply(source);
+        query = context.ApplyTransformations(query);
 
-        var query = queryResult.Value;
+#if DEBUG
+        Debug.Write(context.Graph.Print());
+#endif
 
-        GetService<IFilteringService<TView>>(scope).Apply(query, request.Filter).Switch(q => query = q, errors.AddRange);
-        GetService<IOrderingService<TView>>(scope).Apply(query, request.Order).Switch(q => query = q, errors.AddRange);
-        GetService<IProjectionService<TView>>(scope).Apply(query, request.Select).Switch(q => query = q, errors.AddRange);
+        return new RqlResponse<TView>
+        {
+            Graph = context.Graph,
+            Query = query,
+            Status = context.HasErrors ? context.GetErrors().ToList() : Result.Success
+        };
 
-        return errors.Count != 0 ? errors : ErrorOrFactory.From(query);
-
-        static T GetService<T>(IServiceScope scope) where T : notnull => scope.ServiceProvider.GetRequiredService<T>();
+        T GetService<T>() where T : notnull => scope.ServiceProvider.GetRequiredService<T>();
     }
 
     private static RqlRequest MakeRequest(Action<RqlRequest> configure)
@@ -78,3 +73,5 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
         return request;
     }
 }
+
+

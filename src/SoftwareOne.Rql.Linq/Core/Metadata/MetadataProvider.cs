@@ -36,7 +36,9 @@ internal class MetadataProvider : IMetadataProvider, IRqlMetadataProvider
             foreach (var property in properties)
             {
                 var name = _propertyNameProvider.GetName(property);
-                props.Add(name, _metadataFactory.MakeRqlPropertyInfo(name, property));
+                var propertyInfo = _metadataFactory.MakeRqlPropertyInfo(name, property);
+                if (!props.TryAdd(name, propertyInfo))
+                    props[name] = propertyInfo;
             }
             return props;
         });

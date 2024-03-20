@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Rql.Sample.Contracts.Ef.Products;
+using Rql.Sample.Domain.Ef;
 using SoftwareOne.Rql;
 using System.Globalization;
 using System.Linq.Expressions;
@@ -23,10 +25,10 @@ internal class RqlRequest<TStorage, TView> : IRqlRequest<TStorage, TView>
     {
         var httpContext = _httpContextAccessor.HttpContext!;
         var request = ExtractRqlRequest(httpContext.Request.Query);
-        var res = _rql.Transform(source, request, out var auditContext);
+        var res = _rql.Transform(source, request);
 
-        if (res.IsError)
-            return _errorResultProvider.Problem(res.Errors);
+        if (res.Status.IsError)
+            return _errorResultProvider.Problem(res.Status.Errors);
 
         var limit = ParseIntParameter(httpContext.Request.Query, QueryConstants.Limit, 10);
         var offset = ParseIntParameter(httpContext.Request.Query, QueryConstants.Offset, 0);
@@ -43,18 +45,18 @@ internal class RqlRequest<TStorage, TView> : IRqlRequest<TStorage, TView>
             }
         };
 
-        if (res.Value is IAsyncEnumerable<TView>) // efcore
+        if (res.Query is IAsyncEnumerable<TView>) // efcore
         {
-            data.Data = await res.Value.Skip(offset).Take(limit).ToListAsync();
-            data.Metadata.Pagination.Total = await res.Value.CountAsync();
+            data.Data = await res.Query.Skip(offset).Take(limit).ToListAsync();
+            data.Metadata.Pagination.Total = await res.Query.CountAsync();
         }
         else // memory
         {
-            data.Data = res.Value.Skip(offset).Take(limit).ToList();
-            data.Metadata.Pagination.Total = res.Value.Count();
+            data.Data = res.Query.Skip(offset).Take(limit).ToList();
+            data.Metadata.Pagination.Total = res.Query.Count();
         }
 
-        data.Metadata.Omitted = auditContext.Omitted.Where(s => !s.Contains('.')).ToList();
+        data.Metadata.Omitted = res.Graph.Children.Where(t => !t.IsIncluded && (t.ExcludeReason & (ExcludeReasons.Unselected | ExcludeReasons.Default)) != 0).Select(s => s.Name).ToList();
 
         return new OkObjectResult(data);
 

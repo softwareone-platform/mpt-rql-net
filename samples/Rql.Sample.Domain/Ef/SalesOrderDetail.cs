@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SoftwareOne.Rql;
+using System;
 using System.Collections.Generic;
 
 namespace Rql.Sample.Domain.Ef;
@@ -11,6 +12,7 @@ public partial class SalesOrderDetail
     /// <summary>
     /// Primary key. Foreign key to SalesOrderHeader.SalesOrderID.
     /// </summary>
+    [RqlProperty(IsCore = true)] 
     public int SalesOrderId { get; set; }
 
     /// <summary>
@@ -41,6 +43,7 @@ public partial class SalesOrderDetail
     /// <summary>
     /// Per product subtotal. Computed as UnitPrice * (1 - UnitPriceDiscount) * OrderQty.
     /// </summary>
+    [RqlProperty(IsCore = true)] 
     public decimal LineTotal { get; set; }
 
     /// <summary>

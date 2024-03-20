@@ -23,7 +23,29 @@ internal static class QueryableSampleEntityCollection
     internal static IReadOnlyList<SampleEntityView> Default() => QueryData<SampleEntityView>();
 
     internal static IReadOnlyList<SampleEntityViewOperatorTest> Operators() => QueryData<SampleEntityViewOperatorTest>();
-    
+
     private static IReadOnlyList<TView> QueryData<TView>() where TView : SampleEntityView, new()
-        => Queryable.Select(_data.AsQueryable(), new SampleEntityMapper<TView>().GetMapping()).ToList();
+        => _data.Select(t => new TView
+        {
+            Id = t.Id,
+            Desc = t.Description,
+            Name = t.ProductName,
+            Category = t.Category,
+            Price = t.Price,
+            SellPrice = t.SalePrice,
+            ListDate = t.ListDate,
+            Sub = new TView
+            {
+                Id = t.Id,
+                Desc = t.Description,
+                Name = t.ProductName,
+                Category = t.Category,
+                Price = t.Price,
+                SellPrice = t.SalePrice,
+                ListDate = t.ListDate,
+            }
+        }).ToList();
+
+
+
 }

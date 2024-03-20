@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SoftwareOne.Rql;
+using System;
 using System.Collections.Generic;
 
 namespace Rql.Sample.Domain.Ef;
@@ -8,6 +9,7 @@ namespace Rql.Sample.Domain.Ef;
 /// </summary>
 public partial class ProductCategory
 {
+    [RqlProperty(IsCore = true)]
     /// <summary>
     /// Primary key for ProductCategory records.
     /// </summary>
@@ -18,6 +20,7 @@ public partial class ProductCategory
     /// </summary>
     public int? ParentProductCategoryId { get; set; }
 
+    [RqlProperty(IsCore = true)]
     /// <summary>
     /// Category description.
     /// </summary>

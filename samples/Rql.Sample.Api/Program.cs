@@ -28,7 +28,7 @@ namespace Rql.Sample.Api
             app.UseSwaggerUI();
             app.UseAuthorization();
             app.MapControllers();
-            app.UseExceptionHandler("/error");
+            // app.UseExceptionHandler("/error");
             app.Run();
         }
     }

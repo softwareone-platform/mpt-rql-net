@@ -5,9 +5,12 @@ namespace SoftwareOne.Rql;
 
 public interface IRqlMapper
 {
+    void MapEntity(IRqlMapperContext context);
 }
 
 public interface IRqlMapper<TStorage, TView> : IRqlMapper
 {
-    public Expression<Func<TStorage, TView>> GetMapping();
+    void MapEntity(IRqlMapperContext<TStorage, TView> context);
+
+    void IRqlMapper.MapEntity(IRqlMapperContext context) => MapEntity((IRqlMapperContext<TStorage, TView>)context);
 }

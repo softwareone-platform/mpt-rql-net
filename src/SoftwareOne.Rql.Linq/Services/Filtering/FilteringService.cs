@@ -1,6 +1,6 @@
-﻿using ErrorOr;
-using SoftwareOne.Rql.Abstractions;
+﻿using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Group;
+using SoftwareOne.Rql.Linq.Services.Context;
 using SoftwareOne.Rql.Linq.Services.Filtering.Builders;
 using System.Linq.Expressions;
 
@@ -8,21 +8,27 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering;
 
 internal delegate BinaryExpression LogicalExpression(Expression left, Expression right);
 
-internal sealed class FilteringService<TView> : IFilteringService<TView>
+internal sealed class FilteringService<TView> : RqlService, IFilteringService<TView>
 {
+    private readonly IQueryContext<TView> _context;
+    private readonly IFilteringGraphBuilder<TView> _graphBuilder;
     private readonly IExpressionBuilder _builder;
     private readonly IRqlParser _parser;
 
-    public FilteringService(IExpressionBuilder builder, IRqlParser parser)
+    public FilteringService(IQueryContext<TView> context, IFilteringGraphBuilder<TView> graphBuilder, IExpressionBuilder builder, IRqlParser parser)
     {
+        _context = context;
+        _graphBuilder = graphBuilder;
         _builder = builder;
         _parser = parser;
     }
 
-    public ErrorOr<IQueryable<TView>> Apply(IQueryable<TView> query, string? filter)
+    protected override string ErrorPrefix => "query";
+
+    public void Process(string? filter)
     {
         if (string.IsNullOrEmpty(filter))
-            return ErrorOrFactory.From(query);
+            return;
 
         RqlExpression rql;
         var parseResult = _parser.Parse(filter);
@@ -31,14 +37,21 @@ internal sealed class FilteringService<TView> : IFilteringService<TView>
         else
             rql = parseResult;
 
+        _graphBuilder.TraverseRqlExpression(_context.Graph, rql);
+
         var param = Expression.Parameter(typeof(TView));
         var expression = _builder.Build(param, rql);
 
         if (expression.IsError)
-            return expression.Errors;
+        {
+            _context.AddErrors(expression.Errors);
+            return;
+        }
 
-        var lambda = (Expression<Func<TView, bool>>)Expression.Lambda(expression.Value, param);
-
-        return ErrorOrFactory.From(query.Where(lambda));
+        _context.AddTransformation(q =>
+        {
+            var lambda = (Expression<Func<TView, bool>>)Expression.Lambda(expression.Value, param);
+            return q.Where(lambda);
+        });
     }
 }

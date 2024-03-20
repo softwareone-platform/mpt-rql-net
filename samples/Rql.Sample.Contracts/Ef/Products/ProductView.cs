@@ -22,15 +22,14 @@ namespace Rql.Sample.Contracts.Ef.Products
         public decimal ListPrice { get; set; }
         public ViewProductStatus Status { get; set; }
 
+        [RqlProperty(IsNullable = true)]
         public ProductCategoryView? Category { get; set; }
 
-        [RqlProperty(IsCore = true)]
+        [RqlProperty(IsCore = true, IsNullable = true)]
         public ProductModelView? Model { get; set; }
 
-        [RqlProperty(Select = RqlSelectModes.None)]
         public IEnumerable<ProductSaleOrder>? SaleDetails { get; set; }
 
-        [RqlProperty(Select = RqlSelectModes.None)]
         public IEnumerable<int>? SaleDetailIds { get; set; }
 
         [RqlProperty(ActionStrategy = typeof(SelectNoneStrategy))]

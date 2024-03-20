@@ -18,11 +18,12 @@ public class BasicAuditTests
     public void Audit_Omitted_Default()
     {
         // Arrange and Act
-        _testExecutor.Rql.Transform(_testExecutor.GetQuery(), new RqlRequest { }, out var rqlAudit);
-        var shouldBe = new List<string>() { "hiddenCollection" };
+        var result = _testExecutor.Rql.Transform(_testExecutor.GetQuery(), new RqlRequest { });
 
         // Assert
-        shouldBe.Should().BeEquivalentTo(rqlAudit.Omitted.Where(s => !s.Contains('.')).ToList());
+        result.Graph.TryGetChild("hiddenCollection", out var hidden);
+        hidden.Should().NotBeNull();
+        hidden!.ExcludeReason.Should().HaveFlag(ExcludeReasons.Default);
     }
 
     [Fact]
@@ -30,11 +31,23 @@ public class BasicAuditTests
     {
         // Arrange and Act
         var extra = new List<string> { "category", "price", "name" };
-        _testExecutor.Rql.Transform(_testExecutor.GetQuery(), new RqlRequest { Select = string.Join(',', extra.Select(s => $"-{s}")) }, out var rqlAudit);
-        var shouldBe = new List<string>() { "hiddenCollection" };
-        shouldBe.AddRange(extra);
+        var result = _testExecutor.Rql.Transform(_testExecutor.GetQuery(), new RqlRequest { Select = string.Join(',', extra.Select(s => $"-{s}")) });
 
         // Assert
-        shouldBe.Should().BeEquivalentTo(rqlAudit.Omitted.Where(s => !s.Contains('.')).ToList());
+        result.Graph.TryGetChild("hiddenCollection", out var hidden);
+        hidden.Should().NotBeNull();
+        hidden!.ExcludeReason.Should().HaveFlag(ExcludeReasons.Default);
+
+        result.Graph.TryGetChild("category", out var category);
+        category.Should().NotBeNull();
+        category!.ExcludeReason.Should().HaveFlag(ExcludeReasons.Unselected);
+
+        result.Graph.TryGetChild("price", out var price);
+        price.Should().NotBeNull();
+        price!.ExcludeReason.Should().HaveFlag(ExcludeReasons.Unselected);
+
+        result.Graph.TryGetChild("name", out var name);
+        name.Should().NotBeNull();
+        name!.ExcludeReason.Should().HaveFlag(ExcludeReasons.Unselected);
     }
 }

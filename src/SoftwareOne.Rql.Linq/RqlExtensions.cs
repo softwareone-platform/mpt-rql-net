@@ -13,6 +13,7 @@ using SoftwareOne.Rql.Linq.Client.Generator;
 using SoftwareOne.Rql.Linq.Configuration;
 using SoftwareOne.Rql.Linq.Core;
 using SoftwareOne.Rql.Linq.Core.Metadata;
+using SoftwareOne.Rql.Linq.Services.Context;
 using SoftwareOne.Rql.Linq.Services.Filtering;
 using SoftwareOne.Rql.Linq.Services.Filtering.Builders;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
@@ -52,6 +53,7 @@ public static class RqlExtensions
 
         services.AddScoped(typeof(IMappingService<,>), typeof(MappingService<,>));
 
+        services.AddScoped(typeof(IQueryContext<>), typeof(QueryContext<>));
         services.AddScoped(typeof(IFilteringService<>), typeof(FilteringService<>));
         services.AddScoped<IExpressionBuilder, ExpressionBuilder>();
         services.AddScoped<IConcreteExpressionBuilder<RqlBinary>, BinaryExpressionBuilder>();
@@ -59,12 +61,14 @@ public static class RqlExtensions
         services.AddScoped<IConcreteExpressionBuilder<RqlGroup>, GroupExpressionBuilder>();
         services.AddScoped<IConcreteExpressionBuilder<RqlUnary>, UnaryExpressionBuilder>();
         services.AddScoped<IFilteringPathInfoBuilder, FilteringPathInfoBuilder>();
+        services.AddScoped(typeof(IFilteringGraphBuilder<>), typeof(FilteringGraphBuilder<>));
 
         services.AddScoped(typeof(IOrderingService<>), typeof(OrderingService<>));
         services.AddScoped<IOrderingPathInfoBuilder, OrderingPathInfoBuilder>();
+        services.AddScoped(typeof(IOrderingGraphBuilder<>), typeof(OrderingGraphBuilder<>));
 
         services.AddScoped(typeof(IProjectionService<>), typeof(ProjectionService<>));
-        services.AddScoped<IAuditContextAccessor, AuditContextAccessor>();
+        services.AddScoped(typeof(IProjectionGraphBuilder<>), typeof(ProjectionGraphBuilder<>));
 
         services.AddScoped<IActionValidator, ActionValidator>();
 
@@ -72,6 +76,7 @@ public static class RqlExtensions
         services.AddSingleton<IMetadataProvider>(serviceProvider => serviceProvider.GetRequiredService<MetadataProvider>());
         services.AddSingleton<IRqlMetadataProvider>(serviceProvider =>
             serviceProvider.GetRequiredService<MetadataProvider>());
+        services.AddSingleton<IEntityMapCache, EntityMapCache>();
 
         services.AddSingleton<IMetadataFactory, MetadataFactory>();
         services.AddSingleton(typeof(IPropertyNameProvider), options.PropertyMapperType ?? typeof(PropertyNameProvider));
@@ -81,6 +86,8 @@ public static class RqlExtensions
 
         if (options.ViewMappersAssembly != null)
             ScanForViewMappers(services, options.ViewMappersAssembly);
+
+        services.AddTransient(typeof(IRqlMapperContext<,>), typeof(RqlMapperContext<,>));
 
         return services;
     }
@@ -127,7 +134,7 @@ public static class RqlExtensions
     {
         var mapTypeRoot = typeof(IRqlMapper);
         var mapTypeGeneric = typeof(IRqlMapper<,>);
-        var mapTypes = mappingsAssembly.GetTypes().Where(t => t.IsClass && mapTypeRoot.IsAssignableFrom(t)).ToList();
+        var mapTypes = mappingsAssembly.GetTypes().Where(t => t.IsClass && !t.IsAbstract && mapTypeRoot.IsAssignableFrom(t)).ToList();
 
         foreach (var mapType in mapTypes)
         {

@@ -11,7 +11,7 @@ public abstract class TestExecutor<TStorage> : TestExecutor<TStorage, TStorage> 
     {
         var srcData = GetQuery().ToList();
         var transformed = Rql.Transform(srcData.AsQueryable(), new RqlRequest { Select = select, Customization = GetCustomisation() });
-        var targetJson = JsonSerializer.Serialize(transformed.Value.ToList());
+        var targetJson = JsonSerializer.Serialize(transformed.Query.ToList());
 
         foreach (var item in srcData)
         {
@@ -42,9 +42,9 @@ public abstract class TestExecutor<TStorage, TView> where TView : ITestEntity
     {
         var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select, Customization = GetCustomisation() });
 
-        Assert.False(transformed.IsError);
+        Assert.False(transformed.Status.IsError);
 
-        var data = transformed.Value.OfType<ITestEntity>().ToList();
+        var data = transformed.Query.OfType<ITestEntity>().ToList();
 
         Assert.True(isHappyFlow == false || data.Count > 0);
         Assert.Equal(isHappyFlow, data.SequenceEqual(toCompare.OfType<ITestEntity>(), new TestEntityEqualityComparer()));
@@ -53,16 +53,16 @@ public abstract class TestExecutor<TStorage, TView> where TView : ITestEntity
     public IQueryable<TView> Transform(string? filter = null, string? order = null, string? select = null)
     {
         var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select, Customization = GetCustomisation() });
-        Assert.False(transformed.IsError);
-        return transformed.Value;
+        Assert.False(transformed.Status.IsError);
+        return transformed.Query;
     }
 
     public void MustFailWithError(string? filter = null, string? order = null, string? select = null, string? errorDescription = null)
     {
         var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select, Customization = GetCustomisation() });
-        Assert.True(transformed.IsError);
+        Assert.True(transformed.Status.IsError);
         if (errorDescription != null)
-            Assert.Equal(errorDescription, transformed.Errors[0].Description);
+            Assert.Equal(errorDescription, transformed.Status.Errors[0].Description);
     }
 
     protected abstract IRqlQueryable<TStorage, TView> MakeRql();

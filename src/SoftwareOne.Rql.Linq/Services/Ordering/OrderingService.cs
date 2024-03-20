@@ -2,37 +2,47 @@
 using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Argument;
 using SoftwareOne.Rql.Linq.Core;
+using SoftwareOne.Rql.Linq.Services.Context;
 using System.Linq.Expressions;
 using System.Reflection;
 
 namespace SoftwareOne.Rql.Linq.Services.Ordering;
 
-internal sealed class OrderingService<TView> : IOrderingService<TView>
+internal sealed class OrderingService<TView> : RqlService, IOrderingService<TView>
 {
+    private readonly IQueryContext<TView> _context;
+    private readonly IOrderingGraphBuilder<TView> _graphBuilder;
     private readonly IOrderingPathInfoBuilder _pathBuilder;
     private readonly IRqlParser _parser;
 
-    public OrderingService(IRqlParser parser, IOrderingPathInfoBuilder pathBuilder)
+    public OrderingService(IQueryContext<TView> context, IOrderingGraphBuilder<TView> graphBuilder, IRqlParser parser, IOrderingPathInfoBuilder pathBuilder) : base()
     {
+        _context = context;
+        _graphBuilder = graphBuilder;
         _parser = parser;
         _pathBuilder = pathBuilder;
     }
 
-    public ErrorOr<IQueryable<TView>> Apply(IQueryable<TView> query, string? order)
+    protected override string ErrorPrefix => "order";
+
+    public void Process(string? order)
     {
         if (string.IsNullOrEmpty(order))
-            return ErrorOrFactory.From(query);
+            return;
 
         var node = _parser.Parse(order);
 
+        _graphBuilder.TraverseRqlExpression(_context.Graph, node);
+
         var orderProperties = node.Items!.OfType<RqlConstant>().ToList();
         if (!orderProperties.Any())
-            return Error.Validation("no_props", "No valid ordering properties were detected");
+        {
+            _context.AddError(Error.Validation(MakeErrorCode("no_props"), "No valid ordering properties were detected"));
+            return;
+        }
 
         var isFirst = true;
         var param = Expression.Parameter(typeof(TView));
-
-        var errors = new List<Error>();
 
         foreach (var property in orderProperties)
         {
@@ -41,18 +51,16 @@ internal sealed class OrderingService<TView> : IOrderingService<TView>
 
             if (member.IsError)
             {
-                errors.AddRange(member.Errors);
+                _context.AddErrors(member.Errors);
                 continue;
             }
 
             var method = MakeOrderingMethod(member.Value.Expression, isAsc, isFirst);
             var expression = Expression.Lambda(member.Value.Expression, param);
 
-            query = (IQueryable<TView>)method.Invoke(null, new object[] { query, expression })!;
+            _context.AddTransformation(q => (IQueryable<TView>)method.Invoke(null, new object[] { q, expression })!);
             isFirst = false;
         }
-
-        return errors.Any() ? errors : ErrorOrFactory.From(query);
     }
 
     private static MethodInfo MakeOrderingMethod(Expression member, bool isAsc, bool isFirst)
