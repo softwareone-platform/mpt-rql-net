@@ -37,13 +37,7 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
 
     private void BuildDefaultsForType(RqlNode target, Type type, RqlSelectModes currentMode)
     {
-        if (target.Depth > 100)
-        {
-            _context.AddError(Error.Failure(description: "Extreme select depth detected. Most likely a circular dependency issue. Processing stopped."));
-            return;
-        }
-
-        if (target.Depth > _selectSettings.MaxDepth)
+        if (MaxDepthExceeded(target))
             return;
 
         var properties = _metadataProvider.GetPropertiesByDeclaringType(type);
@@ -59,13 +53,12 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
                 continue;
             }
 
+            target.TryGetChild(rqlProperty.Name, out var propertyNode);
+            var isIncludedExplicitly = propertyNode != null && propertyNode.IncludeReason.HasFlag(IncludeReasons.Select);
+
             // if property already added as part of filter or order - skip unless parent already selected for some reason
-            if (target.TryGetChild(rqlProperty.Name, out var propertyNode)
-                && !propertyNode!.IncludeReason.HasFlag(IncludeReasons.Select)
-                && (target!.IncludeReason & (IncludeReasons.Select | IncludeReasons.Default)) == 0)
-            {
+            if (propertyNode != null && !isIncludedExplicitly && (target!.IncludeReason & (IncludeReasons.Select | IncludeReasons.Default)) == 0)
                 continue;
-            }
 
             if (ShouldOmitProperty(rqlProperty, currentMode) || rqlProperty.SelectMode == RqlSelectModes.None)
             {
@@ -74,8 +67,24 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
             }
 
             var child = target.IncludeChild(rqlProperty, IncludeReasons.Default);
-            BuildDefaultsForProperty(child, rqlProperty, rqlProperty.SelectMode);
+
+
+            BuildDefaultsForProperty(child, rqlProperty, isIncludedExplicitly ? _selectSettings.Mode : rqlProperty.SelectMode);
         }
+    }
+
+    private bool MaxDepthExceeded(RqlNode target)
+    {
+        if (target.Depth > 100)
+        {
+            _context.AddError(Error.Failure(description: "Extreme select depth detected. Most likely a circular dependency issue. Processing stopped."));
+            return true;
+        }
+
+        if (target.Depth > _selectSettings.MaxDepth)
+            return true;
+
+        return false;
     }
 
     private void BuildDefaultsForProperty(RqlNode target, IRqlPropertyInfo rqlProperty, RqlSelectModes mode)
