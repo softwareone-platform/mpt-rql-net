@@ -22,8 +22,7 @@ internal class MetadataFactory : IMetadataFactory
             Type = GetRqlPropertyType(property),
             Actions = _settings.DefaultActions,
             Operators = _settings.AllowedOperators,
-            ElementType = GetCollectionElementType(property.PropertyType),
-            SelectMode = RqlSelectModes.Core
+            ElementType = GetCollectionElementType(property.PropertyType)
         };
 
         var attribute = property.GetCustomAttributes<RqlPropertyAttribute>(true).FirstOrDefault();
@@ -52,7 +51,7 @@ internal class MetadataFactory : IMetadataFactory
                 propertyInfo.Operators = attribute.Operators;
 
             if (attribute.SelectSet)
-                propertyInfo.SelectMode = attribute.Select;
+                propertyInfo.SelectModeOverride = attribute.Select;
 
             if (attribute.TreatAsSet)
                 propertyInfo.TypeOverride = attribute.TreatAs;

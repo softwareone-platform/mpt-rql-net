@@ -52,7 +52,7 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
                 break;
             case RqlCollection collection:
                 {
-                    var child = ProcessNode(target, collection.Left);
+                    var child = ProcessNode(target, collection.Left, true);
                     TraverseRqlExpression(child, collection.Right);
                 }
                 break;
@@ -69,36 +69,47 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
         }
     }
 
-    private RqlNode? ProcessNode(RqlNode parentNode, RqlExpression constant)
+    private RqlNode? ProcessNode(RqlNode parentNode, RqlExpression constant, bool hierarchyOnly = false)
     {
         if (constant is not RqlConstant constExpression)
             return null;
 
-        return ProcessNode(parentNode, constExpression.Value);
+        return ProcessNode(parentNode, constExpression.Value, hierarchyOnly);
     }
 
-    private RqlNode? ProcessNode(RqlNode parentNode, string name)
+    private RqlNode? ProcessNode(RqlNode parentNode, string name, bool hierarchyOnly = false)
     {
         var currentType = parentNode.Property != null ? parentNode.Property.ElementType ?? parentNode.Property.Property.PropertyType : typeof(TView);
 
         var (path, sign) = StringHelper.ExtractSign(name);
 
         var currentNode = parentNode;
-        foreach (var rqlProperty in GetProperties(currentType, path))
+        var segments = GetProperties(currentType, path).ToList();
+
+        for (int i = 0; i < segments.Count; i++)
         {
+            var rqlProperty = segments[i];
+
             if (!_actionValidator.Validate(rqlProperty, Action))
             {
                 OnValidationFailed(currentNode, rqlProperty);
             }
 
-            currentNode = AddNodeToGraph(currentNode, rqlProperty!, sign);
+            if (i < segments.Count - 1 || hierarchyOnly) // part of the path 
+            {
+                currentNode = currentNode.IncludeChild(rqlProperty, IncludeReasons.Hierarchy);
+            }
+            else // leaf
+            {
+                currentNode = AddNodeToGraph(currentNode, rqlProperty!, sign);
+            }
         }
 
         return currentNode != parentNode ? currentNode : null;
     }
 
     protected abstract RqlActions Action { get; }
-    
+
     protected abstract RqlNode AddNodeToGraph(RqlNode parentNode, RqlPropertyInfo rqlProperty, bool sign);
 
     protected virtual void OnValidationFailed(RqlNode node, RqlPropertyInfo property) { }

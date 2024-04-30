@@ -1,6 +1,5 @@
 ﻿using ErrorOr;
 using SoftwareOne.Rql.Abstractions;
-using SoftwareOne.Rql.Abstractions.Exception;
 using SoftwareOne.Rql.Linq.Configuration;
 using SoftwareOne.Rql.Linq.Core;
 using SoftwareOne.Rql.Linq.Core.Metadata;
@@ -33,7 +32,7 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
     }
 
     public void BuildDefaults()
-        => BuildDefaultsForType(_context.Graph, typeof(TView), _selectSettings.Mode);
+        => BuildDefaultsForType(_context.Graph, typeof(TView), _selectSettings.Explicit);
 
     private void BuildDefaultsForType(RqlNode target, Type type, RqlSelectModes currentMode)
     {
@@ -44,32 +43,32 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
 
         foreach (var rqlProperty in properties)
         {
+            // invalid and ignored properties are skipped
             if (rqlProperty.Property == null || rqlProperty.IsIgnored)
                 continue;
 
+            // properties which don't pass select validation excluded as invisible
             if (!_actionValidator.Validate(rqlProperty, RqlActions.Select))
             {
                 target.ExcludeChild(rqlProperty, ExcludeReasons.Invisible);
                 continue;
             }
 
-            target.TryGetChild(rqlProperty.Name, out var propertyNode);
-            var isIncludedExplicitly = propertyNode != null && propertyNode.IncludeReason.HasFlag(IncludeReasons.Select);
-
-            // if property already added as part of filter or order - skip unless parent already selected for some reason
-            if (propertyNode != null && !isIncludedExplicitly && (target!.IncludeReason & (IncludeReasons.Select | IncludeReasons.Default)) == 0)
-                continue;
-
-            if (ShouldOmitProperty(rqlProperty, currentMode) || rqlProperty.SelectMode == RqlSelectModes.None)
+            // if property should be omitted add exclude reason
+            if (ShouldOmitProperty(rqlProperty, currentMode))
             {
                 target.ExcludeChild(rqlProperty, ExcludeReasons.Default);
                 continue;
             }
 
+            // if property survives all checks it gets added as default
             var child = target.IncludeChild(rqlProperty, IncludeReasons.Default);
 
-
-            BuildDefaultsForProperty(child, rqlProperty, isIncludedExplicitly ? _selectSettings.Mode : rqlProperty.SelectMode);
+            // continue hierarchical select for survivor properties that was not deselected explicitly
+            if (!child.ExcludeReason.HasFlag(ExcludeReasons.Unselected))
+            {
+                BuildDefaultsForProperty(child, rqlProperty, child.IncludeReason.HasFlag(IncludeReasons.Select) ? _selectSettings.Explicit : rqlProperty.SelectModeOverride ?? _selectSettings.Implicit);
+            }
         }
     }
 
@@ -106,12 +105,12 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
         }
     }
 
-    private static bool ShouldOmitProperty(RqlPropertyInfo rqlProperty, RqlSelectModes currentMode)
+    private static bool ShouldOmitProperty(RqlPropertyInfo rqlProperty, RqlSelectModes parentMode)
     {
-        if (currentMode == RqlSelectModes.None)
+        if (parentMode == RqlSelectModes.None || rqlProperty.SelectModeOverride == RqlSelectModes.None)
             return true;
 
-        if (currentMode.HasFlag(RqlSelectModes.Core) && rqlProperty.IsCore)
+        if (parentMode.HasFlag(RqlSelectModes.Core) && rqlProperty.IsCore)
             return false;
 
         var effectiveType = rqlProperty.TypeOverride ?? rqlProperty.Type;
@@ -119,9 +118,9 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
         return effectiveType switch
         {
             RqlPropertyType.Root => false,
-            RqlPropertyType.Primitive => !currentMode.HasFlag(RqlSelectModes.Primitive),
-            RqlPropertyType.Reference => !currentMode.HasFlag(RqlSelectModes.Reference),
-            RqlPropertyType.Collection => !currentMode.HasFlag(RqlSelectModes.Collection),
+            RqlPropertyType.Primitive => !parentMode.HasFlag(RqlSelectModes.Primitive),
+            RqlPropertyType.Reference => !parentMode.HasFlag(RqlSelectModes.Reference),
+            RqlPropertyType.Collection => !parentMode.HasFlag(RqlSelectModes.Collection),
             _ => throw new NotImplementedException("Unknown RQL property type"),
         };
     }

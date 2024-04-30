@@ -1,7 +1,5 @@
 ﻿#pragma warning disable IDE0130
 using SoftwareOne.Rql.Abstractions;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace SoftwareOne.Rql;
@@ -77,19 +75,7 @@ public class RqlNode
         if (reason == IncludeReasons.None)
             throw new ArgumentException("Include reason must be provided", nameof(reason));
 
-        var child = AddChild(rqlProperty, reason, ExcludeReasons.None);
-
-        if ((IncludeReason & (IncludeReasons.Select | IncludeReasons.Filter | IncludeReasons.Order)) != 0)
-        {
-            var current = this;
-            while (current != null)
-            {
-                current.IncludeReason |= IncludeReasons.Hierarchy;
-                current = current.Parent;
-            }
-        }
-
-        return child;
+        return AddChild(rqlProperty, reason, ExcludeReasons.None);
     }
 
     internal RqlNode ExcludeChild(IRqlPropertyInfo rqlProperty, ExcludeReasons reason)

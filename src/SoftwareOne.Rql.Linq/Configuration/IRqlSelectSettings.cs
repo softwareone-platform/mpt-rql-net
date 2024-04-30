@@ -2,7 +2,10 @@
 {
     public interface IRqlSelectSettings
     {
-        RqlSelectModes Mode { get; set; }
+        RqlSelectModes Implicit { get; set; }
+
+        RqlSelectModes Explicit { get; set; }
+
         int? MaxDepth { get; set; }
     }
 }

@@ -28,7 +28,7 @@ namespace Rql.Sample.Contracts.Ef.Products
         [RqlProperty(IsCore = true, IsNullable = true)]
         public ProductModelView? Model { get; set; }
 
-        public IEnumerable<ProductSaleOrder>? SaleDetails { get; set; }
+        public List<ProductSaleOrder>? SaleDetails { get; set; }
 
         public IEnumerable<int>? SaleDetailIds { get; set; }
 

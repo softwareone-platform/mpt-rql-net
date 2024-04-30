@@ -5,6 +5,7 @@ internal static class SettingsExtensions
     public static void Apply(this IRqlSelectSettings target, IRqlSelectSettings source)
     {
         target.MaxDepth = source.MaxDepth;
-        target.Mode = source.Mode;
+        target.Implicit = source.Implicit;
+        target.Explicit = source.Explicit;
     }
 }

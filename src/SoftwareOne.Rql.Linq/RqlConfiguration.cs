@@ -11,23 +11,25 @@ public class RqlConfiguration
 {
     public RqlConfiguration()
     {
-        OperatorOverrides = new Dictionary<Type, Type>();
+        OperatorOverrides = [];
+
         General = new RqlGeneralSettings
         {
             DefaultActions = RqlActions.All,
-            
+
         };
 
         Select = new RqlSelectSettings
         {
-            Mode = RqlSelectModes.Core
+            Implicit = RqlSelectModes.Core,
+            Explicit = RqlSelectModes.Core
         };
     }
 
     internal Assembly? ViewMappersAssembly { get; private set; }
     internal Type? PropertyMapperType { get; private set; }
     internal Dictionary<Type, Type> OperatorOverrides { get; init; }
-    
+
     public IRqlGeneralSettings General { get; init; }
 
     public IRqlSelectSettings Select { get; init; }

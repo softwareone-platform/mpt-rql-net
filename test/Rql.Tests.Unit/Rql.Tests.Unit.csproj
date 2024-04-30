@@ -1,36 +1,37 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <IsPackable>false</IsPackable>
-        <TargetFrameworks>net7.0;net8.0</TargetFrameworks>
-        <EnablePreviewFeatures>true</EnablePreviewFeatures>
-    </PropertyGroup>
+	<PropertyGroup>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<IsPackable>false</IsPackable>
+		<TargetFrameworks>net7.0;net8.0</TargetFrameworks>
+		<EnablePreviewFeatures>true</EnablePreviewFeatures>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="FluentAssertions" Version="6.12.0" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
-        <PackageReference Include="Moq" Version="4.20.70" />
-        <PackageReference Include="NSubstitute" Version="5.1.0" />
-        <PackageReference Include="xunit" Version="2.7.0" />
+	<ItemGroup>
+		<PackageReference Include="FluentAssertions" Version="6.12.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+		<PackageReference Include="Moq" Version="4.20.70" />
+		<PackageReference Include="NSubstitute" Version="5.1.0" />
+		<PackageReference Include="xunit" Version="2.7.0" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.5.7">
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="coverlet.collector" Version="6.0.1">
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-    </ItemGroup>
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.5.7">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="coverlet.collector" Version="6.0.1">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+	</ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\..\src\SoftwareOne.Rql.Abstractions\SoftwareOne.Rql.Abstractions.csproj" />
-        <ProjectReference Include="..\..\src\SoftwareOne.Rql.Linq\SoftwareOne.Rql.Linq.csproj" />
-    </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\SoftwareOne.Rql.Abstractions\SoftwareOne.Rql.Abstractions.csproj" />
+		<ProjectReference Include="..\..\src\SoftwareOne.Rql.Linq\SoftwareOne.Rql.Linq.csproj" />
+	</ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="Client\Builder\" />
-    </ItemGroup>
+	<ItemGroup>
+		<Folder Include="Client\Builder\" />
+	</ItemGroup>
 
 </Project>

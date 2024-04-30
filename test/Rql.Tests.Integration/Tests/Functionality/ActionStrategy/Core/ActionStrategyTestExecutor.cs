@@ -16,7 +16,8 @@ public class ActionStrategyTestExecutor : TestExecutor<ActionStrategyTestItem>
     protected override IRqlQueryable<ActionStrategyTestItem, ActionStrategyTestItem> MakeRql()
         => RqlFactory.Make<ActionStrategyTestItem>(_configureServices, rql =>
         {
-            rql.Select.Mode = RqlSelectModes.All;
+            rql.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
+            rql.Select.Explicit = RqlSelectModes.All;
         });
 
     public override IQueryable<ActionStrategyTestItem> GetQuery() => ActionStrategyTestItemRepository.Query();

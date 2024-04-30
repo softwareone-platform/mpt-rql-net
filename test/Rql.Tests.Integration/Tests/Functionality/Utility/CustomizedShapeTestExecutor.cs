@@ -9,7 +9,7 @@ public class CustomizedShapeTestExecutor : ProductShapeTestExecutor
     protected override IRqlQueryable<ShapedProduct, ShapedProduct> MakeRql()
         => RqlFactory.Make<ShapedProduct>(services => { }, rql =>
         {
-            rql.Select.Mode = RqlSelectModes.None;
+            rql.Select.Implicit = RqlSelectModes.None;
             rql.Select.MaxDepth = 0;
         });
 
@@ -17,7 +17,8 @@ public class CustomizedShapeTestExecutor : ProductShapeTestExecutor
     {
         Select = new RqlSelectSettings
         {
-            Mode = RqlSelectModes.All,
+            Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference,
+            Explicit = RqlSelectModes.All,
             MaxDepth = 99
         }
     };

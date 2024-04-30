@@ -9,7 +9,7 @@ public interface IRqlPropertyInfo
     bool IsIgnored { get; }
     bool IsCore { get; }
     bool IsNullable { get; }
-    RqlSelectModes SelectMode { get; }
+    RqlSelectModes? SelectModeOverride { get; }
     RqlActions Actions { get; }
     RqlOperators Operators { get; }
     RqlPropertyType Type { get; }
