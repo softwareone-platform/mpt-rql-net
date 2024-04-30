@@ -130,7 +130,10 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
         if (sign)
         {
             var child = parentNode.IncludeChild(rqlProperty, IncludeReasons.Select);
-            BuildDefaultsForProperty(child, child.Property, _selectSettings.Explicit);
+
+            // extend configured select mode with explicit config
+            var selectMode = rqlProperty.SelectModeOverride.HasValue ? (rqlProperty.SelectModeOverride.Value | _selectSettings.Explicit) : _selectSettings.Explicit;
+            BuildDefaultsForProperty(child, child.Property, selectMode);
             return child;
         }
 
