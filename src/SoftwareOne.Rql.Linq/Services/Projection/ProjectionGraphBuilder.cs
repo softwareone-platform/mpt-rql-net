@@ -130,7 +130,7 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
         if (sign)
         {
             var child = parentNode.IncludeChild(rqlProperty, IncludeReasons.Select);
-            BuildDefaultsForProperty(child, child.Property, RqlSelectModes.All);
+            BuildDefaultsForProperty(child, child.Property, _selectSettings.Explicit);
             return child;
         }
 
