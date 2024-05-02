@@ -1,5 +1,6 @@
 ﻿using ErrorOr;
 using SoftwareOne.Rql.Abstractions;
+using SoftwareOne.Rql.Linq.Core.Expressions;
 using System.Linq.Expressions;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation
@@ -21,14 +22,14 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implement
                 if (accessor.Type.IsValueType && Nullable.GetUnderlyingType(accessor.Type) == null)
                     return Error.Validation(description: $"Cannot compare non nullable property with null");
 
-                return Handler(accessor, Expression.Constant(null, accessor.Type));
+                return Handler(accessor, ConstantBuilder.Build(null, accessor.Type));
             }
 
             var converted = ConstantHelper.ChangeType(value, accessor.Type);
             if (converted.IsError)
                 return converted.Errors;
 
-            ConstantExpression constant = Expression.Constant(converted.Value, accessor.Type);
+            var constant = ConstantBuilder.Build(converted.Value, accessor.Type);
 
             return Handler(accessor, constant);
         }

@@ -1,5 +1,6 @@
 ﻿using ErrorOr;
 using SoftwareOne.Rql.Abstractions;
+using SoftwareOne.Rql.Linq.Core.Expressions;
 using System.Collections;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -35,7 +36,7 @@ internal class ListIn : IListIn
             return errors;
 
         var contains = _containsMethod.MakeGenericMethod(member.Type);
-        return Expression.Call(contains, Expression.Constant(values), member);
+        return Expression.Call(contains, ConstantBuilder.Build(values, values.GetType()), member);
     }
 
     protected virtual RqlOperators Operator => RqlOperators.ListIn;

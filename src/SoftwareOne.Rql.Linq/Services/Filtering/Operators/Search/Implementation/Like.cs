@@ -1,5 +1,6 @@
 ﻿using ErrorOr;
 using SoftwareOne.Rql.Abstractions;
+using SoftwareOne.Rql.Linq.Core.Expressions;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -27,7 +28,7 @@ internal class Like : ILike
         if (validationResult.IsError)
             return validationResult.Errors;
 
-        return Expression.Call(member, methodInfo, Expression.Constant(pattern.Trim(_wildcard)));
+        return Expression.Call(member, methodInfo, ConstantBuilder.Build(pattern.Trim(_wildcard), typeof(string)));
     }
 
     protected virtual bool IsInsensitive => false;
