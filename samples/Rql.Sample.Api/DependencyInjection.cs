@@ -31,7 +31,7 @@ public static class DependencyInjection
         {
             t.ScanForMappers(typeof(Program).Assembly);
             t.General.DefaultActions = RqlActions.All;
-            t.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
+            t.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive;
             t.Select.Explicit = RqlSelectModes.All;
         });
 

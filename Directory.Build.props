@@ -1,10 +1,10 @@
 <Project>
     <PropertyGroup>
         <Nullable>enable</Nullable>
-        <VersionPrefix>0.15.4</VersionPrefix>
-        <Authors>RQL Developmnet Group</Authors>
+        <VersionPrefix>0.15.5</VersionPrefix>
+        <Authors>RQL Development Group</Authors>
         <Company>SoftwareOne</Company>
-        <Copyright>SoftwareOne © 2023</Copyright>
+        <Copyright>SoftwareOne © 2024</Copyright>
         <IsPackable>false</IsPackable>
     </PropertyGroup>
 </Project>

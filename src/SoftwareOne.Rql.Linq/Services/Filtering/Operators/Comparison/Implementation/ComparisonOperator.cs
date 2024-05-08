@@ -2,21 +2,29 @@
 using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Linq.Core.Expressions;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation
 {
     internal abstract class ComparisonOperator : IComparisonOperator
     {
+        private static readonly MethodInfo _stringOperator = typeof(string).GetMethod(nameof(string.Compare), BindingFlags.Public | BindingFlags.Static, [typeof(string), typeof(string)])!;
+
         public ErrorOr<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, Expression accessor, string? value)
         => MakeBinaryExpression(propertyInfo, accessor, value);
 
         protected ErrorOr<Expression> MakeBinaryExpression(IRqlPropertyInfo propertyInfo, Expression accessor, string? value)
         {
             var validationResult = ValidationHelper.ValidateOperatorApplicability(propertyInfo, Operator);
+
             if (validationResult.IsError)
                 return validationResult.Errors;
 
-            if (value == null)
+            if (accessor.Type == typeof(string))
+            {
+                return Handler(Expression.Call(_stringOperator, accessor, ConstantBuilder.Build(value, typeof(string))), Expression.Constant(0, typeof(int)));
+            }
+            else if (value == null)
             {
                 // check if member type is nullable
                 if (accessor.Type.IsValueType && Nullable.GetUnderlyingType(accessor.Type) == null)
@@ -26,6 +34,7 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implement
             }
 
             var converted = ConstantHelper.ChangeType(value, accessor.Type);
+
             if (converted.IsError)
                 return converted.Errors;
 

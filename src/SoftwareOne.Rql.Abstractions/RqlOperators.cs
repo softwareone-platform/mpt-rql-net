@@ -23,7 +23,7 @@ namespace SoftwareOne.Rql
 
         GenericDefaults = Eq | Ne | Gt | Ge | Lt | Le | ListIn | ListOut,
         GuidDefaults = Eq | Ne | ListIn | ListOut,
-        StringDefaults = Eq | Ne | StartsWith | EndsWith | Contains | ListIn | ListOut | Empty | Null,
+        StringDefaults = Eq | Ne | Gt | Ge | Lt | Le | StartsWith | EndsWith | Contains | ListIn | ListOut | Empty | Null,
         CollectionDefaults = Any | All,
 
         AllOperators = Eq | Ne | Gt | Ge | Lt | Le | ListIn | ListOut | StartsWith | Contains | EndsWith | Null | Empty | All | Any
