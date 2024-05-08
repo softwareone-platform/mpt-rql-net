@@ -93,6 +93,7 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
             if (!_actionValidator.Validate(rqlProperty, Action))
             {
                 OnValidationFailed(currentNode, rqlProperty);
+                return null;
             }
 
             if (i < segments.Count - 1 || hierarchyOnly) // part of the path 

@@ -37,11 +37,7 @@ public class RqlNode
     {
         get
         {
-            // hidden properties cannot be included
-            if (ExcludeReason.HasFlag(ExcludeReasons.Invisible))
-                return false;
-
-            // actively selected properties are selected
+            // actively selected or participating in filter/order properties are selected
             if ((IncludeReason & (IncludeReasons.Select | IncludeReasons.Hierarchy | IncludeReasons.Filter | IncludeReasons.Order)) != 0)
                 return true;
 
