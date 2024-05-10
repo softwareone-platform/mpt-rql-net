@@ -103,6 +103,10 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
             else // leaf
             {
                 currentNode = AddNodeToGraph(currentNode, rqlProperty!, sign);
+
+                // root of the node to be added as hierarchy
+                if (i == 0)
+                    parentNode.AddIncludeReason(IncludeReasons.Hierarchy);
             }
         }
 

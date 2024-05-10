@@ -95,10 +95,14 @@ public class RqlNode
             _children.Add(rqlProperty.Name, child);
         }
 
-        child.IncludeReason |= includeReason;
-        child.ExcludeReason |= excludeReason;
+        child.AddIncludeReason(includeReason);
+        child.AddExcludeReason(excludeReason);
         return child;
     }
+
+    internal void AddIncludeReason(IncludeReasons includeReason) => IncludeReason |= includeReason;
+
+    internal void AddExcludeReason(ExcludeReasons excludeReason) => ExcludeReason |= excludeReason;
 
     internal string GetFullPath()
     {
