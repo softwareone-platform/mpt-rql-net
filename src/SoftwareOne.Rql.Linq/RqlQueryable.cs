@@ -1,6 +1,7 @@
 ﻿using ErrorOr;
 using Microsoft.Extensions.DependencyInjection;
 using SoftwareOne.Rql.Linq.Configuration;
+using SoftwareOne.Rql.Linq.Core;
 using SoftwareOne.Rql.Linq.Services.Context;
 using SoftwareOne.Rql.Linq.Services.Filtering;
 using SoftwareOne.Rql.Linq.Services.Mapping;
@@ -43,6 +44,7 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
 
         var context = GetService<IQueryContext<TView>>();
 
+        GetService<IExternalServiceAccessor>().SetServiceProvider(_serviceProvider);
         GetService<IRqlSelectSettings>().Apply(selectCustomization);
         GetService<IFilteringService<TView>>().Process(request.Filter);
         GetService<IOrderingService<TView>>().Process(request.Order);

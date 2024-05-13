@@ -1,22 +1,14 @@
-﻿
-using SoftwareOne.Rql.Abstractions.Exception;
+﻿using SoftwareOne.Rql.Abstractions.Exception;
 
 namespace SoftwareOne.Rql.Linq.Core
 {
-    internal class ActionValidator : IActionValidator
+    internal class ActionValidator(IExternalServiceAccessor externalServices) : IActionValidator
     {
-        private readonly IServiceProvider _serviceProvider;
-
-        public ActionValidator(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
-
         public bool Validate(RqlPropertyInfo propertyInfo, RqlActions action)
         {
             if (propertyInfo.ActionStrategy != null)
             {
-                return _serviceProvider.GetService(propertyInfo.ActionStrategy) is not IActionStrategy strategy
+                return externalServices.GetService(propertyInfo.ActionStrategy) is not IActionStrategy strategy
                     ? throw new RqlInvalidActionStrategyException(
                         $"The instance of type {propertyInfo.ActionStrategy.FullName} defined as action strategy for property " +
                         $"({propertyInfo.Property!.DeclaringType!.FullName}).{propertyInfo.Property.Name} " +
