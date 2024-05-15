@@ -302,8 +302,6 @@ public partial class AvDbContext : DbContext
             entity.Property(e => e.Weight)
                 .HasComment("Product weight.")
                 .HasColumnType("decimal(8, 2)");
-            entity.Property(e => e.Status)
-                .HasConversion<int>();
 
             entity.HasOne(d => d.ProductCategory).WithMany(p => p.Products).HasForeignKey(d => d.ProductCategoryId);
 

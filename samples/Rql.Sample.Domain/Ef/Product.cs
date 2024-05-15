@@ -44,11 +44,6 @@ public partial class Product
     public string? Size { get; set; }
 
     /// <summary>
-    /// Product status.
-    /// </summary>
-    public ProductStatus Status { get; set; }
-
-    /// <summary>
     /// Product weight.
     /// </summary>
     public decimal? Weight { get; set; }
@@ -103,12 +98,4 @@ public partial class Product
     public virtual ProductModel? ProductModel { get; set; }
 
     public virtual ICollection<SalesOrderDetail> SalesOrderDetails { get; set; } = new List<SalesOrderDetail>();
-}
-
-public enum ProductStatus
-{
-    Draft = 0,
-    Active = 1,
-    Updating = 2,
-    Unlisted = 3
 }

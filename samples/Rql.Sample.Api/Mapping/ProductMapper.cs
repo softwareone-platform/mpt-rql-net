@@ -10,7 +10,6 @@ namespace Rql.Sample.Api.Mapping
         {
             context.Map(t => t.Id, t => t.ProductId)
                 .MapDynamic(t => t.Model, t => t.ProductModel)
-                .Map(t => t.Status, t => (ViewProductStatus)t.Status)
                 .MapDynamic(t => t.SaleDetails, t => t.SalesOrderDetails)
                 .Map(t => t.SaleDetailIds, t => t.SalesOrderDetails.Select(s => s.SalesOrderDetailId));
         }
