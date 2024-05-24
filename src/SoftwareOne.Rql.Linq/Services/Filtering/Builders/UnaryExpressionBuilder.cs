@@ -1,5 +1,5 @@
-﻿using ErrorOr;
-using SoftwareOne.Rql.Abstractions.Unary;
+﻿using SoftwareOne.Rql.Abstractions.Unary;
+using SoftwareOne.Rql.Linq.Core.Result;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Unary;
 using System.Linq.Expressions;
@@ -17,10 +17,10 @@ internal class UnaryExpressionBuilder : IConcreteExpressionBuilder<RqlUnary>
         _operatorHandlerProvider = operatorHandlerProvider;
     }
 
-    public ErrorOr<Expression> Build(ParameterExpression pe, RqlUnary node)
+    public Result<Expression> Build(ParameterExpression pe, RqlUnary node)
     {
         var handler = (IUnaryOperator)_operatorHandlerProvider.GetOperatorHandler(node.GetType())!;
         var expression = _builder.Build(pe, node.Nested);
-        return expression.Match(handler.MakeExpression, errors => errors);
+        return expression.IsError ? expression.Errors : handler.MakeExpression(expression.Value!);
     }
 }

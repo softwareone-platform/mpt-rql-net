@@ -1,6 +1,4 @@
-﻿using ErrorOr;
-
-namespace SoftwareOne.Rql.Linq.Services.Ordering;
+﻿namespace SoftwareOne.Rql.Linq.Services.Ordering;
 
 internal interface IOrderingService<TView>
 {

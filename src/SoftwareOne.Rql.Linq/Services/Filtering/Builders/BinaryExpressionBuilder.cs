@@ -1,9 +1,9 @@
-﻿using ErrorOr;
-using SoftwareOne.Rql.Abstractions;
+﻿using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Argument;
 using SoftwareOne.Rql.Abstractions.Argument.Pointer;
 using SoftwareOne.Rql.Abstractions.Binary;
 using SoftwareOne.Rql.Abstractions.Group;
+using SoftwareOne.Rql.Linq.Core.Result;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation;
@@ -25,7 +25,7 @@ internal class BinaryExpressionBuilder : IConcreteExpressionBuilder<RqlBinary>
     }
 
 
-    public ErrorOr<Expression> Build(ParameterExpression pe, RqlBinary node)
+    public Result<Expression> Build(ParameterExpression pe, RqlBinary node)
     {
         var handler = _operatorHandlerProvider.GetOperatorHandler(node.GetType())!;
 
@@ -34,7 +34,7 @@ internal class BinaryExpressionBuilder : IConcreteExpressionBuilder<RqlBinary>
         if (memberInfo.IsError)
             return memberInfo.Errors;
 
-        var property = memberInfo.Value.PropertyInfo;
+        var property = memberInfo.Value!.PropertyInfo;
         var accessor = memberInfo.Value.Expression;
 
         var expression = handler switch
@@ -49,7 +49,7 @@ internal class BinaryExpressionBuilder : IConcreteExpressionBuilder<RqlBinary>
     }
 
 
-    private ErrorOr<Expression> MakeComparison(ParameterExpression parameter, RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, IComparisonOperator comparison)
+    private Result<Expression> MakeComparison(ParameterExpression parameter, RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, IComparisonOperator comparison)
     {
         if (node.Right is RqlPointer pointer)
         {
@@ -57,31 +57,37 @@ internal class BinaryExpressionBuilder : IConcreteExpressionBuilder<RqlBinary>
             if (rightExpression.IsError)
                 return rightExpression.Errors;
 
-            return ((ComparisonOperator)comparison).Handler.Invoke(accessor, Expression.ConvertChecked(rightExpression.Value.Expression, accessor.Type));
+            return ((ComparisonOperator)comparison).Handler.Invoke(accessor, Expression.ConvertChecked(rightExpression.Value!.Expression, accessor.Type));
         }
         else
         {
             var arg = GetRightConstantArgument(node.Right, true);
+            if (arg.IsError)
+                return arg.Errors;
+
             return comparison.MakeExpression(propertyInfo, accessor, arg.Value);
         }
     }
 
-    private static ErrorOr<Expression> MakeSearch(RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, ISearchOperator search)
+    private static Result<Expression> MakeSearch(RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, ISearchOperator search)
     {
         if (accessor is not MemberExpression member)
-            return Error.Failure(description: "Search operations work with properties only");
+            return Error.General("Search operations work with properties only");
 
         var arg = GetRightConstantArgument(node.Right, false);
+        if (arg.IsError)
+            return arg.Errors;
+
         return search.MakeExpression(propertyInfo, member, arg.Value!);
     }
 
-    private static ErrorOr<Expression> MakeList(RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, IListOperator list)
+    private static Result<Expression> MakeList(RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, IListOperator list)
     {
         if (accessor is not MemberExpression member)
-            return Error.Failure(description: "List operations work with properties only");
+            return Error.General("List operations work with properties only");
 
         if (node.Right is not RqlGroup grp || grp.Items == null || grp.Items.Count == 0)
-            return Error.Validation(description: "Value has to be a non empty array.");
+            return Error.Validation("Value has to be a non empty array.");
 
         var values = grp.Items.Select(x => GetRightConstantArgument(x, false)).ToList();
 
@@ -91,18 +97,18 @@ internal class BinaryExpressionBuilder : IConcreteExpressionBuilder<RqlBinary>
         return list.MakeExpression(propertyInfo, member, values.Select(s => s.Value!));
     }
 
-    private static ErrorOr<string?> GetRightConstantArgument(RqlExpression right, bool allowNull)
+    private static Result<string?> GetRightConstantArgument(RqlExpression right, bool allowNull)
     {
-        ErrorOr<string?> res = right switch
+        Result<string?> res = right switch
         {
             RqlNull => (string?)null,
             RqlEmpty => string.Empty,
             RqlConstant str => str.Value,
-            _ => Error.Validation(description: "Unsupported argument type.")
+            _ => Error.Validation("Unsupported argument type.")
         };
 
         if (!allowNull && !res.IsError && res.Value == null)
-            return Error.Validation(description: "Null values are not supported.");
+            return Error.Validation("Null values are not supported.");
 
         return res;
     }

@@ -2,7 +2,6 @@
 using Rql.Tests.Integration.Tests.Functionality.ActionStrategy.Core;
 using SoftwareOne.Rql.Abstractions.Exception;
 using Xunit;
-using Xunit.Sdk;
 
 namespace Rql.Tests.Integration.Tests.Functionality.ActionStrategy;
 
@@ -63,12 +62,12 @@ public class BasicActionStrategyTests
     [InlineData("FilterOnly")]
     [InlineData("SelectOnly")]
     public void Order_Forbidden_Should_Fail(string orderingExpression) =>
-        _testExecutor.MustFailWithError(order: orderingExpression, errorDescription: "Ordering is not permitted.");
+        _testExecutor.MustFailWithError(order: orderingExpression, errorMessage: "Ordering is not permitted.");
 
     [Theory]
     [InlineData("Nothing.Foo=abc")]
     [InlineData("OrderOnly.Foo=abc")]
     [InlineData("SelectOnly.Foo=abc")]
     public void Filter_Forbidden_Should_Fail(string filterExpression) =>
-        _testExecutor.MustFailWithError(filter: filterExpression, errorDescription: "Filtering is not permitted.");
+        _testExecutor.MustFailWithError(filter: filterExpression, errorMessage: "Filtering is not permitted.");
 }

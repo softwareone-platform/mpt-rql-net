@@ -1,8 +1,8 @@
-﻿using ErrorOr;
-using SoftwareOne.Rql.Abstractions;
+﻿using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Argument;
 using SoftwareOne.Rql.Abstractions.Argument.Pointer;
 using SoftwareOne.Rql.Linq.Core.Metadata;
+using SoftwareOne.Rql.Linq.Core.Result;
 using System.Linq.Expressions;
 
 namespace SoftwareOne.Rql.Linq.Core
@@ -16,7 +16,7 @@ namespace SoftwareOne.Rql.Linq.Core
             _metadataProvider = metadataProvider;
         }
 
-        public ErrorOr<MemberPathInfo> Build(Expression root, RqlExpression rqlExpression)
+        public Result<MemberPathInfo> Build(Expression root, RqlExpression rqlExpression)
         {
             switch (rqlExpression)
             {
@@ -33,28 +33,28 @@ namespace SoftwareOne.Rql.Linq.Core
                         var path = Build(root, constant.Value);
                         if (path.IsError)
                             return path.Errors;
-                        return path.Value;
+                        return path.Value!;
                     }
                 default:
-                    return Error.Validation(description: "Unsupported property node.");
+                    return Error.Validation("Unsupported property node.");
             }
         }
 
-        public ErrorOr<MemberPathInfo> Build(Expression root, string path)
+        public Result<MemberPathInfo> Build(Expression root, string path)
         {
             var nameSegments = path.Split('.');
             var aggregatedInfo = nameSegments.Aggregate(
-                ErrorOrFactory.From(new MemberPathInfo(path, path.AsMemory(0, 0), null!, root)),
+                new Result<MemberPathInfo>(new MemberPathInfo(path, path.AsMemory(0, 0), null!, root)),
                 (current, segment) =>
                 {
                     if (current.IsError)
                         return current;
 
-                    var previousLength = current.Value.Path.Length;
+                    var previousLength = current.Value!.Path.Length;
                     var cumulativePath = current.Value.FullPath.AsMemory(0, (previousLength > 0 ? previousLength + 1 : previousLength) + segment.Length);
 
                     if (!_metadataProvider.TryGetPropertyByDisplayName(current.Value.Expression.Type, segment, out var propInfo) || propInfo!.IsIgnored)
-                        return Error.Validation(cumulativePath.ToString(), "Invalid property path.");
+                        return Error.Validation("Invalid property path.", cumulativePath.ToString());
 
                     var expression = (Expression)Expression.MakeMemberAccess(current.Value!.Expression, propInfo!.Property!);
                     var pathInfo = new MemberPathInfo(current.Value.FullPath, cumulativePath, propInfo, expression);
@@ -70,9 +70,9 @@ namespace SoftwareOne.Rql.Linq.Core
             if (aggregatedInfo.IsError)
                 return aggregatedInfo.Errors;
 
-            return aggregatedInfo.Value;
+            return aggregatedInfo.Value!;
         }
 
-        protected abstract ErrorOr<Success> ValidatePath(MemberPathInfo pathInfo);
+        protected abstract Result<bool> ValidatePath(MemberPathInfo pathInfo);
     }
 }

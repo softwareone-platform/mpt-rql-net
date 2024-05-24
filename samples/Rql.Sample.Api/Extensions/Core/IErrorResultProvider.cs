@@ -1,5 +1,5 @@
-﻿using ErrorOr;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using SoftwareOne.Rql.Linq.Core.Result;
 
 namespace Rql.Sample.Api.Extensions.Core;
 

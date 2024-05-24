@@ -1,6 +1,6 @@
-﻿using ErrorOr;
-using SoftwareOne.Rql.Linq.Core;
+﻿using SoftwareOne.Rql.Linq.Core;
 using SoftwareOne.Rql.Linq.Core.Metadata;
+using SoftwareOne.Rql.Linq.Core.Result;
 
 namespace SoftwareOne.Rql.Linq.Services.Ordering
 {
@@ -15,11 +15,11 @@ namespace SoftwareOne.Rql.Linq.Services.Ordering
             _actionValidator = actionValidator;
         }
 
-        protected override ErrorOr<Success> ValidatePath(MemberPathInfo pathInfo)
+        protected override Result<bool> ValidatePath(MemberPathInfo pathInfo)
         {
             if (!_actionValidator.Validate(pathInfo.PropertyInfo, RqlActions.Order))
-                return Error.Validation(pathInfo.Path.ToString(), "Ordering is not permitted.");
-            return Result.Success;
+                return Error.Validation("Ordering is not permitted.", pathInfo.Path.ToString());
+            return true;
         }
     }
 }

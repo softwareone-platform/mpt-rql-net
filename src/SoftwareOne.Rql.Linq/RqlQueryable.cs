@@ -1,5 +1,4 @@
-﻿using ErrorOr;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using SoftwareOne.Rql.Linq.Configuration;
 using SoftwareOne.Rql.Linq.Core;
 using SoftwareOne.Rql.Linq.Services.Context;
@@ -62,7 +61,8 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
         {
             Graph = context.Graph,
             Query = query,
-            Status = context.HasErrors ? context.GetErrors().ToList() : Result.Success
+            IsSuccess = !context.HasErrors,
+            Errors = context.GetErrors().ToList()
         };
 
         T GetService<T>() where T : notnull => scope.ServiceProvider.GetRequiredService<T>();

@@ -1,6 +1,6 @@
-﻿using ErrorOr;
-using SoftwareOne.Rql.Linq.Core;
+﻿using SoftwareOne.Rql.Linq.Core;
 using SoftwareOne.Rql.Linq.Core.Metadata;
+using SoftwareOne.Rql.Linq.Core.Result;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering
 {
@@ -15,11 +15,11 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering
             _actionValidator = actionValidator;
         }
 
-        protected override ErrorOr<Success> ValidatePath(MemberPathInfo pathInfo)
+        protected override Result<bool> ValidatePath(MemberPathInfo pathInfo)
         {
             if (!_actionValidator.Validate(pathInfo.PropertyInfo, RqlActions.Filter))
-                return Error.Validation(description: "Filtering is not permitted.");
-            return Result.Success;
+                return Error.Validation("Filtering is not permitted.");
+            return true;
         }
     }
 }

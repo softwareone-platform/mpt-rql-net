@@ -1,5 +1,5 @@
-﻿using ErrorOr;
-using SoftwareOne.Rql.Abstractions.Collection;
+﻿using SoftwareOne.Rql.Abstractions.Collection;
+using SoftwareOne.Rql.Linq.Core.Result;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Collection;
 using System.Linq.Expressions;
@@ -19,7 +19,7 @@ internal class CollectionExpressionBuilder : IConcreteExpressionBuilder<RqlColle
         _operatorHandlerProvider = operatorHandlerProvider;
     }
 
-    public ErrorOr<Expression> Build(ParameterExpression pe, RqlCollection node)
+    public Result<Expression> Build(ParameterExpression pe, RqlCollection node)
     {
         var handler = (ICollectionOperator)_operatorHandlerProvider.GetOperatorHandler(node.GetType())!;
 
@@ -28,14 +28,14 @@ internal class CollectionExpressionBuilder : IConcreteExpressionBuilder<RqlColle
         if (memberInfo.IsError)
             return memberInfo.Errors;
 
-        var property = memberInfo.Value.PropertyInfo;
+        var property = memberInfo.Value!.PropertyInfo;
         var accessor = memberInfo.Value.Expression;
 
         if (accessor is not MemberExpression member)
-            return Error.Failure(description: "Collection operations work with properties only");
+            return Error.General("Collection operations work with properties only");
 
         if (property.ElementType == null)
-            return Error.Failure(description: "Collection property has incompatible type");
+            return Error.General("Collection property has incompatible type");
 
         var param = Expression.Parameter(property.ElementType);
 
@@ -47,7 +47,7 @@ internal class CollectionExpressionBuilder : IConcreteExpressionBuilder<RqlColle
             if (innerExpression.IsError)
                 return innerExpression.Errors;
 
-            innerLambda = Expression.Lambda(innerExpression.Value, param);
+            innerLambda = Expression.Lambda(innerExpression.Value!, param);
         }
 
         return handler.MakeExpression(property, member, innerLambda);

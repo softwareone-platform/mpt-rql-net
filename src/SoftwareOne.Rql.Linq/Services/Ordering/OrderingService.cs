@@ -1,7 +1,7 @@
-﻿using ErrorOr;
-using SoftwareOne.Rql.Abstractions;
+﻿using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Argument;
 using SoftwareOne.Rql.Linq.Core;
+using SoftwareOne.Rql.Linq.Core.Result;
 using SoftwareOne.Rql.Linq.Services.Context;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -37,7 +37,7 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
         var orderProperties = node.Items!.OfType<RqlConstant>().ToList();
         if (!orderProperties.Any())
         {
-            _context.AddError(Error.Validation(MakeErrorCode("no_props"), "No valid ordering properties were detected"));
+            _context.AddError(Error.Validation("No valid ordering properties were detected", MakeErrorCode("no_props")));
             return;
         }
 
@@ -55,7 +55,7 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
                 continue;
             }
 
-            var method = MakeOrderingMethod(member.Value.Expression, isAsc, isFirst);
+            var method = MakeOrderingMethod(member.Value!.Expression, isAsc, isFirst);
             var expression = Expression.Lambda(member.Value.Expression, param);
 
             _context.AddTransformation(q => (IQueryable<TView>)method.Invoke(null, new object[] { q, expression })!);

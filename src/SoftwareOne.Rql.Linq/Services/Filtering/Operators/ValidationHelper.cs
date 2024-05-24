@@ -1,14 +1,14 @@
-﻿using ErrorOr;
-using SoftwareOne.Rql.Abstractions;
+﻿using SoftwareOne.Rql.Abstractions;
+using SoftwareOne.Rql.Linq.Core.Result;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators;
 internal static class ValidationHelper
 {
-    public static ErrorOr<Success> ValidateOperatorApplicability(IRqlPropertyInfo propertyInfo, RqlOperators rqlOperator)
+    public static Result<bool> ValidateOperatorApplicability(IRqlPropertyInfo propertyInfo, RqlOperators rqlOperator)
     {
         if (!propertyInfo.Operators.HasFlag(rqlOperator))
-            return Error.Validation(description: $"Operator '{rqlOperator}' is not permitted");
+            return Error.Validation($"Operator '{rqlOperator}' is not permitted");
 
-        return Result.Success;
+        return true;
     }
 }

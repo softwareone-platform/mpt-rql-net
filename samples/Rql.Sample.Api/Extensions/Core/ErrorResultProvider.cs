@@ -1,9 +1,7 @@
-﻿using ErrorOr;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.DependencyInjection;
+using SoftwareOne.Rql.Linq.Core.Result;
 
 namespace Rql.Sample.Api.Extensions.Core;
 
@@ -20,7 +18,7 @@ internal class ErrorResultProvider : IErrorResultProvider
     {
         if (errors.Count is 0)
         {
-            return Problem(Error.Failure());
+            return Problem(Error.General("A failure has occurred"));
         }
 
         if (errors.All(error => error.Type == ErrorType.Validation))
@@ -35,13 +33,11 @@ internal class ErrorResultProvider : IErrorResultProvider
     {
         var statusCode = error.Type switch
         {
-            ErrorType.Conflict => StatusCodes.Status409Conflict,
             ErrorType.Validation => StatusCodes.Status400BadRequest,
-            ErrorType.NotFound => StatusCodes.Status404NotFound,
             _ => StatusCodes.Status500InternalServerError,
         };
 
-        return Problem(statusCode: statusCode, title: error.Description);
+        return Problem(statusCode: statusCode, title: error.Message);
     }
 
     private ObjectResult Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null)
@@ -86,7 +82,7 @@ internal class ErrorResultProvider : IErrorResultProvider
         {
             modelStateDictionary.AddModelError(
                 error.Code,
-                error.Description);
+                error.Message);
         }
 
         return ValidationProblem(modelStateDictionary: modelStateDictionary);

@@ -1,8 +1,8 @@
-﻿using ErrorOr;
-using SoftwareOne.Rql.Abstractions;
+﻿using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Linq.Configuration;
 using SoftwareOne.Rql.Linq.Core;
 using SoftwareOne.Rql.Linq.Core.Metadata;
+using SoftwareOne.Rql.Linq.Core.Result;
 using SoftwareOne.Rql.Linq.Services.Context;
 using SoftwareOne.Rql.Linq.Services.Graph;
 
@@ -76,7 +76,7 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
     {
         if (target.Depth > 100)
         {
-            _context.AddError(Error.Failure(description: "Extreme select depth detected. Most likely a circular dependency issue. Processing stopped."));
+            _context.AddError(Error.General("Extreme select depth detected. Most likely a circular dependency issue. Processing stopped."));
             return true;
         }
 

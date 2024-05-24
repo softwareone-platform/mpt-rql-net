@@ -1,6 +1,4 @@
-﻿using ErrorOr;
-
-namespace SoftwareOne.Rql.Linq.Services.Projection;
+﻿namespace SoftwareOne.Rql.Linq.Services.Projection;
 
 internal interface IProjectionService<TView>
 {

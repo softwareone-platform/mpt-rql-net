@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using NSubstitute;
-using NSubstitute.Core;
+﻿using NSubstitute;
 using Rql.Tests.Unit.Factory;
 using Rql.Tests.Unit.Utility;
 using SoftwareOne.Rql;
@@ -261,7 +259,7 @@ public class FilteringServiceTests
 
         // Assert
         Assert.True(contextSubstitute.HasErrors);
-        Assert.Equal(ErrorMessageFactory.OperatorProhibited(RqlOperators.Eq), errors.First().Description);
+        Assert.Equal(ErrorMessageFactory.OperatorProhibited(RqlOperators.Eq), errors.First().Message);
     }
 
     [Theory]
@@ -284,7 +282,7 @@ public class FilteringServiceTests
 
         // Assert
         Assert.True(contextSubstitute.HasErrors);
-        Assert.Equal(ErrorMessageFactory.OperatorProhibited(isIn ? RqlOperators.ListIn : RqlOperators.ListOut), errors.First().Description);
+        Assert.Equal(ErrorMessageFactory.OperatorProhibited(isIn ? RqlOperators.ListIn : RqlOperators.ListOut), errors.First().Message);
     }
 
     [Theory]
@@ -305,6 +303,6 @@ public class FilteringServiceTests
 
         // Assert
         Assert.True(_contextSubstitute.HasErrors);
-        Assert.Equal(ErrorMessageFactory.OperatorProhibited(RqlOperators.StartsWith), errors.First().Description);
+        Assert.Equal(ErrorMessageFactory.OperatorProhibited(RqlOperators.StartsWith), errors.First().Message);
     }
 }

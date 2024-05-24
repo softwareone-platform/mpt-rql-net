@@ -1,6 +1,6 @@
-﻿using ErrorOr;
-using SoftwareOne.Rql.Abstractions.Group;
+﻿using SoftwareOne.Rql.Abstractions.Group;
 using System.Linq.Expressions;
+using SoftwareOne.Rql.Linq.Core.Result;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Builders;
 
@@ -13,13 +13,13 @@ internal class GroupExpressionBuilder : IConcreteExpressionBuilder<RqlGroup>
         _builder = builder;
     }
 
-    public ErrorOr<Expression> Build(ParameterExpression pe, RqlGroup node)
+    public Result<Expression> Build(ParameterExpression pe, RqlGroup node)
     {
         var handler = node switch
         {
-            RqlAnd => (ErrorOr<LogicalExpression>)Expression.AndAlso,
-            RqlOr => (ErrorOr<LogicalExpression>)Expression.OrElse,
-            RqlGenericGroup genGroup => Error.Validation(genGroup.Name, "Unknown expression group."),
+            RqlAnd => (Result<LogicalExpression>)Expression.AndAlso,
+            RqlOr => (Result<LogicalExpression>)Expression.OrElse,
+            RqlGenericGroup genGroup => Error.Validation("Unknown expression group.", genGroup.Name),
             _ => FilteringError.Internal
         };
 
@@ -40,7 +40,7 @@ internal class GroupExpressionBuilder : IConcreteExpressionBuilder<RqlGroup>
                 errors.AddRange(innerFilter.Errors);
 
             if (!filter.IsError && !innerFilter.IsError)
-                filter = handler.Value(filter.Value, innerFilter.Value);
+                filter = handler.Value!(filter.Value!, innerFilter.Value!);
         }
         return errors.Any() ? errors : filter;
     }

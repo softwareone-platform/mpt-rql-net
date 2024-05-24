@@ -1,6 +1,6 @@
-﻿using ErrorOr;
-using SoftwareOne.Rql.Abstractions;
+﻿using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Linq.Core.Expressions;
+using SoftwareOne.Rql.Linq.Core.Result;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -14,7 +14,7 @@ internal class Like : ILike
     private static readonly MethodInfo _methodEquals = typeof(string).GetMethod(nameof(string.Equals), new[] { typeof(string) })!;
     private static readonly char _wildcard = '*';
 
-    public ErrorOr<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, string pattern)
+    public Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, string pattern)
     {
         var (methodInfo, rqlOperator) = pattern switch
         {

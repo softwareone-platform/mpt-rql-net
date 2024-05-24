@@ -1,4 +1,4 @@
-﻿using ErrorOr;
+﻿using SoftwareOne.Rql.Linq.Core.Result;
 
 namespace SoftwareOne.Rql.Linq.Services.Context;
 

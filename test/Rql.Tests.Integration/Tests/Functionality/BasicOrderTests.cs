@@ -22,5 +22,5 @@ public class BasicOrderTests
 
     [Fact]
     public void Ordering_By_IsIgnored_ThrowsException()
-       => _testExecutor.MustFailWithError(order: "ignored", errorDescription: "Invalid property path.");
+       => _testExecutor.MustFailWithError(order: "ignored", errorMessage: "Invalid property path.");
 }

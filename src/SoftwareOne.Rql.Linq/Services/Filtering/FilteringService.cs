@@ -50,7 +50,7 @@ internal sealed class FilteringService<TView> : RqlService, IFilteringService<TV
 
         _context.AddTransformation(q =>
         {
-            var lambda = (Expression<Func<TView, bool>>)Expression.Lambda(expression.Value, param);
+            var lambda = (Expression<Func<TView, bool>>)Expression.Lambda(expression.Value!, param);
             return q.Where(lambda);
         });
     }

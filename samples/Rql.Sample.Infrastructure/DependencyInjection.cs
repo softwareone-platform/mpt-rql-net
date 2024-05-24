@@ -4,7 +4,6 @@ using Rql.Sample.Application.Common.Interfaces.Persistence.InMemory;
 using Rql.Sample.Infrastructure.Persistence.Ef;
 using Rql.Sample.Infrastructure.Persistence.Ef.Repositories;
 using Rql.Sample.Infrastructure.Persistence.InMemory.Repositories;
-using System.Net;
 
 namespace Rql.Sample.Infrastructure;
 
@@ -22,7 +21,7 @@ public static class DependencyInjection
     {
         services.AddSingleton<ISampleRepository, SampleRepository>();
         services.AddScoped<IProductsRepository, ProductsRepository>();
-        services.AddScoped<IAddressesRepository, AddressesRepoository>();
+        services.AddScoped<IAddressesRepository, AddressesRepository>();
         services.AddDbContext<AvDbContext>();
 
         return services;

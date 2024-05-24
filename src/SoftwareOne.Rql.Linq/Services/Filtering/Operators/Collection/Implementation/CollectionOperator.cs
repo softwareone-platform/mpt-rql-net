@@ -1,6 +1,6 @@
-﻿using ErrorOr;
-using SoftwareOne.Rql.Abstractions;
+﻿using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Linq.Core;
+using SoftwareOne.Rql.Linq.Core.Result;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -8,7 +8,7 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Collection.Implement
 
 internal abstract class CollectionOperator : ICollectionOperator
 {
-    public ErrorOr<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, LambdaExpression? inner)
+    public Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, LambdaExpression? inner)
     {
         var validationResult = ValidationHelper.ValidateOperatorApplicability(propertyInfo, Operator);
         if (validationResult.IsError)
@@ -20,12 +20,12 @@ internal abstract class CollectionOperator : ICollectionOperator
         if (function.IsError) return function.Errors;
 
         if (inner != null)
-            return Expression.Call(null, function.Value, member, inner);
+            return Expression.Call(null, function.Value!, member, inner);
 
-        return Expression.Call(null, function.Value, member);
+        return Expression.Call(null, function.Value!, member);
     }
 
     protected abstract RqlOperators Operator { get; }
 
-    protected abstract ErrorOr<MethodInfo> GetFunction(ICollectionFunctions factory, bool noPredicate);
+    protected abstract Result<MethodInfo> GetFunction(ICollectionFunctions factory, bool noPredicate);
 }

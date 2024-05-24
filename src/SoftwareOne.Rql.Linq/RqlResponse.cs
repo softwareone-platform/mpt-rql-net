@@ -1,11 +1,12 @@
 ﻿#pragma warning disable IDE0130
-using ErrorOr;
+using SoftwareOne.Rql.Linq.Core.Result;
 
 namespace SoftwareOne.Rql;
 
 public class RqlResponse<TView>
 {
     public IQueryable<TView> Query { get; set; } = null!;
-    public ErrorOr<Success> Status { get; set; }
+    public bool IsSuccess { get; set; }
+    public List<Error> Errors { get; set; } = null!;
     public RqlNode Graph { get; set; } = null!;
 }

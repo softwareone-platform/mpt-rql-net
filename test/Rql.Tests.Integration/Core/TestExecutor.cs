@@ -42,7 +42,7 @@ public abstract class TestExecutor<TStorage, TView> where TView : ITestEntity
     {
         var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select, Customization = GetCustomisation() });
 
-        Assert.False(transformed.Status.IsError);
+        Assert.True(transformed.IsSuccess);
 
         var data = transformed.Query.OfType<ITestEntity>().ToList();
 
@@ -53,16 +53,16 @@ public abstract class TestExecutor<TStorage, TView> where TView : ITestEntity
     public IQueryable<TView> Transform(string? filter = null, string? order = null, string? select = null)
     {
         var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select, Customization = GetCustomisation() });
-        Assert.False(transformed.Status.IsError);
+        Assert.True(transformed.IsSuccess);
         return transformed.Query;
     }
 
-    public void MustFailWithError(string? filter = null, string? order = null, string? select = null, string? errorDescription = null)
+    public void MustFailWithError(string? filter = null, string? order = null, string? select = null, string? errorMessage = null)
     {
         var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select, Customization = GetCustomisation() });
-        Assert.True(transformed.Status.IsError);
-        if (errorDescription != null)
-            Assert.Equal(errorDescription, transformed.Status.Errors[0].Description);
+        Assert.False(transformed.IsSuccess);
+        if (errorMessage != null)
+            Assert.Equal(errorMessage, transformed.Errors[0].Message);
     }
 
     protected abstract IRqlQueryable<TStorage, TView> MakeRql();

@@ -1,10 +1,10 @@
-﻿using ErrorOr;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Binary;
 using SoftwareOne.Rql.Abstractions.Collection;
 using SoftwareOne.Rql.Abstractions.Group;
 using SoftwareOne.Rql.Abstractions.Unary;
+using SoftwareOne.Rql.Linq.Core.Result;
 using System.Linq.Expressions;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Builders;
@@ -18,7 +18,7 @@ internal class ExpressionBuilder : IExpressionBuilder
         _serviceProvider = serviceProvider;
     }
 
-    public ErrorOr<Expression> Build(ParameterExpression pe, RqlExpression node)
+    public Result<Expression> Build(ParameterExpression pe, RqlExpression node)
     {
         return node switch
         {
@@ -29,7 +29,7 @@ internal class ExpressionBuilder : IExpressionBuilder
             _ => FilteringError.Internal
         };
 
-        ErrorOr<Expression> Build<TNode>(ParameterExpression parameter, TNode node) where TNode : RqlExpression
+        Result<Expression> Build<TNode>(ParameterExpression parameter, TNode node) where TNode : RqlExpression
             => _serviceProvider.GetRequiredService<IConcreteExpressionBuilder<TNode>>().Build(parameter, node);
     }
 }

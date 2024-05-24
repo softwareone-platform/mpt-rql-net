@@ -168,5 +168,5 @@ public class BasicFilterTests
 
     [Fact]
     public void Equals_IsIgnored_ThrowsException()
-       => _testExecutor.MustFailWithError(filter: "ignored=true", errorDescription: "Invalid property path.");
+       => _testExecutor.MustFailWithError(filter: "ignored=true", errorMessage: "Invalid property path.");
 }

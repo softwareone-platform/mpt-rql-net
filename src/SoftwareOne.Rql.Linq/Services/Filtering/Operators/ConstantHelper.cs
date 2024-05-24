@@ -1,11 +1,11 @@
-﻿using ErrorOr;
+﻿using SoftwareOne.Rql.Linq.Core.Result;
 using System.ComponentModel;
 using System.Globalization;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators;
 internal static class ConstantHelper
 {
-    public static ErrorOr<object> ChangeType(string value, Type type)
+    public static Result<object> ChangeType(string value, Type type)
     {
         try
         {
@@ -13,7 +13,7 @@ internal static class ConstantHelper
         }
         catch
         {
-            return Error.Validation(description: $"Cannot convert value: '{value}'.");
+            return Error.Validation($"Cannot convert value: '{value}'.");
         }
     }
 }

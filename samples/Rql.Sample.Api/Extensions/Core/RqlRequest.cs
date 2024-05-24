@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Rql.Sample.Contracts.Ef.Products;
-using Rql.Sample.Domain.Ef;
 using SoftwareOne.Rql;
 using System.Globalization;
 using System.Linq.Expressions;
@@ -27,8 +25,8 @@ internal class RqlRequest<TStorage, TView> : IRqlRequest<TStorage, TView>
         var request = ExtractRqlRequest(httpContext.Request.Query);
         var res = _rql.Transform(source, request);
 
-        if (res.Status.IsError)
-            return _errorResultProvider.Problem(res.Status.Errors);
+        if (!res.IsSuccess)
+            return _errorResultProvider.Problem(res.Errors);
 
         var limit = ParseIntParameter(httpContext.Request.Query, QueryConstants.Limit, 10);
         var offset = ParseIntParameter(httpContext.Request.Query, QueryConstants.Offset, 0);
