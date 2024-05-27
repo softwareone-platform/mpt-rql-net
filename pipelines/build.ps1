@@ -14,15 +14,6 @@ $outputDirectory = $args[0]
 
 $expr = "dotnet pack -c 'Release' -o '$outputDirectory' "
 
-if ($branch -ne "refs/heads/main")
-{
-    $versionSuffix = Get-Date -Format yyyyMMddHHmm
-    $versionSuffix = "pre.$versionSuffix"
-    $expr = $expr + "--version-suffix '$versionSuffix' "
-
-    Write-Output "Packaging version: $versionSuffix"
-}
-
 $projectPaths = Get-ChildItem -Path $dir\.. -Recurse | where { $_.extension -eq ".csproj" }
 foreach ($projectPath in $projectPaths)
 {
