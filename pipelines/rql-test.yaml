@@ -4,10 +4,10 @@ trigger:
   branches:
     include:
       - main
-      - release/v*
+      - release/*
 
 variables:
-  shouldDeploy: $[contains(variables['Build.SourceBranch'], 'release/v')]
+  shouldDeploy: $[contains(variables['Build.SourceBranch'], 'release/')]
   testResultsDir: 'test_artifacts'
   nugetArtifactsName: packages
 
