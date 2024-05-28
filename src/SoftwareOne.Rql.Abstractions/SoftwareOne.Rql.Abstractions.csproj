@@ -10,7 +10,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<InternalsVisibleTo Include="Rql.Tests.Unit" />
+		<InternalsVisibleTo Include="SoftwareOne.UnitTests.Common" />
+		<InternalsVisibleTo Include="SoftwareOne.Rql.Parsers.Linear.UnitTests" />
+		<InternalsVisibleTo Include="SoftwareOne.Rql.Linq.UnitTests" />
 	</ItemGroup>
 
 </Project>

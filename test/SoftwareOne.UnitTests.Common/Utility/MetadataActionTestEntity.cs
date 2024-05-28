@@ -1,0 +1,21 @@
+﻿using SoftwareOne.Rql;
+
+namespace SoftwareOne.UnitTests.Common.Utility;
+
+internal class MetadataActionTestEntity
+{
+    [RqlProperty(RqlActions.Order)]
+    public string OrderProp { get; set; } = null!;
+
+    [RqlProperty(RqlActions.Filter)]
+    public int FilterProp { get; set; }
+
+    [RqlProperty(RqlActions.All)]
+    public string AllProp { get; set; } = null!;
+
+    [RqlProperty(RqlActions.Select)]
+    public string SelectProp { get; set; } = null!;
+
+    [RqlProperty(RqlActions.None)]
+    public string NoneProp { get; set; } = null!;
+}
