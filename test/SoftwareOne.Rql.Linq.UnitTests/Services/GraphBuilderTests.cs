@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
-using NSubstitute;
-using SoftwareOne.Rql;
+using Moq;
 using SoftwareOne.Rql.Linq.Configuration;
 using SoftwareOne.Rql.Linq.Core;
 using SoftwareOne.Rql.Linq.Core.Metadata;
@@ -19,14 +18,13 @@ namespace SoftwareOne.Rql.Linq.UnitTests.Services
         private readonly FilteringGraphBuilder<Product> _filteringBuilder;
         private readonly OrderingGraphBuilder<Product> _orderingBuilder;
         private readonly ProjectionGraphBuilder<Product> _projectionBuilder;
-        private readonly IActionValidator _actionValidator;
         private readonly IQueryContext<Product> _queryContext;
         private readonly RqlParser _rqlParser;
 
         public GraphBuilderTests()
         {
-            _actionValidator = Substitute.For<IActionValidator>();
-            _actionValidator.Validate(Arg.Any<RqlPropertyInfo>(), Arg.Any<RqlActions>()).Returns(true);
+            var actionValidatorMock = new Mock<IActionValidator>();
+            actionValidatorMock.Setup(av => av.Validate(It.IsAny<RqlPropertyInfo>(), It.IsAny<RqlActions>())).Returns(true);
 
             _queryContext = new QueryContext<Product>();
             _rqlParser = new RqlParser();
@@ -35,9 +33,9 @@ namespace SoftwareOne.Rql.Linq.UnitTests.Services
             var selectSettings = new RqlSelectSettings { Explicit = RqlSelectModes.All, Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive };
             var metadataProvider = new MetadataProvider(new PropertyNameProvider(), new MetadataFactory(generalSettings));
 
-            _projectionBuilder = new ProjectionGraphBuilder<Product>(_queryContext, metadataProvider, _actionValidator, selectSettings);
-            _filteringBuilder = new FilteringGraphBuilder<Product>(metadataProvider, _actionValidator);
-            _orderingBuilder = new OrderingGraphBuilder<Product>(metadataProvider, _actionValidator);
+            _projectionBuilder = new ProjectionGraphBuilder<Product>(_queryContext, metadataProvider, actionValidatorMock.Object, selectSettings);
+            _filteringBuilder = new FilteringGraphBuilder<Product>(metadataProvider, actionValidatorMock.Object);
+            _orderingBuilder = new OrderingGraphBuilder<Product>(metadataProvider, actionValidatorMock.Object);
         }
 
         [Fact]

@@ -1,6 +1,11 @@
-﻿using NSubstitute;
+﻿using Moq;
+using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Linq.Services.Context;
 using SoftwareOne.Rql.Linq.Services.Filtering;
+using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
+using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation;
+using SoftwareOne.Rql.Linq.Services.Filtering.Operators.List.Implementation;
+using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search.Implementation;
 using SoftwareOne.UnitTests.Common;
 using SoftwareOne.UnitTests.Common.Utility;
 using Xunit;
@@ -9,13 +14,14 @@ namespace SoftwareOne.Rql.Linq.UnitTests.Filtering;
 
 public class FilteringServiceTests
 {
-    private readonly QueryContext<SampleEntityView> _contextSubstitute;
-    private readonly IFilteringGraphBuilder<SampleEntityView> _graphBuilder;
-
-    public FilteringServiceTests()
+    private static (FilteringService<TView> sut, QueryContext<TView> context) BuildSut<TView, TOperator>(IRqlParser parserMock)
+        where TOperator : IOperator, new()
     {
-        _contextSubstitute = new QueryContext<SampleEntityView>();
-        _graphBuilder = Substitute.For<IFilteringGraphBuilder<SampleEntityView>>();
+        var contextSubstitute = new QueryContext<TView>();
+        var graphBuilder = new Mock<IFilteringGraphBuilder<TView>>();
+        var builder = ExpressionBuilderFactory.GetBinary<TOperator>();
+        var sut = new FilteringService<TView>(contextSubstitute, graphBuilder.Object, builder, parserMock);
+        return (sut, contextSubstitute);
     }
 
     [Theory]
@@ -26,13 +32,11 @@ public class FilteringServiceTests
     public void Apply_WithRqlEqual_ReturnsSingleFilteredResult(string query)
     {
         // Arrange
-        var builder = ExpressionBuilderFactory.GetBinary<Linq.Services.Filtering.Operators.Comparison.Implementation.Equal>();
-        var parserMock = RqlParserFactory.RqlEqual();
-        var sut = new FilteringService<SampleEntityView>(_contextSubstitute, _graphBuilder, builder, parserMock);
+        var (sut, context) = BuildSut<SampleEntityView, Equal>(RqlParserFactory.RqlEqual());
 
         // Act
         sut.Process(query);
-        var actualResult = _contextSubstitute.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
+        var actualResult = context.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
 
         // Assert
         Assert.Equal("Jewelry Widget", actualResult.Single().Name);
@@ -42,13 +46,11 @@ public class FilteringServiceTests
     public void Apply_WithRqlNotEqual_ReturnsAllButSingleResult()
     {
         // Arrange
-        var builder = ExpressionBuilderFactory.GetBinary<Linq.Services.Filtering.Operators.Comparison.Implementation.NotEqual>();
-        var parserMock = RqlParserFactory.RqlNotEqual();
-        var sut = new FilteringService<SampleEntityView>(_contextSubstitute, _graphBuilder, builder, parserMock);
+        var (sut, context) = BuildSut<SampleEntityView, NotEqual>(RqlParserFactory.RqlNotEqual());
 
         // Act
         sut.Process("ne(name,Jewelry Widget)");
-        var actualResult = _contextSubstitute.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
+        var actualResult = context.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
 
         // Assert
         Assert.False(actualResult.Any(_ => _.Name == "Jewelry Widget"));
@@ -60,13 +62,11 @@ public class FilteringServiceTests
     public void Apply_WithRqlGreaterThan_ReturnsExpectedResult(string query, decimal value)
     {
         // Arrange
-        var builder = ExpressionBuilderFactory.GetBinary<Linq.Services.Filtering.Operators.Comparison.Implementation.GreaterThan>();
-        var parserMock = RqlParserFactory.RqlGreaterThan(value);
-        var sut = new FilteringService<SampleEntityView>(_contextSubstitute, _graphBuilder, builder, parserMock);
+        var (sut, context) = BuildSut<SampleEntityView, GreaterThan>(RqlParserFactory.RqlGreaterThan(value));
 
         // Act
         sut.Process(query);
-        var actualResult = _contextSubstitute.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
+        var actualResult = context.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
 
         // Assert
         Assert.True(actualResult.Count() > 1);
@@ -79,13 +79,11 @@ public class FilteringServiceTests
     public void Apply_WithRqlGreaterThanTooHigh_ReturnsEmptyResult(string query, decimal value)
     {
         // Arrange
-        var builder = ExpressionBuilderFactory.GetBinary<Linq.Services.Filtering.Operators.Comparison.Implementation.GreaterThan>();
-        var parserMock = RqlParserFactory.RqlGreaterThan(value);
-        var sut = new FilteringService<SampleEntityView>(_contextSubstitute, _graphBuilder, builder, parserMock);
+        var (sut, context) = BuildSut<SampleEntityView, GreaterThan>(RqlParserFactory.RqlGreaterThan(value));
 
         // Act
         sut.Process(query);
-        var actualResult = _contextSubstitute.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
+        var actualResult = context.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
 
         // Assert
         Assert.Empty(actualResult);
@@ -97,13 +95,11 @@ public class FilteringServiceTests
     public void Apply_WithRqlGreaterEqualThan_ReturnsExpectedResult(string query, decimal value)
     {
         // Arrange
-        var builder = ExpressionBuilderFactory.GetBinary<Linq.Services.Filtering.Operators.Comparison.Implementation.GreaterThanOrEqual>();
-        var parserMock = RqlParserFactory.RqlGreaterEqualThan(value);
-        var sut = new FilteringService<SampleEntityView>(_contextSubstitute, _graphBuilder, builder, parserMock);
+        var (sut, context) = BuildSut<SampleEntityView, GreaterThanOrEqual>(RqlParserFactory.RqlGreaterThanOrEqual(value));
 
         // Act
         sut.Process(query);
-        var actualResult = _contextSubstitute.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
+        var actualResult = context.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
 
         // Assert
         Assert.True(actualResult.Count() > 1);
@@ -116,13 +112,11 @@ public class FilteringServiceTests
     public void Apply_WithRqlGreaterEqualThanTooHigh_ReturnsEmptyResult(string query, decimal value)
     {
         // Arrange
-        var builder = ExpressionBuilderFactory.GetBinary<Linq.Services.Filtering.Operators.Comparison.Implementation.GreaterThanOrEqual>();
-        var parserMock = RqlParserFactory.RqlGreaterEqualThan(value);
-        var sut = new FilteringService<SampleEntityView>(_contextSubstitute, _graphBuilder, builder, parserMock);
+        var (sut, context) = BuildSut<SampleEntityView, GreaterThanOrEqual>(RqlParserFactory.RqlGreaterThanOrEqual(value));
 
         // Act
         sut.Process(query);
-        var actualResult = _contextSubstitute.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
+        var actualResult = context.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
 
         // Assert
         Assert.Empty(actualResult);
@@ -134,13 +128,11 @@ public class FilteringServiceTests
     public void Apply_WithRqlLessThan_ReturnsExpectedResult(string query, decimal value)
     {
         // Arrange
-        var builder = ExpressionBuilderFactory.GetBinary<Linq.Services.Filtering.Operators.Comparison.Implementation.LessThan>();
-        var parserMock = RqlParserFactory.RqlLessThan(value);
-        var sut = new FilteringService<SampleEntityView>(_contextSubstitute, _graphBuilder, builder, parserMock);
+        var (sut, context) = BuildSut<SampleEntityView, LessThan>(RqlParserFactory.RqlLessThan(value));
 
         // Act
         sut.Process(query);
-        var actualResult = _contextSubstitute.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
+        var actualResult = context.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
 
         // Assert
         Assert.True(actualResult.Count() > 1);
@@ -153,13 +145,11 @@ public class FilteringServiceTests
     public void Apply_WithRqlLessThanThanTooLow_ReturnsEmptyResult(string query, decimal value)
     {
         // Arrange
-        var builder = ExpressionBuilderFactory.GetBinary<Linq.Services.Filtering.Operators.Comparison.Implementation.LessThan>();
-        var parserMock = RqlParserFactory.RqlLessThan(value);
-        var sut = new FilteringService<SampleEntityView>(_contextSubstitute, _graphBuilder, builder, parserMock);
+        var (sut, context) = BuildSut<SampleEntityView, LessThan>(RqlParserFactory.RqlLessThan(value));
 
         // Act
         sut.Process(query);
-        var actualResult = _contextSubstitute.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
+        var actualResult = context.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
 
         // Assert
         Assert.Empty(actualResult);
@@ -171,13 +161,11 @@ public class FilteringServiceTests
     public void Apply_WithRqlLessEqualThan_ReturnsExpectedResult(string query, decimal value)
     {
         // Arrange
-        var builder = ExpressionBuilderFactory.GetBinary<Linq.Services.Filtering.Operators.Comparison.Implementation.LessThanOrEqual>();
-        var parserMock = RqlParserFactory.RqlLessEqualThan(value);
-        var sut = new FilteringService<SampleEntityView>(_contextSubstitute, _graphBuilder, builder, parserMock);
+        var (sut, context) = BuildSut<SampleEntityView, LessThanOrEqual>(RqlParserFactory.RqlLessThanOrEqual(value));
 
         // Act
         sut.Process(query);
-        var actualResult = _contextSubstitute.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
+        var actualResult = context.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
 
         // Assert
         Assert.True(actualResult.Count() > 1);
@@ -190,13 +178,11 @@ public class FilteringServiceTests
     public void Apply_WithRqlLessEqualThanTooLow_ReturnsEmptyResult(string query, decimal value)
     {
         // Arrange
-        var builder = ExpressionBuilderFactory.GetBinary<Linq.Services.Filtering.Operators.Comparison.Implementation.LessThanOrEqual>();
-        var parserMock = RqlParserFactory.RqlLessEqualThan(value);
-        var sut = new FilteringService<SampleEntityView>(_contextSubstitute, _graphBuilder, builder, parserMock);
+        var (sut, context) = BuildSut<SampleEntityView, LessThanOrEqual>(RqlParserFactory.RqlLessThanOrEqual(value));
 
         // Act
         sut.Process(query);
-        var actualResult = _contextSubstitute.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
+        var actualResult = context.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
 
         // Assert
         Assert.Empty(actualResult);
@@ -208,13 +194,11 @@ public class FilteringServiceTests
     public void Apply_WithRqlLikeMatch_ReturnsExpectedResult(string query, string searchString, int expectedCount)
     {
         // Arrange
-        var builder = ExpressionBuilderFactory.GetBinary<Linq.Services.Filtering.Operators.Search.Implementation.Like>();
-        var parserMock = RqlParserFactory.RqlLike(searchString);
-        var sut = new FilteringService<SampleEntityView>(_contextSubstitute, _graphBuilder, builder, parserMock);
+        var (sut, context) = BuildSut<SampleEntityView, Like>(RqlParserFactory.RqlLike(searchString));
 
         // Act
         sut.Process(query);
-        var actualResult = _contextSubstitute.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
+        var actualResult = context.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
 
         // Assert
         Assert.Equal(actualResult.Count(), expectedCount);
@@ -229,35 +213,28 @@ public class FilteringServiceTests
         // is case sensitive. Kept this test in at a unit level for clarity however
 
         // Arrange
-        var builder = ExpressionBuilderFactory.GetBinary<Linq.Services.Filtering.Operators.Search.Implementation.Like>();
-        var parserMock = RqlParserFactory.RqlLike(searchString);
-        var sut = new FilteringService<SampleEntityView>(_contextSubstitute, _graphBuilder, builder, parserMock);
+        var (sut, context) = BuildSut<SampleEntityView, Like>(RqlParserFactory.RqlLike(searchString));
 
         // Act
         sut.Process(query);
-        var actualResult = _contextSubstitute.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
+        var actualResult = context.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
 
         // Assert
         Assert.Equal(actualResult.Count(), expectedCount);
     }
 
-
     [Fact]
     public void Apply_WithRqlEqual_OperatorProhibited()
     {
         // Arrange
-        var builder = ExpressionBuilderFactory.GetBinary<Linq.Services.Filtering.Operators.Comparison.Implementation.Equal>();
-        var parserMock = RqlParserFactory.RqlEqual("id", "13");
-        var contextSubstitute = new QueryContext<SampleEntityViewOperatorTest>();
-        var graphBuilder = Substitute.For<IFilteringGraphBuilder<SampleEntityViewOperatorTest>>();
-        var sut = new FilteringService<SampleEntityViewOperatorTest>(contextSubstitute, graphBuilder, builder, parserMock);
+        var (sut, context) = BuildSut<SampleEntityViewOperatorTest, Equal>(RqlParserFactory.RqlEqual("id", "13"));
 
         // Act
-        sut.Process($"id=13");
-        var errors = contextSubstitute.GetErrors();
+        sut.Process("id=13");
+        var errors = context.GetErrors();
 
         // Assert
-        Assert.True(contextSubstitute.HasErrors);
+        Assert.True(context.HasErrors);
         Assert.Equal(ErrorMessageFactory.OperatorProhibited(RqlOperators.Eq), errors.First().Message);
     }
 
@@ -267,20 +244,18 @@ public class FilteringServiceTests
     public void Apply_WithRqlList_OperatorProhibited(bool isIn)
     {
         // Arrange
-        var builder = isIn ? ExpressionBuilderFactory.GetBinary<Linq.Services.Filtering.Operators.List.Implementation.ListIn>()
-            : ExpressionBuilderFactory.GetBinary<Linq.Services.Filtering.Operators.List.Implementation.ListOut>();
         var parserMock = RqlParserFactory.RqlList(isIn, "id", "13", "14", "15");
-        var contextSubstitute = new QueryContext<SampleEntityViewOperatorTest>();
-        var graphBuilder = Substitute.For<IFilteringGraphBuilder<SampleEntityViewOperatorTest>>();
-        var sut = new FilteringService<SampleEntityViewOperatorTest>(contextSubstitute, graphBuilder, builder, parserMock);
+        var (sut, context) = isIn
+            ? BuildSut<SampleEntityViewOperatorTest, ListIn>(parserMock)
+            : BuildSut<SampleEntityViewOperatorTest, ListOut>(parserMock);
         var keyword = isIn ? "in" : "out";
 
         // Act
         sut.Process($"{keyword}(id,(13,14,15))");
-        var errors = contextSubstitute.GetErrors();
+        var errors = context.GetErrors();
 
         // Assert
-        Assert.True(contextSubstitute.HasErrors);
+        Assert.True(context.HasErrors);
         Assert.Equal(ErrorMessageFactory.OperatorProhibited(isIn ? RqlOperators.ListIn : RqlOperators.ListOut), errors.First().Message);
     }
 
@@ -290,18 +265,18 @@ public class FilteringServiceTests
     public void Apply_WithRqlLike_OperatorProhibited(bool insensitive)
     {
         // Arrange
-        var builder = insensitive ? ExpressionBuilderFactory.GetBinary<Linq.Services.Filtering.Operators.Search.Implementation.LikeInsensitive>()
-            : ExpressionBuilderFactory.GetBinary<Linq.Services.Filtering.Operators.Search.Implementation.Like>();
         var parserMock = RqlParserFactory.RqlLike("id", "13*", insensitive);
-        var sut = new FilteringService<SampleEntityView>(_contextSubstitute, _graphBuilder, builder, parserMock);
+        var (sut, context) = insensitive
+            ? BuildSut<SampleEntityView, LikeInsensitive>(parserMock)
+            : BuildSut<SampleEntityView, Like>(parserMock);
         var keyword = insensitive ? "ilike" : "like";
 
         // Act
         sut.Process($"{keyword}(id,13*)");
-        var errors = _contextSubstitute.GetErrors();
+        var errors = context.GetErrors();
 
         // Assert
-        Assert.True(_contextSubstitute.HasErrors);
+        Assert.True(context.HasErrors);
         Assert.Equal(ErrorMessageFactory.OperatorProhibited(RqlOperators.StartsWith), errors.First().Message);
     }
 }
