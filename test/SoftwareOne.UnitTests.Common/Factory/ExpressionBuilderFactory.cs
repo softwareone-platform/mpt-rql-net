@@ -17,7 +17,7 @@ internal static class ExpressionBuilderFactory
         new BinaryExpressionBuilder((IOperatorHandlerProvider)sp.GetService(typeof(IOperatorHandlerProvider))!, (IFilteringPathInfoBuilder)sp.GetService(typeof(IFilteringPathInfoBuilder))!));
     }
 
-    private static IExpressionBuilder GetBuilder<TNode, TOperator>(Func<IServiceProvider, IConcreteExpressionBuilder<TNode>> builderCallback) where TNode : RqlExpression
+    private static ExpressionBuilder GetBuilder<TNode, TOperator>(Func<IServiceProvider, IConcreteExpressionBuilder<TNode>> builderCallback) where TNode : RqlExpression
         where TOperator : IOperator, new()
     {
         var serviceProvider = new Mock<IServiceProvider>();

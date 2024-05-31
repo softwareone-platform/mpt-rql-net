@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using SoftwareOne.Rql.Client;
 using SoftwareOne.Rql.Linq.UnitTests.Client.Samples;
 using SoftwareOne.UnitTests.Common;
 using Xunit;
@@ -8,7 +7,7 @@ namespace SoftwareOne.Rql.Linq.UnitTests.Client.RqlGenerator;
 
 public class QueryGeneratorTests
 {
-    private readonly IRqlRequestBuilderProvider _builderProvider;
+    private readonly TestRqlRequestBuilderProvider _builderProvider;
 
     public QueryGeneratorTests()
     {

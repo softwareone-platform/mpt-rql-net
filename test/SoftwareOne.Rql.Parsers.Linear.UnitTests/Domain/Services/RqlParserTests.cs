@@ -13,7 +13,7 @@ namespace Rql.Tests.Unit.Parsers.Linear.Domain.Services;
 
 public class RqlParserTests
 {
-    private readonly IRqlParser _sut;
+    private readonly RqlParser _sut;
 
     public RqlParserTests()
     {

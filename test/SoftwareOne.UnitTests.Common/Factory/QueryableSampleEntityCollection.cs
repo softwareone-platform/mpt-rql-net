@@ -24,7 +24,7 @@ internal static class QueryableSampleEntityCollection
 
     internal static IReadOnlyList<SampleEntityViewOperatorTest> Operators() => QueryData<SampleEntityViewOperatorTest>();
 
-    private static IReadOnlyList<TView> QueryData<TView>() where TView : SampleEntityView, new()
+    private static List<TView> QueryData<TView>() where TView : SampleEntityView, new()
         => _data.Select(t => new TView
         {
             Id = t.Id,
