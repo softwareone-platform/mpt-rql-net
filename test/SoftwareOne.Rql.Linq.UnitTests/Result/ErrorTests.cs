@@ -37,6 +37,24 @@ public class ErrorTests
     }
 
     [Fact]
+    public void Validation_WithMessageCodeAndPath_ShouldSetPropertiesCorrectly()
+    {
+        // Arrange
+        var message = "Validation error occurred";
+        var code = "custom_code";
+        var path = "custom_path";
+
+        // Act
+        var error = Error.Validation(message, code, path);
+
+        // Assert
+        Assert.Equal(ErrorType.Validation, error.Type);
+        Assert.Equal(code, error.Code);
+        Assert.Equal(message, error.Message);
+        Assert.Equal(path, error.Path);
+    }
+
+    [Fact]
     public void General_WithMessage_ShouldSetPropertiesCorrectly()
     {
         // Arrange

@@ -18,7 +18,7 @@ namespace SoftwareOne.Rql.Linq.Services.Ordering
         protected override Result<bool> ValidatePath(MemberPathInfo pathInfo)
         {
             if (!_actionValidator.Validate(pathInfo.PropertyInfo, RqlActions.Order))
-                return Error.Validation("Ordering is not permitted.", pathInfo.Path.ToString());
+                return Error.Validation("Ordering is not permitted.", path: pathInfo.Path.ToString());
             return true;
         }
     }

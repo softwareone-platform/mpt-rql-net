@@ -81,7 +81,7 @@ internal class ErrorResultProvider : IErrorResultProvider
         foreach (var error in errors)
         {
             modelStateDictionary.AddModelError(
-                error.Code,
+                error.Path ?? error.Code,
                 error.Message);
         }
 

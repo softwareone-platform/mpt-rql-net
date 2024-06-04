@@ -19,7 +19,7 @@ internal class GroupExpressionBuilder : IConcreteExpressionBuilder<RqlGroup>
         {
             RqlAnd => (Result<LogicalExpression>)Expression.AndAlso,
             RqlOr => (Result<LogicalExpression>)Expression.OrElse,
-            RqlGenericGroup genGroup => Error.Validation("Unknown expression group.", genGroup.Name),
+            RqlGenericGroup genGroup => Error.Validation("Unknown expression group.", path: genGroup.Name),
             _ => FilteringError.Internal
         };
 

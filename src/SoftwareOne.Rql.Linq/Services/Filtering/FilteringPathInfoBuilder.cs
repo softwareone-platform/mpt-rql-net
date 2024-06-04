@@ -18,7 +18,7 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering
         protected override Result<bool> ValidatePath(MemberPathInfo pathInfo)
         {
             if (!_actionValidator.Validate(pathInfo.PropertyInfo, RqlActions.Filter))
-                return Error.Validation("Filtering is not permitted.");
+                return Error.Validation("Filtering is not permitted.", path: pathInfo.Path.ToString());
             return true;
         }
     }
