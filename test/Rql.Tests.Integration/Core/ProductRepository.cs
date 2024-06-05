@@ -43,6 +43,10 @@ public static class ProductRepository
                 },
                 OrdersIds = new List<int> { 1 }
             },
+            new Product { Id = 8, Name = "*Example \\With*", Category = "Activity", Price = 450.95M, SellPrice = 76 , ListDate = DateTime.Now.AddDays(-7),
+                Orders = new List<ProductOrder>{ },
+                OrdersIds = new List<int> { }
+            },
         };
 
         foreach (var item in _data)

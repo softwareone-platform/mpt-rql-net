@@ -64,12 +64,24 @@ public class BasicFilterTests
         => _testExecutor.ResultMatch(t => t.Price <= 205.15M, query, isHappyFlow: isHappyFlow);
 
     [Theory]
-    [InlineData("like(name,Jewelry*)")]
-    [InlineData("ilike(name,'*Jewelry*')")]
-    [InlineData("(ilike(name,'*ewelr*')|ilike(name,'*Jewelry*'))")]
-    [InlineData("like(name,WRONG_DATA*)", false)]
-    public void Like_Name_StartsWith(string query, bool isHappyFlow = true)
-        => _testExecutor.ResultMatch(t => t.Name.StartsWith("Jewelry"), query, isHappyFlow: isHappyFlow);
+    [InlineData("like(name,Jewelry*)", "Jewelry Widget")]
+    [InlineData("ilike(name,'*Jewelry*')", "Jewelry Widget")]
+    [InlineData("(ilike(name,'*ewelr*')|ilike(name,'*Jewelry*'))", "Jewelry Widget")]
+    [InlineData("like(name,WRONG_DATA*)", "Jewelry Widget", false)]
+    [InlineData(@"like(name,*Jewelry\**)", "Jewelry Widget", false)]
+    [InlineData("like(name,*With*)", "*Example \\With*")]
+    [InlineData(@"like(name,*With\*)", "*Example \\With*")]
+    [InlineData(@"like(name,*With\**)", "*Example \\With*", false)]
+    [InlineData(@"like(name,With\*)", "*Example \\With*", false)]
+    [InlineData(@"like(name,\*Example \With\*)", "*Example \\With*")]
+    [InlineData(@"like(name,*Example \With*)", "*Example \\With*")]
+    [InlineData(@"like(name,*Example*)", "*Example \\With*")]
+    [InlineData(@"like(name,*\\\Example*)", "*Example \\With*", false)]
+    [InlineData(@"like(name,Example*)", "*Example \\With*", false)]
+    [InlineData(@"like(name,*\With*)", "*Example \\With*")]
+    [InlineData(@"like(name,*\With\*)", "*Example \\With*")]
+    public void Like_Name_StartsWith(string query, string matchingProductName, bool isHappyFlow = true)
+        => _testExecutor.ResultMatch(t => t.Name == matchingProductName, query, isHappyFlow: isHappyFlow);
 
     [Theory]
     [InlineData("like(name,*Widget)")]
