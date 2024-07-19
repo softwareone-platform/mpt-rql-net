@@ -7,7 +7,7 @@ trigger:
       - release/*
 
 variables:
-  shouldDeploy: $[or(eq(variables['Build.SourceBranch'], 'main'),contains(variables['Build.SourceBranch'], 'release/'))]
+  shouldDeploy: $[or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),contains(variables['Build.SourceBranch'], 'release/'))]
   testResultsDir: 'test_artifacts'
   nugetArtifactsName: packages
 
