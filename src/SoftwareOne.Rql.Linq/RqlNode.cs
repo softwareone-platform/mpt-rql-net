@@ -41,8 +41,8 @@ public class RqlNode
             if ((IncludeReason & (IncludeReasons.Select | IncludeReasons.Hierarchy | IncludeReasons.Filter | IncludeReasons.Order)) != 0)
                 return true;
 
-            // default properties are added unless there is any reason to exclude them
-            return IncludeReason.HasFlag(IncludeReasons.Default) && ExcludeReason == ExcludeReasons.None;
+            // default properties are added unless there is good (invisible or unselected) reason to exclude them
+            return IncludeReason.HasFlag(IncludeReasons.Default) && (ExcludeReason == ExcludeReasons.None || ExcludeReason == ExcludeReasons.Default);
         }
     }
 
