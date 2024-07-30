@@ -32,10 +32,11 @@ namespace SoftwareOne.Rql.Linq.UnitTests.Services
             var generalSettings = new RqlGeneralSettings { };
             var selectSettings = new RqlSelectSettings { Explicit = RqlSelectModes.All, Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive };
             var metadataProvider = new MetadataProvider(new PropertyNameProvider(), new MetadataFactory(generalSettings));
+            var builderContext = new BuilderContext();
 
-            _projectionBuilder = new ProjectionGraphBuilder<Product>(_queryContext, metadataProvider, actionValidatorMock.Object, selectSettings);
-            _filteringBuilder = new FilteringGraphBuilder<Product>(metadataProvider, actionValidatorMock.Object);
-            _orderingBuilder = new OrderingGraphBuilder<Product>(metadataProvider, actionValidatorMock.Object);
+            _projectionBuilder = new ProjectionGraphBuilder<Product>(_queryContext, metadataProvider, actionValidatorMock.Object, selectSettings, builderContext);
+            _filteringBuilder = new FilteringGraphBuilder<Product>(metadataProvider, actionValidatorMock.Object, builderContext);
+            _orderingBuilder = new OrderingGraphBuilder<Product>(metadataProvider, actionValidatorMock.Object, builderContext);
         }
 
         [Fact]

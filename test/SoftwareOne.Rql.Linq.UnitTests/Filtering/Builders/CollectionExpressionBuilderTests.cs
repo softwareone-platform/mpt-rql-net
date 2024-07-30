@@ -9,6 +9,7 @@ using SoftwareOne.Rql.Linq.Services.Filtering.Builders;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Collection;
 using System.Linq.Expressions;
+using SoftwareOne.Rql.Linq.Services.Context;
 using Xunit;
 
 namespace SoftwareOne.Rql.Linq.UnitTests.Filtering.Builders;
@@ -16,6 +17,7 @@ namespace SoftwareOne.Rql.Linq.UnitTests.Filtering.Builders;
 public class CollectionExpressionBuilderTests
 {
     private readonly Mock<IExpressionBuilder> _builderMock;
+    private readonly Mock<IBuilderContext> _builderContextMock;
     private readonly Mock<IFilteringPathInfoBuilder> _pathBuilderMock;
     private readonly Mock<IOperatorHandlerProvider> _operatorHandlerProviderMock;
     private readonly ParameterExpression _pe;
@@ -26,12 +28,14 @@ public class CollectionExpressionBuilderTests
     public CollectionExpressionBuilderTests()
     {
         _builderMock = new Mock<IExpressionBuilder>();
+        _builderContextMock = new Mock<IBuilderContext>();
         _pathBuilderMock = new Mock<IFilteringPathInfoBuilder>();
         _operatorHandlerProviderMock = new Mock<IOperatorHandlerProvider>();
         var obj = new { SomeProperty = "" };
         _pe = Expression.Parameter(obj.GetType(), "x");
         _node = new RqlAny(new RqlConstant("collection"), new RqlConstant("id"));
         _sut = new CollectionExpressionBuilder(
+            _builderContextMock.Object,
             _builderMock.Object,
             _operatorHandlerProviderMock.Object,
             _pathBuilderMock.Object);

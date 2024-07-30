@@ -1,5 +1,6 @@
 ﻿using SoftwareOne.Rql.Abstractions.Collection;
 using SoftwareOne.Rql.Linq.Core.Result;
+using SoftwareOne.Rql.Linq.Services.Context;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Collection;
 using System.Linq.Expressions;
@@ -8,12 +9,14 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Builders;
 
 internal class CollectionExpressionBuilder : IConcreteExpressionBuilder<RqlCollection>
 {
+    private readonly IBuilderContext _builderContext;
     private readonly IExpressionBuilder _builder;
     private readonly IFilteringPathInfoBuilder _pathBuilder;
     private readonly IOperatorHandlerProvider _operatorHandlerProvider;
 
-    public CollectionExpressionBuilder(IExpressionBuilder builder, IOperatorHandlerProvider operatorHandlerProvider, IFilteringPathInfoBuilder pathBuilder)
+    public CollectionExpressionBuilder(IBuilderContext builderContext, IExpressionBuilder builder, IOperatorHandlerProvider operatorHandlerProvider, IFilteringPathInfoBuilder pathBuilder)
     {
+        _builderContext = builderContext;
         _builder = builder;
         _pathBuilder = pathBuilder;
         _operatorHandlerProvider = operatorHandlerProvider;
@@ -42,12 +45,14 @@ internal class CollectionExpressionBuilder : IConcreteExpressionBuilder<RqlColle
         LambdaExpression? innerLambda = null;
         if (node.Right != null)
         {
+            _builderContext.TryGoToChild(property);
             var innerExpression = _builder.Build(param, node.Right);
 
             if (innerExpression.IsError)
                 return innerExpression.Errors;
 
             innerLambda = Expression.Lambda(innerExpression.Value!, param);
+            _builderContext.GoToRoot();
         }
 
         return handler.MakeExpression(property, member, innerLambda);

@@ -22,8 +22,8 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
 
     protected override RqlActions Action => RqlActions.Select;
 
-    public ProjectionGraphBuilder(IQueryContext<TView> context, IMetadataProvider metadataProvider, IActionValidator actionValidator, IRqlSelectSettings selectSettings)
-        : base(metadataProvider, actionValidator)
+    public ProjectionGraphBuilder(IQueryContext<TView> context, IMetadataProvider metadataProvider, IActionValidator actionValidator, IRqlSelectSettings selectSettings, IBuilderContext builderContext)
+        : base(metadataProvider, actionValidator, builderContext)
     {
         _context = context;
         _metadataProvider = metadataProvider;

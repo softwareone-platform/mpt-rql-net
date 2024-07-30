@@ -57,6 +57,7 @@ public static class RqlExtensions
         services.AddScoped<IExternalServiceAccessor, ExternalServiceAccessor>();
 
         services.AddScoped(typeof(IFilteringService<>), typeof(FilteringService<>));
+        services.AddScoped<IBuilderContext, BuilderContext>();
         services.AddScoped<IExpressionBuilder, ExpressionBuilder>();
         services.AddScoped<IConcreteExpressionBuilder<RqlBinary>, BinaryExpressionBuilder>();
         services.AddScoped<IConcreteExpressionBuilder<RqlCollection>, CollectionExpressionBuilder>();

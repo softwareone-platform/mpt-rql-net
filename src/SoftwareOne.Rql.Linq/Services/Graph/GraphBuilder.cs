@@ -7,6 +7,7 @@ using SoftwareOne.Rql.Abstractions.Group;
 using SoftwareOne.Rql.Abstractions.Unary;
 using SoftwareOne.Rql.Linq.Core;
 using SoftwareOne.Rql.Linq.Core.Metadata;
+using SoftwareOne.Rql.Linq.Services.Context;
 
 namespace SoftwareOne.Rql.Linq.Services.Graph;
 
@@ -14,11 +15,13 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
 {
     private readonly IMetadataProvider _metadataProvider;
     private readonly IActionValidator _actionValidator;
+    private readonly IBuilderContext _builderContext;
 
-    protected GraphBuilder(IMetadataProvider metadataProvider, IActionValidator actionValidator)
+    protected GraphBuilder(IMetadataProvider metadataProvider, IActionValidator actionValidator, IBuilderContext builderContext)
     {
         _metadataProvider = metadataProvider;
         _actionValidator = actionValidator;
+        _builderContext = builderContext;
     }
 
     public void TraverseRqlExpression(RqlNode? target, RqlExpression? expression)
@@ -67,6 +70,8 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
                 }
                 break;
         }
+
+        _builderContext.SetNode(target);
     }
 
     private RqlNode? ProcessNode(RqlNode parentNode, RqlExpression constant, bool hierarchyOnly = false)

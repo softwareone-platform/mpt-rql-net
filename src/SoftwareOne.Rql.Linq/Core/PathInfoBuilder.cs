@@ -3,6 +3,7 @@ using SoftwareOne.Rql.Abstractions.Argument;
 using SoftwareOne.Rql.Abstractions.Argument.Pointer;
 using SoftwareOne.Rql.Linq.Core.Metadata;
 using SoftwareOne.Rql.Linq.Core.Result;
+using SoftwareOne.Rql.Linq.Services.Context;
 using System.Linq.Expressions;
 
 namespace SoftwareOne.Rql.Linq.Core
@@ -10,10 +11,12 @@ namespace SoftwareOne.Rql.Linq.Core
     internal abstract class PathInfoBuilder : IPathInfoBuilder
     {
         private readonly IMetadataProvider _metadataProvider;
+        private readonly IBuilderContext _builderContext;
 
-        protected PathInfoBuilder(IMetadataProvider metadataProvider)
+        protected PathInfoBuilder(IMetadataProvider metadataProvider, IBuilderContext builderContext)
         {
             _metadataProvider = metadataProvider;
+            _builderContext = builderContext;
         }
 
         public Result<MemberPathInfo> Build(Expression root, RqlExpression rqlExpression)
@@ -54,7 +57,7 @@ namespace SoftwareOne.Rql.Linq.Core
                     var cumulativePath = current.Value.FullPath.AsMemory(0, (previousLength > 0 ? previousLength + 1 : previousLength) + segment.Length);
 
                     if (!_metadataProvider.TryGetPropertyByDisplayName(current.Value.Expression.Type, segment, out var propInfo) || propInfo!.IsIgnored)
-                        return Error.Validation("Invalid property path.", path: cumulativePath.ToString());
+                        return Error.Validation("Invalid property path.", _builderContext.GetFullPath(cumulativePath.ToString()));
 
                     var expression = (Expression)Expression.MakeMemberAccess(current.Value!.Expression, propInfo!.Property!);
                     var pathInfo = new MemberPathInfo(current.Value.FullPath, cumulativePath, propInfo, expression);
