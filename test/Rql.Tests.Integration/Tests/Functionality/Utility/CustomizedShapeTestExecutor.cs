@@ -7,20 +7,13 @@ namespace Rql.Tests.Integration.Tests.Functionality.Utility;
 public class CustomizedShapeTestExecutor : ProductShapeTestExecutor
 {
     protected override IRqlQueryable<ShapedProduct, ShapedProduct> MakeRql()
-        => RqlFactory.Make<ShapedProduct>(services => { }, rql =>
-        {
-            rql.Select.Implicit = RqlSelectModes.None;
-            rql.Select.MaxDepth = 0;
-        });
+        => RqlFactory.Make<ShapedProduct>(services => { });
 
-    protected override RqlCustomization? GetCustomisation() => new()
+    protected override void Customize(RqlSettings settings)
     {
-        Select = new RqlSelectSettings
-        {
-            Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference,
-            Explicit = RqlSelectModes.All,
-            MaxDepth = 99
-        }
-    };
+        settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
+        settings.Select.Explicit = RqlSelectModes.All;
+        settings.Select.MaxDepth = 99;
+    }
 }
 

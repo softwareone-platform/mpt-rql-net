@@ -1,8 +1,9 @@
-﻿using System.Linq.Expressions;
+﻿using SoftwareOne.Rql.Linq.Configuration;
+using System.Linq.Expressions;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation;
 
-internal class NotEqual : ComparisonOperator, INotEqual
+internal class NotEqual(IRqlSettings settings) : ComparisonOperator(settings), INotEqual
 {
     protected override RqlOperators Operator => RqlOperators.Ne;
 

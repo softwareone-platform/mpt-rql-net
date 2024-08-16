@@ -3,10 +3,11 @@ using SoftwareOne.Rql.Linq.Core.Expressions;
 using System.Linq.Expressions;
 using System.Reflection;
 using SoftwareOne.Rql.Linq.Core.Result;
+using SoftwareOne.Rql.Linq.Configuration;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation
 {
-    internal abstract class ComparisonOperator : IComparisonOperator
+    internal abstract class ComparisonOperator(IRqlSettings settings) : IComparisonOperator
     {
         private static readonly MethodInfo _stringOperator = typeof(string).GetMethod(nameof(string.Compare), BindingFlags.Public | BindingFlags.Static, [typeof(string), typeof(string)])!;
 
@@ -20,7 +21,7 @@ namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implement
             if (validationResult.IsError)
                 return validationResult.Errors;
 
-            if (accessor.Type == typeof(string))
+            if (accessor.Type == typeof(string) && settings.Filter.Strings.Type == StringComparisonType.Lexicographical)
             {
                 return Handler(Expression.Call(_stringOperator, accessor, ConstantBuilder.Build(value, typeof(string))), Expression.Constant(0, typeof(int)));
             }

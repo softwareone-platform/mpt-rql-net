@@ -24,7 +24,6 @@ internal class BinaryExpressionBuilder : IConcreteExpressionBuilder<RqlBinary>
         _operatorHandlerProvider = operatorHandlerProvider;
     }
 
-
     public Result<Expression> Build(ParameterExpression pe, RqlBinary node)
     {
         var handler = _operatorHandlerProvider.GetOperatorHandler(node.GetType())!;
@@ -47,7 +46,6 @@ internal class BinaryExpressionBuilder : IConcreteExpressionBuilder<RqlBinary>
 
         return expression.IsError ? expression.Errors : expression;
     }
-
 
     private Result<Expression> MakeComparison(ParameterExpression parameter, RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, IComparisonOperator comparison)
     {

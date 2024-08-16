@@ -18,21 +18,21 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
     private readonly IQueryContext<TView> _context;
     private readonly IMetadataProvider _metadataProvider;
     private readonly IActionValidator _actionValidator;
-    private readonly IRqlSelectSettings _selectSettings;
+    private readonly IRqlSettings _settings;
 
     protected override RqlActions Action => RqlActions.Select;
 
-    public ProjectionGraphBuilder(IQueryContext<TView> context, IMetadataProvider metadataProvider, IActionValidator actionValidator, IRqlSelectSettings selectSettings, IBuilderContext builderContext)
+    public ProjectionGraphBuilder(IQueryContext<TView> context, IMetadataProvider metadataProvider, IActionValidator actionValidator, IBuilderContext builderContext, IRqlSettings settings)
         : base(metadataProvider, actionValidator, builderContext)
     {
         _context = context;
         _metadataProvider = metadataProvider;
         _actionValidator = actionValidator;
-        _selectSettings = selectSettings;
+        _settings = settings;
     }
 
     public void BuildDefaults()
-        => BuildDefaultsForType(_context.Graph, typeof(TView), _selectSettings.Explicit);
+        => BuildDefaultsForType(_context.Graph, typeof(TView), _settings.Select.Explicit);
 
     private void BuildDefaultsForType(RqlNode target, Type type, RqlSelectModes currentMode)
     {
@@ -67,7 +67,7 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
             // continue hierarchical select for survivor properties that was not deselected explicitly
             if (!child.ExcludeReason.HasFlag(ExcludeReasons.Unselected))
             {
-                BuildDefaultsForProperty(child, rqlProperty, child.IncludeReason.HasFlag(IncludeReasons.Select) ? _selectSettings.Explicit : rqlProperty.SelectModeOverride ?? _selectSettings.Implicit);
+                BuildDefaultsForProperty(child, rqlProperty, child.IncludeReason.HasFlag(IncludeReasons.Select) ? _settings.Select.Explicit : rqlProperty.SelectModeOverride ?? _settings.Select.Implicit);
             }
         }
     }
@@ -80,7 +80,7 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
             return true;
         }
 
-        if (target.Depth > _selectSettings.MaxDepth)
+        if (target.Depth > _settings.Select.MaxDepth)
             return true;
 
         return false;
@@ -132,7 +132,7 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
             var child = parentNode.IncludeChild(rqlProperty, IncludeReasons.Select);
 
             // extend configured select mode with explicit config
-            var selectMode = rqlProperty.SelectModeOverride.HasValue ? (rqlProperty.SelectModeOverride.Value | _selectSettings.Explicit) : _selectSettings.Explicit;
+            var selectMode = rqlProperty.SelectModeOverride.HasValue ? (rqlProperty.SelectModeOverride.Value | _settings.Select.Explicit) : _settings.Select.Explicit;
             BuildDefaultsForProperty(child, child.Property, selectMode);
             return child;
         }

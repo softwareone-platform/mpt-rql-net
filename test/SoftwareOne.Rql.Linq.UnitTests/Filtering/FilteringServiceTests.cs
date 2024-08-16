@@ -1,5 +1,6 @@
 ﻿using Moq;
 using SoftwareOne.Rql.Abstractions;
+using SoftwareOne.Rql.Linq.Configuration;
 using SoftwareOne.Rql.Linq.Services.Context;
 using SoftwareOne.Rql.Linq.Services.Filtering;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
@@ -14,12 +15,18 @@ namespace SoftwareOne.Rql.Linq.UnitTests.Filtering;
 
 public class FilteringServiceTests
 {
-    private static (FilteringService<TView> sut, QueryContext<TView> context) BuildSut<TView, TOperator>(IRqlParser parserMock)
-        where TOperator : IOperator, new()
+    private readonly IRqlSettings _settings;
+
+    public FilteringServiceTests()
+    {
+        _settings = new RqlSettings();
+    }
+
+    private static (FilteringService<TView> sut, QueryContext<TView> context) BuildSut<TView>(IRqlParser parserMock, IOperator operatorInstance)
     {
         var contextSubstitute = new QueryContext<TView>();
         var graphBuilder = new Mock<IFilteringGraphBuilder<TView>>();
-        var builder = ExpressionBuilderFactory.GetBinary<TOperator>();
+        var builder = ExpressionBuilderFactory.GetBinary(operatorInstance);
         var sut = new FilteringService<TView>(contextSubstitute, graphBuilder.Object, builder, parserMock);
         return (sut, contextSubstitute);
     }
@@ -32,7 +39,7 @@ public class FilteringServiceTests
     public void Apply_WithRqlEqual_ReturnsSingleFilteredResult(string query)
     {
         // Arrange
-        var (sut, context) = BuildSut<SampleEntityView, Equal>(RqlParserFactory.RqlEqual());
+        var (sut, context) = BuildSut<SampleEntityView>(RqlParserFactory.RqlEqual(), new Equal(_settings));
 
         // Act
         sut.Process(query);
@@ -46,7 +53,7 @@ public class FilteringServiceTests
     public void Apply_WithRqlNotEqual_ReturnsAllButSingleResult()
     {
         // Arrange
-        var (sut, context) = BuildSut<SampleEntityView, NotEqual>(RqlParserFactory.RqlNotEqual());
+        var (sut, context) = BuildSut<SampleEntityView>(RqlParserFactory.RqlNotEqual(), new NotEqual(_settings));
 
         // Act
         sut.Process("ne(name,Jewelry Widget)");
@@ -62,7 +69,7 @@ public class FilteringServiceTests
     public void Apply_WithRqlGreaterThan_ReturnsExpectedResult(string query, decimal value)
     {
         // Arrange
-        var (sut, context) = BuildSut<SampleEntityView, GreaterThan>(RqlParserFactory.RqlGreaterThan(value));
+        var (sut, context) = BuildSut<SampleEntityView>(RqlParserFactory.RqlGreaterThan(value), new GreaterThan(_settings));
 
         // Act
         sut.Process(query);
@@ -79,7 +86,7 @@ public class FilteringServiceTests
     public void Apply_WithRqlGreaterThanTooHigh_ReturnsEmptyResult(string query, decimal value)
     {
         // Arrange
-        var (sut, context) = BuildSut<SampleEntityView, GreaterThan>(RqlParserFactory.RqlGreaterThan(value));
+        var (sut, context) = BuildSut<SampleEntityView>(RqlParserFactory.RqlGreaterThan(value), new GreaterThan(_settings));
 
         // Act
         sut.Process(query);
@@ -95,7 +102,7 @@ public class FilteringServiceTests
     public void Apply_WithRqlGreaterEqualThan_ReturnsExpectedResult(string query, decimal value)
     {
         // Arrange
-        var (sut, context) = BuildSut<SampleEntityView, GreaterThanOrEqual>(RqlParserFactory.RqlGreaterThanOrEqual(value));
+        var (sut, context) = BuildSut<SampleEntityView>(RqlParserFactory.RqlGreaterThanOrEqual(value), new GreaterThanOrEqual(_settings));
 
         // Act
         sut.Process(query);
@@ -112,7 +119,7 @@ public class FilteringServiceTests
     public void Apply_WithRqlGreaterEqualThanTooHigh_ReturnsEmptyResult(string query, decimal value)
     {
         // Arrange
-        var (sut, context) = BuildSut<SampleEntityView, GreaterThanOrEqual>(RqlParserFactory.RqlGreaterThanOrEqual(value));
+        var (sut, context) = BuildSut<SampleEntityView>(RqlParserFactory.RqlGreaterThanOrEqual(value), new GreaterThanOrEqual(_settings));
 
         // Act
         sut.Process(query);
@@ -128,7 +135,7 @@ public class FilteringServiceTests
     public void Apply_WithRqlLessThan_ReturnsExpectedResult(string query, decimal value)
     {
         // Arrange
-        var (sut, context) = BuildSut<SampleEntityView, LessThan>(RqlParserFactory.RqlLessThan(value));
+        var (sut, context) = BuildSut<SampleEntityView>(RqlParserFactory.RqlLessThan(value), new LessThan(_settings));
 
         // Act
         sut.Process(query);
@@ -145,7 +152,7 @@ public class FilteringServiceTests
     public void Apply_WithRqlLessThanThanTooLow_ReturnsEmptyResult(string query, decimal value)
     {
         // Arrange
-        var (sut, context) = BuildSut<SampleEntityView, LessThan>(RqlParserFactory.RqlLessThan(value));
+        var (sut, context) = BuildSut<SampleEntityView>(RqlParserFactory.RqlLessThan(value), new LessThan(_settings));
 
         // Act
         sut.Process(query);
@@ -161,7 +168,7 @@ public class FilteringServiceTests
     public void Apply_WithRqlLessEqualThan_ReturnsExpectedResult(string query, decimal value)
     {
         // Arrange
-        var (sut, context) = BuildSut<SampleEntityView, LessThanOrEqual>(RqlParserFactory.RqlLessThanOrEqual(value));
+        var (sut, context) = BuildSut<SampleEntityView>(RqlParserFactory.RqlLessThanOrEqual(value), new LessThanOrEqual(_settings));
 
         // Act
         sut.Process(query);
@@ -178,7 +185,7 @@ public class FilteringServiceTests
     public void Apply_WithRqlLessEqualThanTooLow_ReturnsEmptyResult(string query, decimal value)
     {
         // Arrange
-        var (sut, context) = BuildSut<SampleEntityView, LessThanOrEqual>(RqlParserFactory.RqlLessThanOrEqual(value));
+        var (sut, context) = BuildSut<SampleEntityView>(RqlParserFactory.RqlLessThanOrEqual(value), new LessThanOrEqual(_settings));
 
         // Act
         sut.Process(query);
@@ -194,7 +201,7 @@ public class FilteringServiceTests
     public void Apply_WithRqlLikeMatch_ReturnsExpectedResult(string query, string searchString, int expectedCount)
     {
         // Arrange
-        var (sut, context) = BuildSut<SampleEntityView, Like>(RqlParserFactory.RqlLike(searchString));
+        var (sut, context) = BuildSut<SampleEntityView>(RqlParserFactory.RqlLike(searchString), new Like());
 
         // Act
         sut.Process(query);
@@ -213,7 +220,7 @@ public class FilteringServiceTests
         // is case sensitive. Kept this test in at a unit level for clarity however
 
         // Arrange
-        var (sut, context) = BuildSut<SampleEntityView, Like>(RqlParserFactory.RqlLike(searchString));
+        var (sut, context) = BuildSut<SampleEntityView>(RqlParserFactory.RqlLike(searchString), new Like());
 
         // Act
         sut.Process(query);
@@ -227,7 +234,7 @@ public class FilteringServiceTests
     public void Apply_WithRqlEqual_OperatorProhibited()
     {
         // Arrange
-        var (sut, context) = BuildSut<SampleEntityViewOperatorTest, Equal>(RqlParserFactory.RqlEqual("id", "13"));
+        var (sut, context) = BuildSut<SampleEntityViewOperatorTest>(RqlParserFactory.RqlEqual("id", "13"), new Equal(_settings));
 
         // Act
         sut.Process("id=13");
@@ -246,8 +253,8 @@ public class FilteringServiceTests
         // Arrange
         var parserMock = RqlParserFactory.RqlList(isIn, "id", "13", "14", "15");
         var (sut, context) = isIn
-            ? BuildSut<SampleEntityViewOperatorTest, ListIn>(parserMock)
-            : BuildSut<SampleEntityViewOperatorTest, ListOut>(parserMock);
+            ? BuildSut<SampleEntityViewOperatorTest>(parserMock, new ListIn())
+            : BuildSut<SampleEntityViewOperatorTest>(parserMock, new ListOut());
         var keyword = isIn ? "in" : "out";
 
         // Act
@@ -267,8 +274,8 @@ public class FilteringServiceTests
         // Arrange
         var parserMock = RqlParserFactory.RqlLike("id", "13*", insensitive);
         var (sut, context) = insensitive
-            ? BuildSut<SampleEntityView, LikeInsensitive>(parserMock)
-            : BuildSut<SampleEntityView, Like>(parserMock);
+            ? BuildSut<SampleEntityView>(parserMock, new LikeInsensitive())
+            : BuildSut<SampleEntityView>(parserMock, new Like());
         var keyword = insensitive ? "ilike" : "like";
 
         // Act

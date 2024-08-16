@@ -1,8 +1,9 @@
-﻿using System.Linq.Expressions;
+﻿using SoftwareOne.Rql.Linq.Configuration;
+using System.Linq.Expressions;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation;
 
-internal class GreaterThanOrEqual : ComparisonOperator, IGreaterThanOrEqual
+internal class GreaterThanOrEqual(IRqlSettings settings) : ComparisonOperator(settings), IGreaterThanOrEqual
 {
     protected override RqlOperators Operator => RqlOperators.Ge;
 

@@ -6,7 +6,10 @@ namespace SoftwareOne.Rql;
 public class RqlRequest
 {
     public string? Filter { get; set; }
+
     public string? Order { get; set; }
+    
     public string? Select { get; set; }
-    public RqlCustomization? Customization { get; set; }
+    
+    public RqlSettings? Settings { get; set; }
 }

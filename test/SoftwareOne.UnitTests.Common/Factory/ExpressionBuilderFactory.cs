@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using SoftwareOne.Rql.Abstractions;
-using SoftwareOne.Rql.Abstractions.Binary;
 using SoftwareOne.Rql.Linq.Services.Filtering;
 using SoftwareOne.Rql.Linq.Services.Filtering.Builders;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
@@ -10,15 +9,15 @@ namespace SoftwareOne.UnitTests.Common;
 
 internal static class ExpressionBuilderFactory
 {
-    public static IExpressionBuilder GetBinary<TOperator>()
-        where TOperator : IOperator, new()
+    public static IExpressionBuilder GetBinary(IOperator operatorInstance)
     {
-        return GetBuilder<RqlBinary, TOperator>(sp =>
-        new BinaryExpressionBuilder((IOperatorHandlerProvider)sp.GetService(typeof(IOperatorHandlerProvider))!, (IFilteringPathInfoBuilder)sp.GetService(typeof(IFilteringPathInfoBuilder))!));
+        return GetBuilder(sp =>
+        new BinaryExpressionBuilder((IOperatorHandlerProvider)sp.GetService(typeof(IOperatorHandlerProvider))!,
+        (IFilteringPathInfoBuilder)sp.GetService(typeof(IFilteringPathInfoBuilder))!), operatorInstance);
     }
 
-    private static ExpressionBuilder GetBuilder<TNode, TOperator>(Func<IServiceProvider, IConcreteExpressionBuilder<TNode>> builderCallback) where TNode : RqlExpression
-        where TOperator : IOperator, new()
+    private static ExpressionBuilder GetBuilder<TNode>(Func<IServiceProvider, IConcreteExpressionBuilder<TNode>> builderCallback, IOperator operatorInstance)
+        where TNode : RqlExpression
     {
         var serviceProvider = new Mock<IServiceProvider>();
         serviceProvider
@@ -27,7 +26,7 @@ internal static class ExpressionBuilderFactory
 
         var operatorHandlerProviderMock = new Mock<IOperatorHandlerProvider>();
         operatorHandlerProviderMock.Setup(operatorHandlerProvider => operatorHandlerProvider.GetOperatorHandler(It.IsAny<Type>())).Returns(() =>
-            new TOperator());
+            operatorInstance);
 
         serviceProvider
             .Setup(x => x.GetService(typeof(IOperatorHandlerProvider)))

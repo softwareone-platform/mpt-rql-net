@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Rql.Tests.Integration.Core;
 using SoftwareOne.Rql;
+using SoftwareOne.Rql.Linq.Configuration;
 
 namespace Rql.Tests.Integration.Tests.Functionality.ActionStrategy.Core;
 
@@ -14,11 +15,13 @@ public class ActionStrategyTestExecutor : TestExecutor<ActionStrategyTestItem>
     }
 
     protected override IRqlQueryable<ActionStrategyTestItem, ActionStrategyTestItem> MakeRql()
-        => RqlFactory.Make<ActionStrategyTestItem>(_configureServices, rql =>
-        {
-            rql.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
-            rql.Select.Explicit = RqlSelectModes.All;
-        });
+        => RqlFactory.Make<ActionStrategyTestItem>(_configureServices);
 
     public override IQueryable<ActionStrategyTestItem> GetQuery() => ActionStrategyTestItemRepository.Query();
+
+    protected override void Customize(RqlSettings settings)
+    {
+        settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
+        settings.Select.Explicit = RqlSelectModes.All;
+    }
 }

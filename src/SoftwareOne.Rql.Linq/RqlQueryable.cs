@@ -33,18 +33,12 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
     private RqlResponse<TView> TransformInternal(IQueryable<TStorage> source, RqlRequest request)
     {
         using var scope = _serviceProvider.CreateScope();
-
-        var selectCustomization = request.Customization?.Select;
-        if (selectCustomization == null)
-        {
-            var defaultSettings = GetService<IRqlDefaultSettings>();
-            selectCustomization = defaultSettings.Select;
-        }
+        var settingsAccessor = GetService<IRqlSettingsAccessor>();
+        settingsAccessor.Override(request.Settings);
 
         var context = GetService<IQueryContext<TView>>();
 
         GetService<IExternalServiceAccessor>().SetServiceProvider(_serviceProvider);
-        GetService<IRqlSelectSettings>().Apply(selectCustomization);
         GetService<IFilteringService<TView>>().Process(request.Filter);
         GetService<IOrderingService<TView>>().Process(request.Order);
         GetService<IProjectionService<TView>>().Process(request.Select);

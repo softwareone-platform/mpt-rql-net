@@ -1,4 +1,5 @@
 ﻿using SoftwareOne.Rql;
+using SoftwareOne.Rql.Linq.Configuration;
 using System.Linq.Expressions;
 using System.Text.Json;
 using Xunit;
@@ -10,7 +11,7 @@ public abstract class TestExecutor<TStorage> : TestExecutor<TStorage, TStorage> 
     public void ShapeMatch(Action<TStorage> configure, string select)
     {
         var srcData = GetQuery().ToList();
-        var transformed = Rql.Transform(srcData.AsQueryable(), new RqlRequest { Select = select, Customization = GetCustomisation() });
+        var transformed = Rql.Transform(srcData.AsQueryable(), new RqlRequest { Select = select, Settings = GetCustomisation() });
         var targetJson = JsonSerializer.Serialize(transformed.Query.ToList());
 
         foreach (var item in srcData)
@@ -40,7 +41,7 @@ public abstract class TestExecutor<TStorage, TView> where TView : ITestEntity
 
     public void ResultMatch(IEnumerable<TView> toCompare, string? filter = null, string? order = null, string? select = null, bool isHappyFlow = true)
     {
-        var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select, Customization = GetCustomisation() });
+        var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select, Settings = GetCustomisation() });
 
         Assert.True(transformed.IsSuccess);
 
@@ -52,14 +53,14 @@ public abstract class TestExecutor<TStorage, TView> where TView : ITestEntity
 
     public IQueryable<TView> Transform(string? filter = null, string? order = null, string? select = null)
     {
-        var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select, Customization = GetCustomisation() });
+        var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select, Settings = GetCustomisation() });
         Assert.True(transformed.IsSuccess);
         return transformed.Query;
     }
 
     public void MustFailWithError(string? filter = null, string? order = null, string? select = null, string? errorMessage = null)
     {
-        var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select, Customization = GetCustomisation() });
+        var transformed = Rql.Transform(GetQuery(), new RqlRequest { Filter = filter, Order = order, Select = select, Settings = GetCustomisation() });
         Assert.False(transformed.IsSuccess);
         if (errorMessage != null)
             Assert.Equal(errorMessage, transformed.Errors[0].Message);
@@ -69,5 +70,12 @@ public abstract class TestExecutor<TStorage, TView> where TView : ITestEntity
 
     protected abstract Expression<Func<TStorage, TView>> GetMapping();
 
-    protected virtual RqlCustomization? GetCustomisation() { return null; }
+    protected RqlSettings? GetCustomisation()
+    {
+        var settings = new RqlSettings();
+        Customize(settings);
+        return settings;
+    }
+
+    protected abstract void Customize(RqlSettings settings);
 }

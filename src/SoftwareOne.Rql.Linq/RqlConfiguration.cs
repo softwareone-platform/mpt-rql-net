@@ -13,26 +13,28 @@ public class RqlConfiguration
     {
         OperatorOverrides = [];
 
-        General = new RqlGeneralSettings
+        Settings = new GlobalRqlSettings
         {
-            DefaultActions = RqlActions.All,
+            General = new RqlGeneralSettings
+            {
+                DefaultActions = RqlActions.All,
 
-        };
-
-        Select = new RqlSelectSettings
-        {
-            Implicit = RqlSelectModes.Core,
-            Explicit = RqlSelectModes.Core
+            },
+            Select = new RqlSelectSettings
+            {
+                Implicit = RqlSelectModes.Core,
+                Explicit = RqlSelectModes.Core
+            }
         };
     }
 
     internal Assembly? ViewMappersAssembly { get; private set; }
+
     internal Type? PropertyMapperType { get; private set; }
+
     internal Dictionary<Type, Type> OperatorOverrides { get; init; }
 
-    public IRqlGeneralSettings General { get; init; }
-
-    public IRqlSelectSettings Select { get; init; }
+    public GlobalRqlSettings Settings { get; init; }
 
     public RqlConfiguration SetComparisonHandler<TOperator, THandler>() where TOperator : IComparisonOperator, IActualOperator where THandler : TOperator
         => SetOperatorInternal<TOperator, THandler>();

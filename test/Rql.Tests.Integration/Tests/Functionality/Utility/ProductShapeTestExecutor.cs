@@ -1,17 +1,20 @@
 ﻿using Rql.Tests.Integration.Core;
 using SoftwareOne.Rql;
+using SoftwareOne.Rql.Linq.Configuration;
 
 namespace Rql.Tests.Integration.Tests.Functionality.Utility;
 
 public class ProductShapeTestExecutor : TestExecutor<ShapedProduct>
 {
     protected override IRqlQueryable<ShapedProduct, ShapedProduct> MakeRql()
-        => RqlFactory.Make<ShapedProduct>(services => { }, rql =>
-        {
-            rql.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
-            rql.Select.Explicit = RqlSelectModes.All;
-            rql.Select.MaxDepth = 99;
-        });
+        => RqlFactory.Make<ShapedProduct>(services => { });
 
     public override IQueryable<ShapedProduct> GetQuery() => ShapedProductRepository.Query();
+
+    protected override void Customize(RqlSettings settings)
+    {
+        settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
+        settings.Select.Explicit = RqlSelectModes.All;
+        settings.Select.MaxDepth = 99;
+    }
 }

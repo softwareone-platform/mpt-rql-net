@@ -1,8 +1,9 @@
-﻿using System.Linq.Expressions;
+﻿using SoftwareOne.Rql.Linq.Configuration;
+using System.Linq.Expressions;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation;
 
-internal class LessThan : ComparisonOperator, ILessThan
+internal class LessThan(IRqlSettings settings) : ComparisonOperator(settings), ILessThan
 {
     protected override RqlOperators Operator => RqlOperators.Lt;
 

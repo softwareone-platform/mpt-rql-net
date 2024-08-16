@@ -1,26 +1,21 @@
-﻿using System.Xml.Linq;
-using System;
+﻿namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators;
 
-namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators
+internal class OperatorHandlerProvider : IOperatorHandlerProvider
 {
+    private readonly IServiceProvider _serviceProvider;
+    private readonly IOperatorHandlerMapper _mapper;
 
-    internal class OperatorHandlerProvider : IOperatorHandlerProvider
+    public OperatorHandlerProvider(IServiceProvider serviceProvider, IOperatorHandlerMapper mapper)
     {
-        private readonly IServiceProvider _serviceProvider;
-        private readonly IOperatorHandlerMapper _mapper;
+        _serviceProvider = serviceProvider;
+        _mapper = mapper;
+    }
 
-        public OperatorHandlerProvider(IServiceProvider serviceProvider, IOperatorHandlerMapper mapper)
-        {
-            _serviceProvider = serviceProvider;
-            _mapper = mapper;
-        }
+    public IOperator GetOperatorHandler(Type expression)
+    {
+        if (!_mapper.TryGetValue(expression, out var handlerType))
+            throw new NotImplementedException($"Expression key is not implemented: {expression.Name}");
 
-        public IOperator GetOperatorHandler(Type expression)
-        {
-            if (!_mapper.TryGetValue(expression, out var handlerType))
-                throw new NotImplementedException($"Expression key is not implemented: {expression.Name}");
-
-            return (IOperator)_serviceProvider.GetService(handlerType!)!;
-        }
+        return (IOperator)_serviceProvider.GetService(handlerType!)!;
     }
 }

@@ -5,9 +5,12 @@ namespace SoftwareOne.UnitTests.Common;
 
 internal static class RqlSettingsFactory
 {
-    internal static RqlGeneralSettings Default()
+    internal static GlobalRqlSettings Default()
     {
-        var rqlSettings = new RqlGeneralSettings { DefaultActions = RqlActions.Filter };
+        var rqlSettings = new GlobalRqlSettings
+        {
+            General = new RqlGeneralSettings { DefaultActions = RqlActions.Filter }
+        };
 
         return rqlSettings;
     }

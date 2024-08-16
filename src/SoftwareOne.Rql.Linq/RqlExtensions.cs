@@ -36,15 +36,9 @@ public static class RqlExtensions
         var options = new RqlConfiguration();
         configure?.Invoke(options);
 
-        var defaultSettings = new RqlDefaultSettings
-        {
-            General = options.General,
-            Select = options.Select,
-        };
-
-        services.AddSingleton<IRqlDefaultSettings>(defaultSettings);
-        services.AddSingleton(defaultSettings.General);
-        services.AddScoped<IRqlSelectSettings, RqlSelectSettings>();
+        services.AddScoped<IRqlSettingsAccessor, RqlSettingsAccessor>();
+        services.AddScoped(s => s.GetRequiredService<IRqlSettingsAccessor>().Current);
+        services.AddSingleton<IRqlGlobalSettings>(options.Settings);
 
         services.AddSingleton<IRqlParser, RqlParser>();
 
@@ -125,12 +119,12 @@ public static class RqlExtensions
 
             var implementation = options.OperatorOverrides.TryGetValue(type, out var typeValue) ? typeValue : attribute.Implementation;
 
-            services.AddSingleton(type, implementation);
+            services.AddScoped(type, implementation);
             expMapping.Add(attribute.Key, type);
         }
 
         services.AddSingleton<IOperatorHandlerMapper>(expMapping);
-        services.AddSingleton<IOperatorHandlerProvider, OperatorHandlerProvider>();
+        services.AddScoped<IOperatorHandlerProvider, OperatorHandlerProvider>();
     }
 
     private static void ScanForViewMappers(IServiceCollection services, Assembly mappingsAssembly)

@@ -7,8 +7,8 @@ namespace SoftwareOne.Rql.Linq.Core.Metadata;
 
 internal class MetadataFactory : IMetadataFactory
 {
-    private readonly IRqlGeneralSettings _settings;
-    public MetadataFactory(IRqlGeneralSettings settings)
+    private readonly IRqlGlobalSettings _settings;
+    public MetadataFactory(IRqlGlobalSettings settings)
     {
         _settings = settings;
     }
@@ -20,8 +20,8 @@ internal class MetadataFactory : IMetadataFactory
             Name = name,
             Property = property,
             Type = GetRqlPropertyType(property),
-            Actions = _settings.DefaultActions,
-            Operators = _settings.AllowedOperators,
+            Actions = _settings.General.DefaultActions,
+            Operators = _settings.General.AllowedOperators,
             ElementType = GetCollectionElementType(property.PropertyType)
         };
 

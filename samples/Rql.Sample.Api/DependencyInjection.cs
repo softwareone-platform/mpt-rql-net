@@ -1,5 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Rql.Sample.Api.Extensions.Core;
 using Rql.Sample.Contracts.Ef.Products;
 using SoftwareOne.Rql;
@@ -30,9 +28,9 @@ public static class DependencyInjection
         services.AddRql(t =>
         {
             t.ScanForMappers(typeof(Program).Assembly);
-            t.General.DefaultActions = RqlActions.All;
-            t.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive;
-            t.Select.Explicit = RqlSelectModes.All;
+            t.Settings.General.DefaultActions = RqlActions.All;
+            t.Settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive;
+            t.Settings.Select.Explicit = RqlSelectModes.All;
         });
 
         return services;

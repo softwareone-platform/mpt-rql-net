@@ -1,8 +1,9 @@
-﻿using System.Linq.Expressions;
+﻿using SoftwareOne.Rql.Linq.Configuration;
+using System.Linq.Expressions;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation;
 
-internal class Equal : ComparisonOperator, IEqual
+internal class Equal(IRqlSettings settings) : ComparisonOperator(settings), IEqual
 {
     protected override RqlOperators Operator => RqlOperators.Eq;
 
