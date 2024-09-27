@@ -3,7 +3,10 @@ namespace SoftwareOne.Rql;
 
 public interface IRqlQueryable<in TStorage, TView>
 {
+    RqlGraphResponse BuildGraph(RqlRequest request);
+
     RqlResponse<TView> Transform(IQueryable<TStorage> source, RqlRequest request);
+
     RqlResponse<TView> Transform(IQueryable<TStorage> source, Action<RqlRequest> configure);
 }
 

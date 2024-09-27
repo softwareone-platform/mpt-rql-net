@@ -3,10 +3,17 @@ using SoftwareOne.Rql.Linq.Core.Result;
 
 namespace SoftwareOne.Rql;
 
-public class RqlResponse<TView>
+public class RqlGraphResponse
+{
+    public bool IsSuccess { get; set; }
+    
+    public List<Error> Errors { get; set; } = null!;
+    
+    public RqlNode Graph { get; set; } = null!;
+}
+
+
+public class RqlResponse<TView> : RqlGraphResponse
 {
     public IQueryable<TView> Query { get; set; } = null!;
-    public bool IsSuccess { get; set; }
-    public List<Error> Errors { get; set; } = null!;
-    public RqlNode Graph { get; set; } = null!;
 }

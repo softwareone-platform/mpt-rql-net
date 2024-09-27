@@ -6,7 +6,6 @@ using SoftwareOne.Rql.Linq.Services.Filtering;
 using SoftwareOne.Rql.Linq.Services.Mapping;
 using SoftwareOne.Rql.Linq.Services.Ordering;
 using SoftwareOne.Rql.Linq.Services.Projection;
-using System.Diagnostics;
 
 namespace SoftwareOne.Rql.Linq;
 
@@ -24,13 +23,16 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
         _serviceProvider = serviceProvider;
     }
 
+    public RqlGraphResponse BuildGraph(RqlRequest request)
+        => TransformInternal(null!, request, true);
+
     public RqlResponse<TView> Transform(IQueryable<TStorage> source, Action<RqlRequest> configure)
         => Transform(source, MakeRequest(configure));
 
     public RqlResponse<TView> Transform(IQueryable<TStorage> source, RqlRequest request)
-        => TransformInternal(source, request);
+        => TransformInternal(source, request, false);
 
-    private RqlResponse<TView> TransformInternal(IQueryable<TStorage> source, RqlRequest request)
+    private RqlResponse<TView> TransformInternal(IQueryable<TStorage> source, RqlRequest request, bool skipTransformStage)
     {
         using var scope = _serviceProvider.CreateScope();
         var settingsAccessor = GetService<IRqlSettingsAccessor>();
@@ -44,17 +46,17 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
         GetService<IProjectionService<TView>>().Process(request.Select);
         GetService<IProjectionGraphBuilder<TView>>().BuildDefaults();
 
-        var query = GetService<IMappingService<TStorage, TView>>().Apply(source);
-        query = context.ApplyTransformations(query);
-
-#if DEBUG
-        Debug.Write(context.Graph.Print());
-#endif
+        IQueryable<TView>? query = null;
+        if (!skipTransformStage)
+        {
+            query = GetService<IMappingService<TStorage, TView>>().Apply(source);
+            query = context.ApplyTransformations(query);
+        }
 
         return new RqlResponse<TView>
         {
             Graph = context.Graph,
-            Query = query,
+            Query = query!,
             IsSuccess = !context.HasErrors,
             Errors = context.GetErrors().ToList()
         };
