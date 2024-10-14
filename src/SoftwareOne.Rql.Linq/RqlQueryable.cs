@@ -49,7 +49,11 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
         IQueryable<TView>? query = null;
         if (!skipTransformStage)
         {
-            query = GetService<IMappingService<TStorage, TView>>().Apply(source);
+            if (settingsAccessor.Global.General.UseTransparentMap && typeof(TView) == typeof(TStorage))
+                query = (IQueryable<TView>)source;
+            else
+                query = GetService<IMappingService<TStorage, TView>>().Apply(source);
+
             query = context.ApplyTransformations(query);
         }
 
