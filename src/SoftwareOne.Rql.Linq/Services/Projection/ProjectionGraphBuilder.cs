@@ -39,6 +39,9 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
         if (MaxDepthExceeded(target))
             return;
 
+        if (target.AppliedMode?.HasFlag(currentMode) == true)
+            return;
+
         var properties = _metadataProvider.GetPropertiesByDeclaringType(type);
 
         foreach (var rqlProperty in properties)
@@ -70,6 +73,7 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
                 BuildDefaultsForProperty(child, rqlProperty, child.IncludeReason.HasFlag(IncludeReasons.Select) ? _settings.Select.Explicit : rqlProperty.SelectModeOverride ?? _settings.Select.Implicit);
             }
         }
+        target.AppliedMode = (target.AppliedMode ?? RqlSelectModes.None) | currentMode;
     }
 
     private bool MaxDepthExceeded(RqlNode target)
@@ -130,14 +134,22 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
         if (sign)
         {
             var child = parentNode.IncludeChild(rqlProperty, IncludeReasons.Select);
-
             // extend configured select mode with explicit config
             var selectMode = rqlProperty.SelectModeOverride.HasValue ? (rqlProperty.SelectModeOverride.Value | _settings.Select.Explicit) : _settings.Select.Explicit;
             BuildDefaultsForProperty(child, child.Property, selectMode);
             return child;
         }
+        else
+        {
+            var child = parentNode.ExcludeChild(rqlProperty, ExcludeReasons.Unselected);
+            BuildDefaultsForProperty(child, child.Property, RqlSelectModes.None);
+            return child;
+        }
+    }
 
-        return parentNode.ExcludeChild(rqlProperty, ExcludeReasons.Unselected);
+    protected override void OnNodeAddedDueToHierarchy(RqlNode node, RqlPropertyInfo property)
+    {
+        BuildDefaultsForProperty(node, property, RqlSelectModes.None);
     }
 
     protected override void OnValidationFailed(RqlNode node, RqlPropertyInfo property)

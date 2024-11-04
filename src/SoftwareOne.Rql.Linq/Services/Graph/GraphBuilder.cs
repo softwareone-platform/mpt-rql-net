@@ -104,6 +104,7 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
             if (i < segments.Count - 1 || hierarchyOnly) // part of the path 
             {
                 currentNode = currentNode.IncludeChild(rqlProperty, IncludeReasons.Hierarchy);
+                OnNodeAddedDueToHierarchy(currentNode, rqlProperty);
             }
             else // leaf
             {
@@ -123,6 +124,8 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
     protected abstract RqlNode AddNodeToGraph(RqlNode parentNode, RqlPropertyInfo rqlProperty, bool sign);
 
     protected virtual void OnValidationFailed(RqlNode node, RqlPropertyInfo property) { }
+
+    protected virtual void OnNodeAddedDueToHierarchy(RqlNode node, RqlPropertyInfo property) { }
 
     private IEnumerable<RqlPropertyInfo> GetProperties(Type type, ReadOnlyMemory<char> path)
     {

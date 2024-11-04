@@ -47,10 +47,10 @@ namespace SoftwareOne.Rql.Linq.UnitTests.Services
             => RunTest(string.Empty, string.Empty, "-coreCategory", p =>
             {
                 p.Property("coreCategory", IncludeReasons.Default, ExcludeReasons.Unselected);
-                p.Remove("coreCategory.description");
-                p.Remove("coreCategory.id");
-                p.Remove("coreCategory.name");
-                p.Remove("coreCategory.products");
+                p.Property("coreCategory.description", IncludeReasons.None, ExcludeReasons.Default);
+                p.Property("coreCategory.id", IncludeReasons.None, ExcludeReasons.Default);
+                p.Property("coreCategory.name", IncludeReasons.None, ExcludeReasons.Default);
+                p.Property("coreCategory.products", IncludeReasons.None, ExcludeReasons.Default);
             });
 
         [Fact]

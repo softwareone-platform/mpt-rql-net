@@ -50,6 +50,8 @@ public class RqlNode
 
     public int Depth { get; init; }
 
+    internal RqlSelectModes? AppliedMode { get; set; }
+
     public bool TryGetChild(string name, out RqlNode? child)
     {
         child = null;
