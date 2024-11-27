@@ -1,5 +1,11 @@
+param ( 
+    [Parameter(Mandatory=$true)]
+    [string]$Version,
+    [string]$outputDirectory 
+) 
+
 dotnet restore
-dotnet build -c Release --no-restore
+dotnet build -c Release --no-restore -p:Version=$Version
 
 $scriptpath = $MyInvocation.MyCommand.Path
 $dir = Split-Path $scriptpath
@@ -10,7 +16,6 @@ $branch = $env:BUILD_SOURCEBRANCH
 
 Write-Output "Source branch: $branch"
 $versionSuffix = $null
-$outputDirectory = $args[0]
 
 $expr = "dotnet pack -c 'Release' -o '$outputDirectory' "
 

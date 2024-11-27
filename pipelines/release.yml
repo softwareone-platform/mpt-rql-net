@@ -1,0 +1,54 @@
+name: $(TeamProject).$(Build.DefinitionName).$(SourceBranchName)_$(Date:yyyyMMdd)_cd_$(Build.BuildId).$(Rev:r)
+
+pool:
+  name: Standard-Linux
+
+trigger: none
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: MPT/ops-build-templates-aks-releases
+      ref: releases/v13
+  pipelines:
+    - pipeline: build
+      source: mpt-library-rql
+      trigger:
+        branches:
+          include:
+            - refs/heads/release/*
+            - master
+            - release/*
+
+stages:
+  - stage: release_prerequisites
+    displayName: Release Prerequisites
+    jobs:
+      - job: build_artifacts
+        displayName: Get Build Artifacts
+        steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'specific'
+              project: 'e9ec0db2-e7ad-4db1-b724-ad515b61c7c8'
+              definition: '5337'
+              specificBuildWithTriggering: true
+              buildVersionToDownload: 'latest'
+              targetPath: '$(Pipeline.Workspace)'
+
+  - stage: deploy
+    displayName: 'Deploy nuget package'
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+          - task: NuGetAuthenticate@1
+            inputs:
+              nuGetServiceConnections:
+          - task: DotNetCoreCLI@2
+            displayName: Push package to NuGet feed
+            inputs:
+              command: 'push'
+              packagesToPush: $(Pipeline.Workspace)/packages/**/*.nupkg
+              nuGetFeedType: 'internal'
+              feedPublish: PyraCloud
+              arguments: --skip-duplicate

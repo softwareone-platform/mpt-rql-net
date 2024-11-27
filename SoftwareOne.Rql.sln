@@ -21,7 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution", "solution", "{F6
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rql.Tests.Integration", "test\Rql.Tests.Integration\Rql.Tests.Integration.csproj", "{848FB3C4-C9B4-4C8F-83F4-0B7ED53F3464}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rql.Tests.Integration", "tests\Rql.Tests.Integration\Rql.Tests.Integration.csproj", "{848FB3C4-C9B4-4C8F-83F4-0B7ED53F3464}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{AEFB19FB-136A-4DAF-BBB0-F864315A9D0F}"
 EndProject
@@ -49,11 +49,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{
 		pipelines\templates\use_dotnet_steps.yaml = pipelines\templates\use_dotnet_steps.yaml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftwareOne.Rql.Parsers.Linear.UnitTests", "test\SoftwareOne.Rql.Parsers.Linear.UnitTests\SoftwareOne.Rql.Parsers.Linear.UnitTests.csproj", "{56074B20-CCE8-448A-B116-ACC5BFBC54E5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftwareOne.Rql.Parsers.Linear.UnitTests", "tests\SoftwareOne.Rql.Parsers.Linear.UnitTests\SoftwareOne.Rql.Parsers.Linear.UnitTests.csproj", "{56074B20-CCE8-448A-B116-ACC5BFBC54E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftwareOne.UnitTests.Common", "test\SoftwareOne.UnitTests.Common\SoftwareOne.UnitTests.Common.csproj", "{7CD68018-2867-4169-AD97-514DBBEFB52A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftwareOne.UnitTests.Common", "tests\SoftwareOne.UnitTests.Common\SoftwareOne.UnitTests.Common.csproj", "{7CD68018-2867-4169-AD97-514DBBEFB52A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftwareOne.Rql.Linq.UnitTests", "test\SoftwareOne.Rql.Linq.UnitTests\SoftwareOne.Rql.Linq.UnitTests.csproj", "{E66632A3-4C40-4489-80F6-6BCF1F5B19B8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftwareOne.Rql.Linq.UnitTests", "tests\SoftwareOne.Rql.Linq.UnitTests\SoftwareOne.Rql.Linq.UnitTests.csproj", "{E66632A3-4C40-4489-80F6-6BCF1F5B19B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

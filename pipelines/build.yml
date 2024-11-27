@@ -1,0 +1,95 @@
+name: $(TeamProject)_$(Build.DefinitionName)_$(Build.BuildId)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  branches:
+    include:
+      - master
+      - release/*
+
+pool:
+  name: Standard-Linux
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: MPT/ops-build-templates-aks-releases
+      ref: releases/v13
+
+stages:
+  - stage: prepare
+    dependsOn: [ ]
+    displayName: "Prerequisites"
+    jobs:
+      - template: aks-docker-templates/build_prerequisites.yaml@templates
+
+  - stage: CI
+    displayName: CI
+    jobs:
+      - job: Build
+        variables:
+          - group: 'Docker-Nuget-NPM-Auth'
+          - group: 'ServicePrincipal - INFRASTRUCTURE'
+          - name: HELM_EXPERIMENTAL_OCI
+            value: 1
+      - job: BuildNugetPackage
+        displayName: Build nuget package
+        variables:
+          - template: aks-docker-templates/acr-creds-group.yaml@templates
+          - name: buildversion
+            value: $[ stageDependencies.prepare.build_prerequisites.outputs['vars.BUILD_VERSION'] ]          
+        steps:
+          - script: |
+              ls
+            workingDirectory: pipelines
+
+          - script: |
+              docker login nlpapp0336cre.azurecr.io -u $(Azure.ServicePrincipal.Username)  -p $(Azure.ServicePrincipal.Password)
+            displayName: Authorize to PROD ACR
+
+          - script: |
+              docker run -e BUILD_SOURCEBRANCH=$(Build.SourceBranch) -v ${PWD}:/repo -a stderr -a stdout --name build nlpapp0336cre.azurecr.io/dotnet/sdk:8.0 pwsh /repo/pipelines/build.ps1 -outputDirectory /repo/artifacts -Version $(buildVersion);
+            displayName: Build
+            env: 
+              buildVersion: ${{ variables.buildversion }}
+
+          - script: |
+              docker cp build:/repo/artifacts $(Build.ArtifactStagingDirectory)
+            displayName: Copy results
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'packages'
+              publishLocation: 'Container'
+
+  - stage: sonar
+    displayName: Sonarcloud
+    jobs:
+      - template: aks-tests-templates/jobs/sonar-code-analysis-job.yaml@templates
+        parameters:
+          projects: '$(System.DefaultWorkingDirectory)/src/**/*.csproj'
+          sonarCloudProjectKey: mpt-library-rql
+          sonarCloudProjectName: mpt-library-rql
+
+  - stage: deploy
+    displayName: 'Deploy nuget package'
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+      - job: TriggerRelease
+        displayName: Trigger Release pipeline
+        variables:
+          - template: aks-docker-templates/acr-creds-group.yaml@templates
+        steps:
+        - task: benjhuser.tfs-extensions-build-tasks.trigger-build-task.TriggerBuild@4
+          displayName: 'Trigger a new release of mpt-library-rql'
+          inputs:
+            definitionIsInCurrentTeamProject: false
+            tfsServer: 'https://dev.azure.com/softwareone-pc/'
+            teamProject: MPT
+            buildDefinition: mpt-library-rql-release
+            useSameBranch: false
+            branchToUse: master
+            waitForQueuedBuildsToFinish: true
+            failTaskIfBuildsNotSuccessful: false
+            authenticationMethod: 'OAuth Token'              

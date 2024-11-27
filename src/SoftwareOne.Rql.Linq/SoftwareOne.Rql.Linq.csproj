@@ -5,7 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Description>RQL implementation for .Net.</Description>
 		<IsPackable>true</IsPackable>
-		<RepositoryUrl>https://dev.azure.com/softwareone-pc/PyraCloud/_git/one-lib-dotnet-rql</RepositoryUrl>
+		<RepositoryUrl>https://dev.azure.com/softwareone-pc/MPT/_git/mpt-library-rql</RepositoryUrl>
 		<PackageId>SoftwareOne.Rql</PackageId>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
