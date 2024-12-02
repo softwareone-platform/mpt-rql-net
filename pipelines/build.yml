@@ -88,5 +88,6 @@ stages:
           sonarCloudProjectKey: mpt-library-rql
           sonarCloudProjectName: mpt-library-rql
           sonarCloudExtraProperties:  |
+            sonar.exclusions = samples/**
             sonar.coverage.exclusions = samples/**
             sonar.cs.opencover.reportsPaths=$(Pipeline.Workspace)/**/coverage-report*

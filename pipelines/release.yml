@@ -3,10 +3,7 @@ name: $(TeamProject).$(Build.DefinitionName).$(SourceBranchName)_$(Date:yyyyMMdd
 pool:
   name: Standard-Linux
 
-trigger:
-  branches:
-    include:
-      - master
+trigger: none
 
 resources:
   repositories:
