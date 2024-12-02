@@ -3,7 +3,10 @@ name: $(TeamProject).$(Build.DefinitionName).$(SourceBranchName)_$(Date:yyyyMMdd
 pool:
   name: Standard-Linux
 
-trigger: none
+trigger:
+  branches:
+    include:
+      - master
 
 resources:
   repositories:
@@ -17,9 +20,7 @@ resources:
       trigger:
         branches:
           include:
-            - refs/heads/release/*
             - master
-            - release/*
 
 stages:
   - stage: release_prerequisites
@@ -41,6 +42,9 @@ stages:
     displayName: 'Deploy nuget package'
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
     jobs:
+      - job: push_to_nuget
+        displayName: Push package to Nuget feed
+        steps:        
           - task: NuGetAuthenticate@1
             inputs:
               nuGetServiceConnections:

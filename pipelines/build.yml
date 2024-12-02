@@ -16,6 +16,9 @@ resources:
       name: MPT/ops-build-templates-aks-releases
       ref: releases/v13
 
+variables:
+  runTests: $[or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['System.Debug'], true))]
+
 stages:
   - stage: prepare
     dependsOn: [ ]
@@ -26,6 +29,18 @@ stages:
   - stage: CI
     displayName: CI
     jobs:
+      - job: Unittests
+        displayName: Run Unit Tests
+        condition: eq(variables.runTests, true)
+        variables:
+          - group: 'shared.servicePrincipal-INFRASTRUCTURE'
+        steps:
+          - template: /aks-tests-templates/steps/run-tests-in-docker-with-coverlet-steps.yaml@templates
+            parameters:
+              project: tests/SoftwareOne.Rql.Linq.UnitTests/SoftwareOne.Rql.Linq.UnitTests.csproj
+              testType: Unit
+              module: main
+              uploadArtifact: true
       - job: Build
         variables:
           - group: 'Docker-Nuget-NPM-Auth'
@@ -37,7 +52,7 @@ stages:
         variables:
           - template: aks-docker-templates/acr-creds-group.yaml@templates
           - name: buildversion
-            value: $[ stageDependencies.prepare.build_prerequisites.outputs['vars.BUILD_VERSION'] ]          
+            value: $[ stageDependencies.prepare.build_prerequisites.outputs['vars.BUILD_VERSION'] ]
         steps:
           - script: |
               ls
@@ -48,6 +63,7 @@ stages:
             displayName: Authorize to PROD ACR
 
           - script: |
+              echo "Building version: $(buildVersion)"
               docker run -e BUILD_SOURCEBRANCH=$(Build.SourceBranch) -v ${PWD}:/repo -a stderr -a stdout --name build nlpapp0336cre.azurecr.io/dotnet/sdk:8.0 pwsh /repo/pipelines/build.ps1 -outputDirectory /repo/artifacts -Version $(buildVersion);
             displayName: Build
             env: 
@@ -71,25 +87,6 @@ stages:
           projects: '$(System.DefaultWorkingDirectory)/src/**/*.csproj'
           sonarCloudProjectKey: mpt-library-rql
           sonarCloudProjectName: mpt-library-rql
-
-  - stage: deploy
-    displayName: 'Deploy nuget package'
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
-    jobs:
-      - job: TriggerRelease
-        displayName: Trigger Release pipeline
-        variables:
-          - template: aks-docker-templates/acr-creds-group.yaml@templates
-        steps:
-        - task: benjhuser.tfs-extensions-build-tasks.trigger-build-task.TriggerBuild@4
-          displayName: 'Trigger a new release of mpt-library-rql'
-          inputs:
-            definitionIsInCurrentTeamProject: false
-            tfsServer: 'https://dev.azure.com/softwareone-pc/'
-            teamProject: MPT
-            buildDefinition: mpt-library-rql-release
-            useSameBranch: false
-            branchToUse: master
-            waitForQueuedBuildsToFinish: true
-            failTaskIfBuildsNotSuccessful: false
-            authenticationMethod: 'OAuth Token'              
+          sonarCloudExtraProperties:  |
+            sonar.coverage.exclusions = samples/**
+            sonar.cs.opencover.reportsPaths=$(Pipeline.Workspace)/**/coverage-report*

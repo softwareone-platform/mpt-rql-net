@@ -10,14 +10,14 @@ dotnet build -c Release --no-restore -p:Version=$Version
 $scriptpath = $MyInvocation.MyCommand.Path
 $dir = Split-Path $scriptpath
 
-Write-Output $dir
+write-output "Version: $Version"
+write-output "Directory: $dir"
 
 $branch = $env:BUILD_SOURCEBRANCH
 
-Write-Output "Source branch: $branch"
-$versionSuffix = $null
+write-output "Source branch: $branch"
 
-$expr = "dotnet pack -c 'Release' -o '$outputDirectory' "
+$expr = "dotnet pack -c 'Release' -o '$outputDirectory'  -p:Version=$Version"
 
 $projectPaths = Get-ChildItem -Path $dir\.. -Recurse | where { $_.extension -eq ".csproj" }
 foreach ($projectPath in $projectPaths)
