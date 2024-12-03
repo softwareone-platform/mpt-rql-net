@@ -13,7 +13,7 @@ resources:
       ref: releases/v13
   pipelines:
     - pipeline: build
-      source: mpt-library-rql
+      source: mpt-library-rql-build
       trigger:
         branches:
           include:
