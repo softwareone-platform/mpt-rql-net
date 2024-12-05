@@ -42,9 +42,22 @@ stages:
       - job: push_to_nuget
         displayName: Push package to Nuget feed
         steps:        
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'specific'
+              project: 'e9ec0db2-e7ad-4db1-b724-ad515b61c7c8'
+              definition: '5337'
+              specificBuildWithTriggering: true
+              buildVersionToDownload: 'latest'
+              targetPath: '$(Pipeline.Workspace)'        
           - task: NuGetAuthenticate@1
             inputs:
               nuGetServiceConnections:
+          - task: UseDotNet@2
+            displayName: Install dotnet v8
+            continueOnError: true
+            inputs:
+              version: 8.x
           - task: DotNetCoreCLI@2
             displayName: Push package to NuGet feed
             inputs:
