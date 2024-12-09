@@ -5,6 +5,9 @@ trigger:
     include:
       - master
       - release/*
+  paths:
+    include:
+    - src/**
 
 pool:
   name: Standard-Linux
@@ -17,77 +20,97 @@ resources:
       ref: releases/v13
 
 variables:
-  runTests: $[or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['System.Debug'], true))]
+  runTests: $[ or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['System.Debug'], true)) ]
+  packNugets: $[ or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['System.Debug'], true)) ]
 
 stages:
   - stage: prepare
-    dependsOn: [ ]
-    displayName: "Prerequisites"
+    displayName: 'Prerequisites'
     jobs:
       - template: aks-docker-templates/build_prerequisites.yaml@templates
+      - template: aks-docker-templates/build_artifacts.yaml@templates
+        parameters:
+          application: mpt-library-rql
 
-  - stage: CI
-    displayName: CI
+  - stage: build
+    displayName: Build
+    jobs:
+      - job: build_solution
+        displayName: Build the solution
+        variables:
+          - name: buildversion
+            value: $[ stageDependencies.prepare.build_prerequisites.outputs['vars.BUILD_VERSION'] ]
+          - name: nugetVersion
+            value: $[ split(variables.buildVersion, '-')[0] ]
+        steps:
+          - task: UseDotNet@2
+            displayName: 'Set dotnet 8.x'
+            continueOnError: true
+            inputs:
+              version: 8.x
+          - task: DotNetCoreCLI@2
+            displayName: 'Restore solution'
+            inputs:
+              command: 'restore'
+              projects: '$(System.DefaultWorkingDirectory)/SoftwareOne.Rql.sln'
+              feedsToUse: 'select'
+              vstsFeed: '18b4703c-2fe6-4542-8437-ce8f3c5bc01b'
+          - task: DotNetCoreCLI@2
+            displayName: 'Build project'
+            inputs:
+              command: 'build'
+              projects: '$(System.DefaultWorkingDirectory)/SoftwareOne.Rql.sln'
+              arguments: '--no-restore -c Release -p:Version=$(nugetVersion)'
+          - task: DotNetCoreCLI@2
+            displayName: 'Create packages'
+            condition: and(succeeded(), eq(variables.packNugets, 'true'))
+            inputs:
+              command: 'pack'
+              packagesToPack: 'src/**/*.csproj'
+              configuration: 'Release'
+              nobuild: true
+              versioningScheme: 'byEnvVar'
+              versionEnvVar: 'NUGETVERSION'
+              packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish packages'
+            condition: and(succeeded(), eq(variables.packNugets, 'true'))
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/packages'
+              ArtifactName: 'packages'
+
+  - stage: tests
+    displayName: Run tests and code analysis
     jobs:
       - job: Unittests
-        displayName: Run Unit Tests
+        displayName: Run Unit Tests and Sonar Analysis
         condition: eq(variables.runTests, true)
         variables:
           - group: 'shared.servicePrincipal-INFRASTRUCTURE'
         steps:
+          - task: UseDotNet@2
+            displayName: 'Set dotnet 8.x'
+            continueOnError: true
+            inputs:
+              version: 8.x
+          - task: DotNetCoreCLI@2
+            displayName: 'Restore solution'
+            inputs:
+              command: 'restore'
+              projects: '$(System.DefaultWorkingDirectory)/SoftwareOne.Rql.sln'
+              feedsToUse: 'select'
+              vstsFeed: '18b4703c-2fe6-4542-8437-ce8f3c5bc01b'
           - template: /aks-tests-templates/steps/run-tests-in-docker-with-coverlet-steps.yaml@templates
             parameters:
               project: tests/SoftwareOne.Rql.Linq.UnitTests/SoftwareOne.Rql.Linq.UnitTests.csproj
               testType: Unit
-              module: main
-              uploadArtifact: true
-      - job: Build
-        variables:
-          - group: 'Docker-Nuget-NPM-Auth'
-          - group: 'ServicePrincipal - INFRASTRUCTURE'
-          - name: HELM_EXPERIMENTAL_OCI
-            value: 1
-      - job: BuildNugetPackage
-        displayName: Build nuget package
-        variables:
-          - template: aks-docker-templates/acr-creds-group.yaml@templates
-          - name: buildversion
-            value: $[ stageDependencies.prepare.build_prerequisites.outputs['vars.BUILD_VERSION'] ]
-        steps:
-          - script: |
-              ls
-            workingDirectory: pipelines
-
-          - script: |
-              docker login nlpapp0336cre.azurecr.io -u $(Azure.ServicePrincipal.Username)  -p $(Azure.ServicePrincipal.Password)
-            displayName: Authorize to PROD ACR
-
-          - script: |
-              echo "Building version: $(buildVersion)"
-              docker run -e BUILD_SOURCEBRANCH=$(Build.SourceBranch) -v ${PWD}:/repo -a stderr -a stdout --name build nlpapp0336cre.azurecr.io/dotnet/sdk:8.0 pwsh /repo/pipelines/build.ps1 -outputDirectory /repo/artifacts -Version $(buildVersion);
-            displayName: Build
-            env: 
-              buildVersion: ${{ variables.buildversion }}
-
-          - script: |
-              docker cp build:/repo/artifacts $(Build.ArtifactStagingDirectory)
-            displayName: Copy results
-
-          - task: PublishBuildArtifacts@1
-            inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-              ArtifactName: 'packages'
-              publishLocation: 'Container'
-
-  - stage: sonar
-    displayName: Sonarcloud
-    jobs:
-      - template: aks-tests-templates/jobs/sonar-code-analysis-job.yaml@templates
-        parameters:
-          projects: '$(System.DefaultWorkingDirectory)/src/**/*.csproj'
-          sonarCloudProjectKey: mpt-library-rql
-          sonarCloudProjectName: mpt-library-rql
-          sonarCloudExtraProperties:  |
-            sonar.exclusions = samples/**
-            sonar.coverage.exclusions = samples/**
-            sonar.cs.opencover.reportsPaths=$(Pipeline.Workspace)/**/coverage-report*
+              uploadArtifact: false
+          - template: aks-tests-templates/steps/sonar-code-analysis-steps.yaml@templates
+            parameters:
+              projects: '$(System.DefaultWorkingDirectory)/src/**/*.csproj'
+              sonarCloudProjectKey: mpt-library-rql
+              sonarCloudProjectName: mpt-library-rql
+              sonarCloudExtraProperties: |
+                sonar.exclusions = samples/**
+                sonar.coverage.exclusions = samples/**
+                sonar.cs.opencover.reportsPaths=$(System.DefaultWorkingDirectory)/**/coverage-report*
