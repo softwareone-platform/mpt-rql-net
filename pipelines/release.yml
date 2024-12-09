@@ -47,7 +47,7 @@ stages:
               echo "Read version $version"
               echo "##vso[task.setvariable variable=BUILD_VERSION;isOutput=true]$version"
               echo "##vso[build.updatebuildnumber]$(Build.DefinitionName)_${version}_$(Build.BuildId)"
-            name: Set build version
+            displayName: Set build version
             workingDirectory: $(Pipeline.Workspace)
 
   - stage: deploy

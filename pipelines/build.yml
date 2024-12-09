@@ -7,7 +7,7 @@ trigger:
       - release/*
   paths:
     include:
-    - src/**
+      - src/**
 
 pool:
   name: Standard-Linux
