@@ -114,3 +114,31 @@ stages:
                 sonar.exclusions = samples/**
                 sonar.coverage.exclusions = samples/**
                 sonar.cs.opencover.reportsPaths=$(System.DefaultWorkingDirectory)/**/coverage-report*
+
+  - stage: deploy
+    displayName: 'Deploy nuget package'
+    condition: and(succeeded(), eq(variables.packNugets, 'true'))
+    jobs:
+      - deployment: push_to_nuget
+        displayName: Push package to Nuget feed
+        environment: mp-libraries
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  displayName: 'Download packages artifact'
+                  artifact: 'packages'
+                - task: UseDotNet@2
+                  displayName: 'Set dotnet 8.x'
+                  continueOnError: true
+                  inputs:
+                    version: 8.x
+                - task: DotNetCoreCLI@2
+                  displayName: Push package to NuGet feed
+                  inputs:
+                    command: 'push'
+                    packagesToPush: $(Pipeline.Workspace)/*.nupkg
+                    nuGetFeedType: 'internal'
+                    feedPublish: PyraCloud
+                    arguments: --skip-duplicate
