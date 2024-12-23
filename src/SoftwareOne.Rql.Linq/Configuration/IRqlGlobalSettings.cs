@@ -1,6 +1,6 @@
 ﻿namespace SoftwareOne.Rql.Linq.Configuration;
 
-internal interface IRqlGlobalSettings : IRqlSettings
+internal interface IRqlGlobalSettings
 {
     RqlGeneralSettings General { get; }
 }

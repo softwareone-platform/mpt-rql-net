@@ -4,9 +4,7 @@ internal class RqlSettingsAccessor(IRqlGlobalSettings globalSettings) : IRqlSett
 {
     private IRqlSettings? _override;
 
-    public IRqlGlobalSettings Global { get; init; } = globalSettings;
-
-    public IRqlSettings Current => _override ?? Global;
+    public IRqlSettings Current => _override ?? (RqlSettings)globalSettings;
 
     public void Override(RqlSettings? settings) => _override = settings;
 }

@@ -88,6 +88,8 @@ stages:
         variables:
           - group: 'shared.servicePrincipal-INFRASTRUCTURE'
         steps:
+          - checkout: self
+            fetchDepth: 0
           - task: UseDotNet@2
             displayName: 'Set dotnet 8.x'
             continueOnError: true
