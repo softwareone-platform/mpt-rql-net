@@ -104,7 +104,20 @@ stages:
               vstsFeed: '18b4703c-2fe6-4542-8437-ce8f3c5bc01b'
           - template: /aks-tests-templates/steps/run-tests-in-docker-with-coverlet-steps.yaml@templates
             parameters:
-              project: tests/SoftwareOne.Rql.Linq.UnitTests/SoftwareOne.Rql.Linq.UnitTests.csproj
+              project: $(System.DefaultWorkingDirectory)/tests/Rql.Tests.Integration/Rql.Tests.Integration.csproj
+              module: Rql
+              testType: Integration
+              uploadArtifact: false
+          - template: /aks-tests-templates/steps/run-tests-in-docker-with-coverlet-steps.yaml@templates
+            parameters:
+              project: $(System.DefaultWorkingDirectory)/tests/SoftwareOne.Rql.Linq.UnitTests/SoftwareOne.Rql.Linq.UnitTests.csproj
+              module: Rql.Linq
+              testType: Unit
+              uploadArtifact: false
+          - template: /aks-tests-templates/steps/run-tests-in-docker-with-coverlet-steps.yaml@templates
+            parameters:
+              project: $(System.DefaultWorkingDirectory)/tests/SoftwareOne.Rql.Parsers.Linear.UnitTests/SoftwareOne.Rql.Parsers.Linear.UnitTests.csproj
+              module: Rql.Parsers.Linear
               testType: Unit
               uploadArtifact: false
           - template: aks-tests-templates/steps/sonar-code-analysis-steps.yaml@templates
@@ -113,8 +126,8 @@ stages:
               sonarCloudProjectKey: mpt-library-rql
               sonarCloudProjectName: mpt-library-rql
               sonarCloudExtraProperties: |
-                sonar.exclusions = samples/**
-                sonar.coverage.exclusions = samples/**
+                sonar.exclusions = samples/**,**/tests/**
+                sonar.coverage.exclusions = samples/**,**/tests/**
                 sonar.cs.opencover.reportsPaths=$(System.DefaultWorkingDirectory)/**/coverage-report*
 
   - stage: deploy
