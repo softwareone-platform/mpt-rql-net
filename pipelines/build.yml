@@ -20,17 +20,15 @@ resources:
       ref: releases/v13
 
 variables:
-  runTests: $[ or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['System.Debug'], true)) ]
-  packNugets: $[ or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['System.Debug'], true)) ]
+  isMasterOrRelease: ${{ or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}
+  packNugets: ${{ or(eq(variables['isMasterOrRelease'], 'true'), eq(variables['Build.Reason'], 'Manual')) }}
+  isPreRelease: ${{ and(eq(variables['isMasterOrRelease'], 'false'), eq(variables['Build.Reason'], 'Manual')) }}
 
 stages:
   - stage: prepare
     displayName: 'Prerequisites'
     jobs:
       - template: aks-docker-templates/build_prerequisites.yaml@templates
-      - template: aks-docker-templates/build_artifacts.yaml@templates
-        parameters:
-          application: mpt-library-rql
 
   - stage: build
     displayName: Build
@@ -41,7 +39,10 @@ stages:
           - name: buildversion
             value: $[ stageDependencies.prepare.build_prerequisites.outputs['vars.BUILD_VERSION'] ]
           - name: nugetVersion
-            value: $[ split(variables.buildVersion, '-')[0] ]
+            ${{ if eq(variables['isPreRelease'], 'true') }}:
+              value: $(buildVersion).$(Build.BuildId)
+            ${{ else }}:
+              value: $[ split(variables.buildVersion, '-')[0] ]
         steps:
           - task: UseDotNet@2
             displayName: 'Set dotnet 8.x'
@@ -81,10 +82,12 @@ stages:
 
   - stage: tests
     displayName: Run tests and code analysis
+    condition: or(eq(variables['isMasterOrRelease'], 'true'), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['System.Debug'], true))
+    dependsOn:
+     - prepare
     jobs:
       - job: Unittests
         displayName: Run Unit Tests and Sonar Analysis
-        condition: eq(variables.runTests, true)
         variables:
           - group: 'shared.servicePrincipal-INFRASTRUCTURE'
         steps:
@@ -133,6 +136,10 @@ stages:
   - stage: deploy
     displayName: 'Deploy nuget package'
     condition: and(succeeded(), eq(variables.packNugets, 'true'))
+    dependsOn:
+      - build
+      - ${{ if eq(variables['isPreRelease'], 'false') }}:
+        - tests
     jobs:
       - deployment: push_to_nuget
         displayName: Push package to Nuget feed
@@ -153,7 +160,7 @@ stages:
                   displayName: Push package to NuGet feed
                   inputs:
                     command: 'push'
-                    packagesToPush: $(Pipeline.Workspace)/*.nupkg
+                    packagesToPush: $(Pipeline.Workspace)/packages/*.nupkg
                     nuGetFeedType: 'internal'
                     feedPublish: PyraCloud
                     arguments: --skip-duplicate
