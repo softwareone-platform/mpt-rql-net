@@ -34,7 +34,7 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
         {
             if (typeMap.TryGetValue(node.Property.Property.Name, out var map))
             {
-                var fromExpression = MakeBindExpression(param, node, map.Expression, map.IsDynamic);
+                var fromExpression = MakeBindExpression(param, node, map.SourceExpression, map.IsDynamic);
                 bindings.Add(Expression.Bind(node.Property.Property, fromExpression));
             }
         }

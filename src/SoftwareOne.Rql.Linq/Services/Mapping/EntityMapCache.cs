@@ -1,62 +1,61 @@
 ﻿using System.Collections.Concurrent;
 using System.Linq.Expressions;
 
-namespace SoftwareOne.Rql.Linq.Services.Mapping
+namespace SoftwareOne.Rql.Linq.Services.Mapping;
+
+internal interface IEntityMapCache
 {
-    internal interface IEntityMapCache
+    Dictionary<string, RqlMapProperty> Get(Type typeFrom, Type typeTo);
+}
+
+internal class EntityMapCache(IServiceProvider serviceProvider) : IEntityMapCache
+{
+    private static readonly ConcurrentDictionary<(Type, Type), Dictionary<string, RqlMapProperty>> _cache = [];
+
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
+
+    public Dictionary<string, RqlMapProperty> Get(Type typeFrom, Type typeTo)
     {
-        Dictionary<string, (LambdaExpression Expression, bool IsDynamic)> Get(Type typeFrom, Type typeTo);
-    }
-
-    internal class EntityMapCache : IEntityMapCache
-    {
-        private static readonly ConcurrentDictionary<(Type, Type), Dictionary<string, (LambdaExpression Expression, bool IsDynamic)>> _cache = [];
-
-        private readonly IServiceProvider _serviceProvider;
-
-
-        public EntityMapCache(IServiceProvider serviceProvider)
+        var key = (typeFrom, typeTo);
+        return _cache.GetOrAdd(key, k =>
         {
-            _serviceProvider = serviceProvider;
-        }
+            IRqlMapper? mapper = null;
 
-        public Dictionary<string, (LambdaExpression Expression, bool IsDynamic)> Get(Type typeFrom, Type typeTo)
-        {
-            var key = (typeFrom, typeTo);
-            return _cache.GetOrAdd(key, k =>
+            var currentTypeFrom = k.Item1;
+            var typeTo = k.Item2;
+
+            while (currentTypeFrom != null)
             {
-                IRqlMapper? mapper = null;
+                var mapperType = typeof(IRqlMapper<,>).MakeGenericType(currentTypeFrom, typeTo);
+                mapper = _serviceProvider.GetService(mapperType) as IRqlMapper;
+                if (mapper != null)
+                    break;
 
-                var currentTypeFrom = k.Item1;
-                var typeTo = k.Item2;
+                currentTypeFrom = currentTypeFrom.BaseType;
+            }
 
-                while (currentTypeFrom != null)
+            if (mapper == null)
+                currentTypeFrom = k.Item1;
+
+            var context = (IRqlMapperContext)_serviceProvider.GetService(typeof(IRqlMapperContext<,>).MakeGenericType(currentTypeFrom!, typeTo))!;
+            mapper?.MapEntity(context);
+            context.AddMissing();
+
+            var result = new Dictionary<string, RqlMapProperty>(context.Mapping.Count, StringComparer.InvariantCultureIgnoreCase);
+            foreach (var mapEntry in context.Mapping)
+            {
+                var fromExp = new RqlMapProperty
                 {
-                    var mapperType = typeof(IRqlMapper<,>).MakeGenericType(currentTypeFrom, typeTo);
-                    mapper = _serviceProvider.GetService(mapperType) as IRqlMapper;
-                    if (mapper != null)
-                        break;
+                    TargetPath = mapEntry.Key,
+                    SourceExpression = mapEntry.Value.Expression,
+                    IsDynamic = mapEntry.Value.IsDynamic
+                };
 
-                    currentTypeFrom = currentTypeFrom.BaseType;
-                }
+                if (!result.TryAdd(mapEntry.Key, fromExp))
+                    result[mapEntry.Key] = fromExp;
+            }
 
-                if (mapper == null)
-                    currentTypeFrom = k.Item1;
-
-                var context = (IRqlMapperContext)_serviceProvider.GetService(typeof(IRqlMapperContext<,>).MakeGenericType(currentTypeFrom!, typeTo))!;
-                mapper?.MapEntity(context);
-                context.AddMissing();
-
-                var result = new Dictionary<string, (LambdaExpression Expression, bool IsDynamic)>(context.Mapping.Count);
-                foreach (var mapEntry in context.Mapping)
-                {
-                    var fromExp = mapEntry.Value;
-                    if (!result.TryAdd(mapEntry.Key, fromExp))
-                        result[mapEntry.Key] = fromExp;
-                }
-
-                return result;
-            });
-        }
+            return result;
+        });
     }
 }

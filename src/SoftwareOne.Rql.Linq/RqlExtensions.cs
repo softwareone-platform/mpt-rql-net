@@ -74,6 +74,7 @@ public static class RqlExtensions
         services.AddSingleton<IRqlMetadataProvider>(serviceProvider =>
             serviceProvider.GetRequiredService<MetadataProvider>());
         services.AddSingleton<IEntityMapCache, EntityMapCache>();
+        services.AddSingleton<IRqlMapAccessor, RqlMapAccessor>();
 
         services.AddSingleton<IMetadataFactory, MetadataFactory>();
         services.AddSingleton(typeof(IPropertyNameProvider), options.PropertyMapperType ?? typeof(PropertyNameProvider));

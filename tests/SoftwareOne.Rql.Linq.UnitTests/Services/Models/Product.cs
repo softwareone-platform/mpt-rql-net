@@ -1,6 +1,4 @@
-﻿using SoftwareOne.Rql;
-
-namespace SoftwareOne.Rql.Linq.UnitTests.Services.Models
+﻿namespace SoftwareOne.Rql.Linq.UnitTests.Services.Models
 {
     internal class Product
     {
