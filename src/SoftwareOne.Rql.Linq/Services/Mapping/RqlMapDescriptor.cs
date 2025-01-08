@@ -3,14 +3,12 @@ namespace SoftwareOne.Rql;
 
 public class RqlMapDescriptor
 {
-    private readonly Dictionary<string, RqlMapProperty> _properties;
+    private readonly Dictionary<string, RqlMapEntry> _properties;
 
-    internal RqlMapDescriptor(Dictionary<string, RqlMapProperty> properties)
+    internal RqlMapDescriptor(Dictionary<string, RqlMapEntry> properties)
     {
         _properties = properties;
     }
 
-    public IEnumerable<RqlMapProperty> GetProperties() => _properties.Values;
-
-    public bool TryGetMapByTargetPath(string targetPath, out RqlMapProperty? property) => _properties.TryGetValue(targetPath, out property);
+    public IEnumerable<RqlMapEntry> GetEntries() => _properties.Values;
 }

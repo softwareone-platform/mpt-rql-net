@@ -3,12 +3,6 @@
 #pragma warning disable IDE0130
 namespace SoftwareOne.Rql;
 
-public interface IRqlMapperContext
-{
-    Dictionary<string, (LambdaExpression Expression, bool IsDynamic)> Mapping { get; }
-    void AddMissing();
-}
-
 public interface IRqlMapperContext<TStorage, TView>
 {
     IRqlMapperContext<TStorage, TView> Map<TFrom, TTo>(Expression<Func<TView, TTo?>> to, Expression<Func<TStorage, TFrom?>> from) where TTo : TFrom;

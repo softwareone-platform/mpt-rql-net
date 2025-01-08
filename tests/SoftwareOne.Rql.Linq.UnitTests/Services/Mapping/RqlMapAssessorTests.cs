@@ -26,8 +26,7 @@ public class RqlMapAssessorTests
         var map = accessor.Get<MapAssessorTestDbEntity, MapAssessorTestEntity>();
 
         // Assert
-        map.GetProperties().Should().HaveCount(2);
-        map.TryGetMapByTargetPath("DsplayName", out var _).Should().BeTrue();
+        map.GetEntries().Should().HaveCount(2);
     }
 }
 

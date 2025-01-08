@@ -1,20 +1,19 @@
 ﻿using System.Collections.Concurrent;
-using System.Linq.Expressions;
 
 namespace SoftwareOne.Rql.Linq.Services.Mapping;
 
 internal interface IEntityMapCache
 {
-    Dictionary<string, RqlMapProperty> Get(Type typeFrom, Type typeTo);
+    Dictionary<string, RqlMapEntry> Get(Type typeFrom, Type typeTo);
 }
 
 internal class EntityMapCache(IServiceProvider serviceProvider) : IEntityMapCache
 {
-    private static readonly ConcurrentDictionary<(Type, Type), Dictionary<string, RqlMapProperty>> _cache = [];
+    private static readonly ConcurrentDictionary<(Type, Type), Dictionary<string, RqlMapEntry>> _cache = [];
 
     private readonly IServiceProvider _serviceProvider = serviceProvider;
 
-    public Dictionary<string, RqlMapProperty> Get(Type typeFrom, Type typeTo)
+    public Dictionary<string, RqlMapEntry> Get(Type typeFrom, Type typeTo)
     {
         var key = (typeFrom, typeTo);
         return _cache.GetOrAdd(key, k =>
@@ -26,8 +25,8 @@ internal class EntityMapCache(IServiceProvider serviceProvider) : IEntityMapCach
 
             while (currentTypeFrom != null)
             {
-                var mapperType = typeof(IRqlMapper<,>).MakeGenericType(currentTypeFrom, typeTo);
-                mapper = _serviceProvider.GetService(mapperType) as IRqlMapper;
+                var mapperInterface = typeof(IRqlMapper<,>).MakeGenericType(currentTypeFrom, typeTo);
+                mapper = _serviceProvider.GetService(mapperInterface) as IRqlMapper;
                 if (mapper != null)
                     break;
 
@@ -37,25 +36,13 @@ internal class EntityMapCache(IServiceProvider serviceProvider) : IEntityMapCach
             if (mapper == null)
                 currentTypeFrom = k.Item1;
 
-            var context = (IRqlMapperContext)_serviceProvider.GetService(typeof(IRqlMapperContext<,>).MakeGenericType(currentTypeFrom!, typeTo))!;
+            // IRqlMapperContext is represented by an internal implementation that expects an IRqlMetadataProvider, 
+            // hence it needs to be injected from the DI container
+            var context = (RqlMapperContext)_serviceProvider.GetService(typeof(IRqlMapperContext<,>).MakeGenericType(currentTypeFrom!, typeTo))!;
             mapper?.MapEntity(context);
             context.AddMissing();
 
-            var result = new Dictionary<string, RqlMapProperty>(context.Mapping.Count, StringComparer.InvariantCultureIgnoreCase);
-            foreach (var mapEntry in context.Mapping)
-            {
-                var fromExp = new RqlMapProperty
-                {
-                    TargetPath = mapEntry.Key,
-                    SourceExpression = mapEntry.Value.Expression,
-                    IsDynamic = mapEntry.Value.IsDynamic
-                };
-
-                if (!result.TryAdd(mapEntry.Key, fromExp))
-                    result[mapEntry.Key] = fromExp;
-            }
-
-            return result;
+            return context.Mapping;
         });
     }
 }

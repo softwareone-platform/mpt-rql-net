@@ -1,12 +1,11 @@
 ﻿using SoftwareOne.Rql;
 
-namespace Rql.Tests.Integration.Tests.Extensibility.Utility
+namespace Rql.Tests.Integration.Tests.Extensibility.Utility;
+
+internal class ProductViewMapInvalid : IRqlMapper<object, object>
 {
-    internal class ProductViewMapInvalid : IRqlMapper
+    public void MapEntity(IRqlMapperContext<object, object> context)
     {
-        public void MapEntity(IRqlMapperContext context)
-        {
-            throw new NotImplementedException();
-        }
+        throw new NotImplementedException();
     }
 }
