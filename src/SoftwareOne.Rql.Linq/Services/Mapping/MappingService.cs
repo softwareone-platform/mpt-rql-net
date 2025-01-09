@@ -1,5 +1,6 @@
 ﻿using SoftwareOne.Rql.Linq.Core.Metadata;
 using SoftwareOne.Rql.Linq.Services.Context;
+using System.Collections;
 using System.Linq.Expressions;
 
 namespace SoftwareOne.Rql.Linq.Services.Mapping;
@@ -86,6 +87,10 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
 
     private Expression MakeCollectionInit(Expression fromExpression, RqlNode node, Type targetItemType)
     {
+        // Temporarily only support List
+        if (!typeof(IList).IsAssignableFrom(node.Property.Property.PropertyType))
+            throw new NotSupportedException($"Cannot map property '{node.Property.Property.Name}' of type {node.Property.Property.DeclaringType!.Name}. Rql temporarily support only list coollections.");
+
         var srcItemType = fromExpression.Type.GenericTypeArguments[0];
 
         if (!TypeHelper.IsUserComplexType(srcItemType))
