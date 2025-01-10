@@ -1,6 +1,6 @@
-﻿using System.Collections.Concurrent;
+﻿using SoftwareOne.Rql.Abstractions;
+using System.Collections.Concurrent;
 using System.Reflection;
-using SoftwareOne.Rql.Abstractions;
 
 namespace SoftwareOne.Rql.Linq.Core.Metadata;
 
@@ -15,6 +15,13 @@ internal class MetadataProvider : IMetadataProvider, IRqlMetadataProvider
         _cache = new ConcurrentDictionary<Type, Dictionary<string, RqlPropertyInfo>>();
         _propertyNameProvider = propertyNameProvider;
         _metadataFactory = metadataFactory;
+    }
+
+    bool IRqlMetadataProvider.TryGetPropertyByDisplayName(Type type, string propertyName, out IRqlPropertyInfo? rqlProperty)
+    {
+        var result = ((IMetadataProvider)this).TryGetPropertyByDisplayName(type, propertyName, out var rqlPropertyInfo);
+        rqlProperty = rqlPropertyInfo;
+        return result;
     }
 
     IEnumerable<IRqlPropertyInfo> IRqlMetadataProvider.GetPropertiesByDeclaringType(Type type)
