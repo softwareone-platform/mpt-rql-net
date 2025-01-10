@@ -30,7 +30,7 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
         => MapInternal(to, from, false);
 
     public IRqlMapperContext<TStorage, TView> MapDynamic<TFrom, TTo>(Expression<Func<TView, TTo?>> to, Expression<Func<TStorage, TFrom?>> from)
-        => MapInternal(to, from, false);
+        => MapInternal(to, from, true);
 
     public IRqlMapperContext<TStorage, TView> Ignore<TTo>(Expression<Func<TView, TTo?>> toIgnore)
     {
