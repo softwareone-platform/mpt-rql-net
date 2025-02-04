@@ -21,146 +21,30 @@ resources:
 
 variables:
   isMasterOrRelease: ${{ or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')) }}
-  packNugets: ${{ or(eq(variables['isMasterOrRelease'], 'true'), eq(variables['Build.Reason'], 'Manual')) }}
   isPreRelease: ${{ and(eq(variables['isMasterOrRelease'], 'false'), eq(variables['Build.Reason'], 'Manual')) }}
+  publish: ${{ or(eq(variables['isMasterOrRelease'], 'true'), eq(variables['Build.Reason'], 'Manual')) }}
 
-stages:
-  - stage: prepare
-    displayName: 'Prerequisites'
-    jobs:
-      - template: aks-docker-templates/build_prerequisites.yaml@templates
-
-  - stage: build
-    displayName: Build
-    jobs:
-      - job: build_solution
-        displayName: Build the solution
-        variables:
-          - name: buildversion
-            value: $[ stageDependencies.prepare.build_prerequisites.outputs['vars.BUILD_VERSION'] ]
-          - name: nugetVersion
-            ${{ if eq(variables['isPreRelease'], 'true') }}:
-              value: $(buildVersion).$(Build.BuildId)
-            ${{ else }}:
-              value: $[ split(variables.buildVersion, '-')[0] ]
-        steps:
-          - task: UseDotNet@2
-            displayName: 'Set dotnet 8.x'
-            continueOnError: true
-            inputs:
-              version: 8.x
-          - task: DotNetCoreCLI@2
-            displayName: 'Restore solution'
-            inputs:
-              command: 'restore'
-              projects: '$(System.DefaultWorkingDirectory)/SoftwareOne.Rql.sln'
-              feedsToUse: 'select'
-              vstsFeed: '18b4703c-2fe6-4542-8437-ce8f3c5bc01b'
-          - task: DotNetCoreCLI@2
-            displayName: 'Build project'
-            inputs:
-              command: 'build'
-              projects: '$(System.DefaultWorkingDirectory)/SoftwareOne.Rql.sln'
-              arguments: '--no-restore -c Release -p:Version=$(nugetVersion)'
-          - task: DotNetCoreCLI@2
-            displayName: 'Create packages'
-            condition: and(succeeded(), eq(variables.packNugets, 'true'))
-            inputs:
-              command: 'pack'
-              packagesToPack: 'src/**/*.csproj'
-              configuration: 'Release'
-              nobuild: true
-              versioningScheme: 'byEnvVar'
-              versionEnvVar: 'NUGETVERSION'
-              packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
-          - task: PublishBuildArtifacts@1
-            displayName: 'Publish packages'
-            condition: and(succeeded(), eq(variables.packNugets, 'true'))
-            inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)/packages'
-              ArtifactName: 'packages'
-
-  - stage: tests
-    displayName: Run tests and code analysis
-    condition: or(eq(variables['isMasterOrRelease'], 'true'), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['System.Debug'], true))
-    dependsOn:
-     - prepare
-    jobs:
-      - job: Unittests
-        displayName: Run Unit Tests and Sonar Analysis
-        variables:
-          - group: 'shared.servicePrincipal-INFRASTRUCTURE'
-        steps:
-          - checkout: self
-            fetchDepth: 0
-          - task: UseDotNet@2
-            displayName: 'Set dotnet 8.x'
-            continueOnError: true
-            inputs:
-              version: 8.x
-          - task: DotNetCoreCLI@2
-            displayName: 'Restore solution'
-            inputs:
-              command: 'restore'
-              projects: '$(System.DefaultWorkingDirectory)/SoftwareOne.Rql.sln'
-              feedsToUse: 'select'
-              vstsFeed: '18b4703c-2fe6-4542-8437-ce8f3c5bc01b'
-          - template: /aks-tests-templates/steps/run-tests-in-docker-with-coverlet-steps.yaml@templates
-            parameters:
-              project: $(System.DefaultWorkingDirectory)/tests/Rql.Tests.Integration/Rql.Tests.Integration.csproj
-              module: Rql
-              testType: Integration
-              uploadArtifact: false
-          - template: /aks-tests-templates/steps/run-tests-in-docker-with-coverlet-steps.yaml@templates
-            parameters:
-              project: $(System.DefaultWorkingDirectory)/tests/SoftwareOne.Rql.Linq.UnitTests/SoftwareOne.Rql.Linq.UnitTests.csproj
-              module: Rql.Linq
-              testType: Unit
-              uploadArtifact: false
-          - template: /aks-tests-templates/steps/run-tests-in-docker-with-coverlet-steps.yaml@templates
-            parameters:
-              project: $(System.DefaultWorkingDirectory)/tests/SoftwareOne.Rql.Parsers.Linear.UnitTests/SoftwareOne.Rql.Parsers.Linear.UnitTests.csproj
-              module: Rql.Parsers.Linear
-              testType: Unit
-              uploadArtifact: false
-          - template: aks-tests-templates/steps/sonar-code-analysis-steps.yaml@templates
-            parameters:
-              projects: '$(System.DefaultWorkingDirectory)/src/**/*.csproj'
-              sonarCloudProjectKey: mpt-library-rql
-              sonarCloudProjectName: mpt-library-rql
-              sonarCloudExtraProperties: |
-                sonar.exclusions = samples/**,**/tests/**
-                sonar.coverage.exclusions = samples/**,**/tests/**
-                sonar.cs.opencover.reportsPaths=$(System.DefaultWorkingDirectory)/**/coverage-report*
-
-  - stage: deploy
-    displayName: 'Deploy nuget package'
-    condition: and(succeeded(), eq(variables.packNugets, 'true'))
-    dependsOn:
-      - build
-      - ${{ if eq(variables['isPreRelease'], 'false') }}:
-        - tests
-    jobs:
-      - deployment: push_to_nuget
-        displayName: Push package to Nuget feed
-        environment: mp-libraries
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - download: current
-                  displayName: 'Download packages artifact'
-                  artifact: 'packages'
-                - task: UseDotNet@2
-                  displayName: 'Set dotnet 8.x'
-                  continueOnError: true
-                  inputs:
-                    version: 8.x
-                - task: DotNetCoreCLI@2
-                  displayName: Push package to NuGet feed
-                  inputs:
-                    command: 'push'
-                    packagesToPush: $(Pipeline.Workspace)/packages/*.nupkg
-                    nuGetFeedType: 'internal'
-                    feedPublish: PyraCloud
-                    arguments: --skip-duplicate
+extends:
+  template: /nuget-libraries-templates/build_nuget_library_pipeline.yaml@templates
+  parameters:
+    solutionPath: $(System.DefaultWorkingDirectory)/SoftwareOne.Rql.sln
+    testProjects:
+      - jobName: linqunittests
+        path: $(System.DefaultWorkingDirectory)/tests/SoftwareOne.Rql.Linq.UnitTests/SoftwareOne.Rql.Linq.UnitTests.csproj
+        module: Rql.Linq
+        testType: Unit
+      - jobName: integrationtests
+        path: $(System.DefaultWorkingDirectory)/tests/Rql.Tests.Integration/Rql.Tests.Integration.csproj
+        module: Rql
+        testType: Integration
+      - jobName: linearparsersunittests
+        path: $(System.DefaultWorkingDirectory)/tests/SoftwareOne.Rql.Parsers.Linear.UnitTests/SoftwareOne.Rql.Parsers.Linear.UnitTests.csproj
+        module: Rql.Parsers.Linear
+        testType: Unit
+    runTests: ${{ or(eq(variables['isMasterOrRelease'], 'true'), eq(variables['Build.Reason'], 'PullRequest')) }}
+    analysisExclusions: samples/**,**/tests/**
+    analysisCoverageExclusions: samples/**,**/tests/**
+    analysisKey: mpt-library-rql
+    analysisName: mpt-library-rql
+    isPreRelease: ${{ variables.isPreRelease }}
+    publish: ${{ variables.publish }}
