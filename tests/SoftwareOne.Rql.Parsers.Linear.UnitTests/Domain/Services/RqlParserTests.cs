@@ -417,7 +417,21 @@ public class RqlParserTests
         Assert.Equal("-id", Assert.IsType<RqlConstant>(item2.Items[1]).Value);
         Assert.Equal("-id", Assert.IsType<RqlConstant>(grp.Items[2]).Value);
     }
+    
+    [Fact]
+    public void Parse_WithSelectMinusWildcard_ReturnsValidResult()
+    {
+        // Act
+        var actualResult = _sut.Parse("id,-*");
 
+        // Assert
+        var grp = Assert.IsAssignableFrom<RqlGroup>(actualResult);
+        var item1 = Assert.IsType<RqlConstant>(grp.Items![0]);
+        Assert.Equal("id", item1.Value);
+        var item2 = Assert.IsType<RqlConstant>(grp.Items[1]);
+        Assert.Equal("-*", item2.Value);
+    }
+    
     [Theory]
     [InlineData("(ilike(number,'*HL*')|ilike(name,'*HL*'))&order=id&offset=0&limit=30")]
     public void Parse_WithILikeEscapeSpecialCharacters_ReturnsValidResult(string query)

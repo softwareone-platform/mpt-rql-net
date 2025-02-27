@@ -84,10 +84,33 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
 
     private RqlNode? ProcessNode(RqlNode parentNode, string name, bool hierarchyOnly = false)
     {
-        var currentType = parentNode.Property != null ? parentNode.Property.ElementType ?? parentNode.Property.Property.PropertyType : typeof(TView);
-
         var (path, sign) = StringHelper.ExtractSign(name);
+        return ProcessNode(parentNode, path, sign,  hierarchyOnly );
+    }
 
+    private RqlNode? ProcessNode(RqlNode parentNode, ReadOnlyMemory<char> path, bool sign, bool hierarchyOnly = false)
+    {
+        var currentType = parentNode.Property != null
+            ? parentNode.Property.ElementType ?? parentNode.Property.Property.PropertyType
+            : typeof(TView);
+
+        if (!path.Span.SequenceEqual("*".AsSpan())) 
+            return ProcessNodeInternal(parentNode, path, sign, hierarchyOnly);
+        
+        var properties = _metadataProvider.GetPropertiesByDeclaringType(currentType);
+        foreach (var property in properties)
+        {
+            ProcessNodeInternal(parentNode, property.Name.AsMemory(), sign, hierarchyOnly);
+        }
+
+        return null;
+    }
+    private RqlNode? ProcessNodeInternal(RqlNode parentNode, ReadOnlyMemory<char> path, bool sign, bool hierarchyOnly = false)
+    {
+        var currentType = parentNode.Property != null
+            ? parentNode.Property.ElementType ?? parentNode.Property.Property.PropertyType
+            : typeof(TView);
+        
         var currentNode = parentNode;
         var segments = GetProperties(currentType, path).ToList();
 
