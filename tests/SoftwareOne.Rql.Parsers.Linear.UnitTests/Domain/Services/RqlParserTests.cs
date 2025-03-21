@@ -290,6 +290,88 @@ public class RqlParserTests
     }
 
     [Theory]
+    [InlineData("id=null(),name=abc")]
+    [InlineData("name=abc,id=null()")]
+    [InlineData("eq(id,null()),name=abc")]
+    [InlineData("name=abc,eq(id,null())")]
+    [InlineData("id=null()&name=abc")]
+    [InlineData("name=abc&id=null()")]
+    [InlineData("eq(id,null())&name=abc")]
+    [InlineData("name=abc&eq(id,null())")]
+    [InlineData("id=empty(),name=abc")]
+    [InlineData("name=abc,id=empty()")]
+    [InlineData("eq(id,empty()),name=abc")]
+    [InlineData("name=abc,eq(id,empty())")]
+    [InlineData("id=empty()&name=abc")]
+    [InlineData("name=abc&id=empty()")]
+    [InlineData("eq(id,empty())&name=abc")]
+    [InlineData("name=abc&eq(id,empty())")]
+    public void Parse_WithNullAndOther_OnAnd_ReturnsValidResult(string query)
+    {
+        // Act
+        var actualResult = _sut.Parse(query);
+
+        // Assert
+        var grp = Assert.IsAssignableFrom<RqlGroup>(actualResult);
+        Assert.True(grp is RqlAnd);
+        var items = grp.Items!.OfType<RqlEqual>().ToList();
+        Assert.Equal(2, items.Count);
+
+        Assert.NotNull(items.FirstOrDefault(t => t.Right is RqlFunction));
+        Assert.NotNull(items.FirstOrDefault(t => t.Right is RqlConstant ctn && ctn.Value == "abc"));
+    }
+
+    [Theory]
+    [InlineData("id=null()|name=abc")]
+    [InlineData("name=abc|id=null()")]
+    [InlineData("eq(id,null())|name=abc")]
+    [InlineData("name=abc|eq(id,null())")]
+    [InlineData("id=null();name=abc")]
+    [InlineData("name=abc;id=null()")]
+    [InlineData("eq(id,null());name=abc")]
+    [InlineData("name=abc;eq(id,null())")]
+    [InlineData("id=empty()|name=abc")]
+    [InlineData("name=abc|id=empty()")]
+    [InlineData("eq(id,empty())|name=abc")]
+    [InlineData("name=abc|eq(id,empty())")]
+    [InlineData("id=empty();name=abc")]
+    [InlineData("name=abc;id=empty()")]
+    [InlineData("eq(id,empty());name=abc")]
+    [InlineData("name=abc;eq(id,empty())")]
+    public void Parse_WithNullAndOther_OnOr_ReturnsValidResult(string query)
+    {
+        // Act
+        var actualResult = _sut.Parse(query);
+
+        // Assert
+        var grp = Assert.IsAssignableFrom<RqlGroup>(actualResult);
+        Assert.True(grp is RqlOr);
+        var items = grp.Items!.OfType<RqlEqual>().ToList();
+        Assert.Equal(2, items.Count);
+
+        Assert.NotNull(items.FirstOrDefault(t => t.Right is RqlFunction));
+        Assert.NotNull(items.FirstOrDefault(t => t.Right is RqlConstant ctn && ctn.Value == "abc"));
+    }
+
+    [Theory]
+    [InlineData("eq(id,1),name=abc")]
+    [InlineData("name=abc,eq(id,1)")]
+    public void Parse_WithParenthesisAndOther_ReturnsValidResult(string query)
+    {
+        // Act
+        var actualResult = _sut.Parse(query);
+
+        // Assert
+        var grp = Assert.IsAssignableFrom<RqlGroup>(actualResult);
+        Assert.True(grp is RqlAnd);
+        var items = grp.Items!.OfType<RqlEqual>().ToList();
+        Assert.Equal(2, items.Count);
+
+        Assert.NotNull(items.FirstOrDefault(t => t.Right is RqlConstant ctn && ctn.Value == "1"));
+        Assert.NotNull(items.FirstOrDefault(t => t.Right is RqlConstant ctn && ctn.Value == "abc"));
+    }
+
+    [Theory]
     [InlineData("id=empty()")]
     public void Parse_WithEmptyQuery_ReturnsValidResult(string query)
     {
@@ -417,7 +499,7 @@ public class RqlParserTests
         Assert.Equal("-id", Assert.IsType<RqlConstant>(item2.Items[1]).Value);
         Assert.Equal("-id", Assert.IsType<RqlConstant>(grp.Items[2]).Value);
     }
-    
+
     [Fact]
     public void Parse_WithSelectMinusWildcard_ReturnsValidResult()
     {
@@ -431,7 +513,7 @@ public class RqlParserTests
         var item2 = Assert.IsType<RqlConstant>(grp.Items[1]);
         Assert.Equal("-*", item2.Value);
     }
-    
+
     [Theory]
     [InlineData("(ilike(number,'*HL*')|ilike(name,'*HL*'))&order=id&offset=0&limit=30")]
     public void Parse_WithILikeEscapeSpecialCharacters_ReturnsValidResult(string query)

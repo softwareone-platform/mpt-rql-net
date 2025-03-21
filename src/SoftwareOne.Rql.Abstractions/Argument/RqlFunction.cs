@@ -1,3 +1,3 @@
 ﻿namespace SoftwareOne.Rql.Abstractions.Argument;
 
-public class RqlNull : RqlFunction { }
+public class RqlFunction : RqlArgument { }

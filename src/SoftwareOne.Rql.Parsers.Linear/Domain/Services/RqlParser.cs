@@ -26,7 +26,7 @@ public class RqlParser : IRqlParser
         return RqlExpression.Group("", exp);
     }
 
-    private static IList<ExpressionPair> ParseInternal(ReadOnlyMemory<char> query, int startIndex, out int currentIndex, bool takeOne)
+    private static List<ExpressionPair> ParseInternal(ReadOnlyMemory<char> query, int startIndex, out int currentIndex, bool takeOne)
     {
         currentIndex = startIndex;
         var expressions = new List<ExpressionPair>();
@@ -80,12 +80,21 @@ public class RqlParser : IRqlParser
         return expressions;
     }
 
+    /// <summary>
+    /// Handles the equals shortcut syntax, allowing expressions like 'field=value' instead of 'eq(field,value)'.
+    /// </summary>
+    /// <param name="query">The original query string.</param>
+    /// <param name="currentIndex">The current processing index.</param>
+    /// <param name="word">The collected word.</param>
+    /// <param name="expressions">The collection of collected expressions.</param>
+    /// <exception cref="RqlParserException">Thrown when the right side expression cannot be resolved into a single <see cref="RqlArgument"/>.</exception>
     private static void HandleEqualsShortcut(ReadOnlyMemory<char> query, ref int currentIndex, ref Word word, List<ExpressionPair> expressions)
     {
         RqlExpression? left;
-        
+
         var replaceLastExpression = word.WordLength == 0 && expressions.Count > 0;
 
+        // If the left side is represented by an already resolved expression '(property)', rather than a word, take that expression.
         if (replaceLastExpression)
         {
             var lastPair = expressions[^1];
@@ -101,7 +110,17 @@ public class RqlParser : IRqlParser
         if (rightNodes.Count != 1 || rightNodes[0].Expression is not RqlArgument)
             throw new RqlParserException("Invalid equals shortcut expression");
         expressions.Add(new ExpressionPair(word.GroupType, RqlExpression.Equal(left, rightNodes[0].Expression)));
-        word = Word.Make(query, currentIndex + 1);
+
+        int shift = 1;
+
+        // If the right side is a function, adjust the shift to skip the closing parenthesis ')'.
+        if (rightNodes[0].Expression is RqlFunction)
+        {
+            shift = 2;
+            currentIndex++;
+        }
+
+        word = Word.Make(query, currentIndex + shift);
     }
 
     private static void HandleGroupOperator(ReadOnlyMemory<char> query, int currentIndex, ref Word word, GroupType groupType, List<ExpressionPair> expressions)
