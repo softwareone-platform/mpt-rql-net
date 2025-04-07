@@ -9,7 +9,7 @@ internal interface IEntityMapCache
 
 internal class EntityMapCache(IServiceProvider serviceProvider) : IEntityMapCache
 {
-    private static readonly ConcurrentDictionary<(Type, Type), Dictionary<string, RqlMapEntry>> _cache = [];
+    private readonly ConcurrentDictionary<(Type, Type), Dictionary<string, RqlMapEntry>> _cache = [];
 
     private readonly IServiceProvider _serviceProvider = serviceProvider;
 
