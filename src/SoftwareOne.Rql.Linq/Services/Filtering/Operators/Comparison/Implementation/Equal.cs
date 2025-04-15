@@ -8,4 +8,6 @@ internal class Equal(IRqlSettings settings) : ComparisonOperator(settings), IEqu
     protected override RqlOperators Operator => RqlOperators.Eq;
 
     internal override Func<Expression, Expression, BinaryExpression> Handler => Expression.Equal;
+
+    protected override bool AvoidLexicographicalComparison => true;
 }

@@ -8,4 +8,6 @@ internal class NotEqual(IRqlSettings settings) : ComparisonOperator(settings), I
     protected override RqlOperators Operator => RqlOperators.Ne;
 
     internal override Func<Expression, Expression, BinaryExpression> Handler => Expression.NotEqual;
+
+    protected override bool AvoidLexicographicalComparison => true;
 }
