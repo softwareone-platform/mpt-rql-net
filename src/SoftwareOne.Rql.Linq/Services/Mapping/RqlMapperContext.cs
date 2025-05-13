@@ -27,10 +27,16 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
     }
 
     public IRqlMapperContext<TStorage, TView> Map<TFrom, TTo>(Expression<Func<TView, TTo?>> to, Expression<Func<TStorage, TFrom?>> from) where TTo : TFrom
-        => MapInternal(to, from, false);
+        => MapInternal(GetTargetProperty(to), from, false, null);
 
     public IRqlMapperContext<TStorage, TView> MapDynamic<TFrom, TTo>(Expression<Func<TView, TTo?>> to, Expression<Func<TStorage, TFrom?>> from)
-        => MapInternal(to, from, true);
+        => MapInternal(GetTargetProperty(to), from, true, null);
+
+    public IRqlMapperContext<TStorage, TView> MapDynamic<TFrom, TTo>(Expression<Func<TView, TTo?>> to, Expression<Func<TStorage, TFrom?>> from, Action<IRqlMapperContext<TFrom, TTo>> configureInline)
+        => MapInternal(GetTargetProperty(to), from, true, configureInline);
+
+    public IRqlMapperContext<TStorage, TView> MapDynamic<TFrom, TTo>(Expression<Func<TView, IEnumerable<TTo>?>> to, Expression<Func<TStorage, IEnumerable<TFrom>?>> from, Action<IRqlMapperContext<TFrom, TTo>> configureInline)
+        => MapInternal(GetTargetProperty(to), from, true, configureInline);
 
     public IRqlMapperContext<TStorage, TView> Ignore<TTo>(Expression<Func<TView, TTo?>> toIgnore)
     {
@@ -66,16 +72,28 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
         }
     }
 
-    private RqlMapperContext<TStorage, TView> MapInternal<TFrom, TTo>(Expression<Func<TView, TTo?>> to, Expression<Func<TStorage, TFrom?>> from, bool isDynamic)
-        => MapInternal(GetTargetProperty(to), from, isDynamic);
+    private RqlMapperContext<TStorage, TView> MapInternal<TFrom, TTo>(IRqlPropertyInfo target, LambdaExpression source, bool isDynamic, Action<IRqlMapperContext<TFrom, TTo>>? configureInline)
+    {
+        Dictionary<string, RqlMapEntry>? inline = null;
+        if (configureInline != null)
+        {
+            var mapperContext = new RqlMapperContext<TFrom, TTo>(_rqlMetadataProvider);
+            configureInline(mapperContext);
+            mapperContext.AddMissing();
+            inline = mapperContext.Mapping;
+        }
 
-    private RqlMapperContext<TStorage, TView> MapInternal(IRqlPropertyInfo target, LambdaExpression source, bool isDynamic)
+        return MapInternal(target, source, isDynamic, inline);
+    }
+
+    private RqlMapperContext<TStorage, TView> MapInternal(IRqlPropertyInfo target, LambdaExpression source, bool isDynamic, Dictionary<string, RqlMapEntry>? inline = null)
     {
         var mapProperty = new RqlMapEntry
         {
             TargetProperty = target,
             SourceExpression = source,
-            IsDynamic = isDynamic
+            IsDynamic = isDynamic,
+            InlineMap = inline
         };
 
         _mapping.Add(target.Property.Name, mapProperty);

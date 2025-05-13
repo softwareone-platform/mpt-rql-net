@@ -10,5 +10,9 @@ public class RqlMapEntry
 
     public LambdaExpression SourceExpression { get; init; } = null!;
 
+    public IReadOnlyDictionary<string, RqlMapEntry>? InlineMap { get; init; }
+
+    public Type TargetType => TargetProperty.ElementType ?? TargetProperty.Property.PropertyType;
+
     public bool IsDynamic { get; init; }
 }

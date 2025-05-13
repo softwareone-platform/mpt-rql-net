@@ -28,14 +28,18 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
     private MemberInitExpression MakeInitExpression(Expression param, RqlNode rqlNode, Type typeFrom, Type typeTo)
     {
         var typeMap = _mapCache.Get(typeFrom, typeTo);
+        return MakeInitExpression(param, rqlNode, typeTo, typeMap);
+    }
 
+    private MemberInitExpression MakeInitExpression(Expression param, RqlNode rqlNode, Type typeTo, IReadOnlyDictionary<string, RqlMapEntry> typeMap)
+    {
         var bindings = new List<MemberBinding>(_queryContext.Graph.Count);
 
         foreach (var node in rqlNode.Children.Where(t => t.IsIncluded))
         {
             if (typeMap.TryGetValue(node.Property.Property.Name, out var map))
             {
-                var fromExpression = MakeBindExpression(param, node, map.SourceExpression, map.IsDynamic);
+                var fromExpression = MakeBindExpression(param, node, map);
                 bindings.Add(Expression.Bind(node.Property.Property, fromExpression));
             }
         }
@@ -43,18 +47,18 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
         return Expression.MemberInit(Expression.New(typeTo.GetConstructor(Type.EmptyTypes)!), bindings);
     }
 
-    private Expression MakeBindExpression(Expression param, RqlNode node, LambdaExpression sourceExpression, bool isDynamic)
+    private Expression MakeBindExpression(Expression param, RqlNode node, RqlMapEntry map)
     {
         var targetType = node.Property.Property.PropertyType;
-        var replaceParamVisitor = new ReplaceParameterVisitor(sourceExpression.Parameters[0], param);
-        var fromExpression = replaceParamVisitor.Visit(sourceExpression.Body);
+        var replaceParamVisitor = new ReplaceParameterVisitor(map.SourceExpression.Parameters[0], param);
+        var fromExpression = replaceParamVisitor.Visit(map.SourceExpression.Body);
 
-        if (isDynamic)
+        if (map.IsDynamic)
         {
             fromExpression = node.Property.Type switch
             {
-                RqlPropertyType.Reference => MakeReferenceInit(fromExpression, node, targetType),
-                RqlPropertyType.Collection => MakeCollectionInit(fromExpression, node, node.Property.ElementType!),
+                RqlPropertyType.Reference => MakeReferenceInit(fromExpression, node, map),
+                RqlPropertyType.Collection => MakeCollectionInit(fromExpression, node, map),
                 _ => fromExpression
             };
         }
@@ -68,9 +72,11 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
         return fromExpression;
     }
 
-    private Expression MakeReferenceInit(Expression fromExpression, RqlNode node, Type targetType)
+    private Expression MakeReferenceInit(Expression fromExpression, RqlNode node, RqlMapEntry map)
     {
-        var subInit = MakeInitExpression(fromExpression, node, fromExpression.Type, targetType);
+        var innerMap = GetInnerMapFromEntry(fromExpression.Type, map);
+
+        var subInit = MakeInitExpression(fromExpression, node, fromExpression.Type, innerMap);
 
         if (node.Property.IsNullable)
         {
@@ -85,7 +91,7 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
         return fromExpression;
     }
 
-    private Expression MakeCollectionInit(Expression fromExpression, RqlNode node, Type targetItemType)
+    private Expression MakeCollectionInit(Expression fromExpression, RqlNode node, RqlMapEntry map)
     {
         // Temporarily only support List
         if (!typeof(IList).IsAssignableFrom(node.Property.Property.PropertyType))
@@ -96,11 +102,15 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
         if (!TypeHelper.IsUserComplexType(srcItemType))
             return fromExpression;
 
+        var innerMap = GetInnerMapFromEntry(srcItemType, map);
         var innerParam = Expression.Parameter(srcItemType);
-        var subInit = MakeInitExpression(innerParam, node, srcItemType, targetItemType);
+        var subInit = MakeInitExpression(innerParam, node, map.TargetType, innerMap);
         var selectLambda = Expression.Lambda(subInit, innerParam);
-        var functions = (IProjectionFunctions)Activator.CreateInstance(typeof(ProjectionFunctions<,>).MakeGenericType(srcItemType, targetItemType))!;
+        var functions = (IProjectionFunctions)Activator.CreateInstance(typeof(ProjectionFunctions<,>).MakeGenericType(srcItemType, map.TargetType))!;
         var selectCall = Expression.Call(null, functions.GetSelect(), fromExpression, selectLambda);
         return Expression.Call(null, functions.GetToList(), selectCall);
     }
+
+    private IReadOnlyDictionary<string, RqlMapEntry> GetInnerMapFromEntry(Type typeFrom, RqlMapEntry map)
+        => map.InlineMap ?? _mapCache.Get(typeFrom, map.TargetType);
 }
