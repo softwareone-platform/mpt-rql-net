@@ -5,7 +5,7 @@ namespace SoftwareOne.Rql;
 
 public interface IRqlMapperContext<TStorage, TView>
 {
-    IRqlMapperContext<TStorage, TView> Map<TFrom, TTo>(Expression<Func<TView, TTo?>> to, Expression<Func<TStorage, TFrom?>> from) where TTo : TFrom;
+    IRqlMapperContext<TStorage, TView> MapStatic<TFrom, TTo>(Expression<Func<TView, TTo?>> to, Expression<Func<TStorage, TFrom?>> from) where TTo : TFrom;
 
     IRqlMapperContext<TStorage, TView> MapDynamic<TFrom, TTo>(Expression<Func<TView, TTo?>> to, Expression<Func<TStorage, TFrom?>> from, Action<IRqlMapperContext<TFrom, TTo>>? configureInline = null);
 

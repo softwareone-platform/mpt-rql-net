@@ -6,6 +6,6 @@ internal class SampleEntityMapper<TView> : IRqlMapper<SampleEntity, TView> where
 {
     public void MapEntity(IRqlMapperContext<SampleEntity, TView> context)
     {
-        context.Map(t => t.Id, t => t.Id);
+        context.MapStatic(t => t.Id, t => t.Id);
     }
 }

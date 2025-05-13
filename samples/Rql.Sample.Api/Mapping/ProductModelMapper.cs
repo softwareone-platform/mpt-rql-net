@@ -8,7 +8,7 @@ namespace Rql.Sample.Api.Mapping
     {
         public void MapEntity(IRqlMapperContext<ProductModel, ProductModelView> context)
         {
-            context.Map(t => t.Name, t => t.Name);
+            context.MapStatic(t => t.Name, t => t.Name);
         }
     }
 }

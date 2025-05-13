@@ -67,7 +67,7 @@ public class RqlMapAssessorTests
     {
         public void MapEntity(IRqlMapperContext<DbEntity, Entity> context)
         {
-            context.Map(t => t.DsplayName, t => t.Name);
+            context.MapStatic(t => t.DsplayName, t => t.Name);
             context.MapDynamic(t => t.Item, t => t.DbItem);
         }
     }

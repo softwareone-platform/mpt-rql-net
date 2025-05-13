@@ -26,7 +26,7 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
         _targetProperties = _rqlMetadataProvider.GetPropertiesByDeclaringType(typeof(TView)).ToDictionary(k => k.Property.Name);
     }
 
-    public IRqlMapperContext<TStorage, TView> Map<TFrom, TTo>(Expression<Func<TView, TTo?>> to, Expression<Func<TStorage, TFrom?>> from) where TTo : TFrom
+    public IRqlMapperContext<TStorage, TView> MapStatic<TFrom, TTo>(Expression<Func<TView, TTo?>> to, Expression<Func<TStorage, TFrom?>> from) where TTo : TFrom
         => MapInternal(new RqlMapEntry
         {
             TargetProperty = GetTargetProperty(to),

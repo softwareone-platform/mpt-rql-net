@@ -111,7 +111,7 @@ public class InlineMappingTests
         {
             context.MapDynamic(t => t.Items, t => t.Items, m =>
             {
-                m.Map(t => t.Name, t => t.DbName);
+                m.MapStatic(t => t.Name, t => t.DbName);
             });
         }
     }
