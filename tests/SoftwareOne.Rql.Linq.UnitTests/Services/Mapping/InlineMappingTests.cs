@@ -11,7 +11,7 @@ public class InlineMappingTests
         // Arrange, Act, Assert
         var sp = MakeServiceProvider(t =>
         {
-            t.AddScoped(typeof(IRqlMapper<DbEntity, Entity>), typeof(InmlinMapper));
+            t.AddScoped(typeof(IRqlMapper<DbEntity, Entity>), typeof(InlineMapper));
         });
         var rql = sp.GetRequiredService<IRqlQueryable<DbEntity, Entity>>();
         var data = new List<DbEntity>
@@ -23,7 +23,7 @@ public class InlineMappingTests
         var result = rql.Transform(data.AsQueryable(), new RqlRequest()).Query.ToList();
         result.Should().HaveCount(2);
         result[0].Items.Should().HaveCount(2);
-        
+
         result[0].Items[0].Id.Should().Be("1");
         result[0].Items[0].Name.Should().Be("One");
 
@@ -70,7 +70,7 @@ public class InlineMappingTests
         var services = new ServiceCollection();
         services.AddRql(t =>
         {
-            t.Settings.Select.Implicit = RqlSelectModes.All;
+            t.Settings.Select.Implicit = t.Settings.Select.Explicit = RqlSelectModes.All;
         });
         configure(services);
         return services.BuildServiceProvider();
@@ -92,16 +92,20 @@ public class InlineMappingTests
 
     internal class Entity
     {
+        public Item Item { get; set; } = null!;
+
         [RqlProperty(IsCore = true)]
         public List<Item> Items { get; set; } = null!;
     }
 
     internal class DbEntity
     {
+        public DbItem DbItem { get; set; } = null!;
+
         public ICollection<DbItem> Items { get; set; } = null!;
     }
 
-    internal class InmlinMapper : IRqlMapper<DbEntity, Entity>
+    internal class InlineMapper : IRqlMapper<DbEntity, Entity>
     {
         public void MapEntity(IRqlMapperContext<DbEntity, Entity> context)
         {

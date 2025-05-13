@@ -40,11 +40,32 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
             if (typeMap.TryGetValue(node.Property.Property.Name, out var map))
             {
                 var fromExpression = MakeBindExpression(param, node, map);
+                fromExpression = TryMakeConditionalBindExpression(param, node, fromExpression, map);
                 bindings.Add(Expression.Bind(node.Property.Property, fromExpression));
             }
         }
 
         return Expression.MemberInit(Expression.New(typeTo.GetConstructor(Type.EmptyTypes)!), bindings);
+    }
+
+    private Expression TryMakeConditionalBindExpression(Expression param, RqlNode rqlNode, Expression defaultExpression, RqlMapEntry parentEntry)
+    {
+        if (parentEntry.Conditions == null || parentEntry.Conditions.Count == 0)
+            return defaultExpression;
+
+        Expression conditionalExpr = defaultExpression;
+
+        for (int i = parentEntry.Conditions.Count - 1; i >= 0; i--)
+        {
+            var condition = parentEntry.Conditions[i];
+
+            var replaceParamVisitor = new ReplaceParameterVisitor(condition.If.Parameters[0], param);
+            var ifExpression = replaceParamVisitor.Visit(condition.If.Body);
+
+            conditionalExpr = Expression.Condition(ifExpression, MakeBindExpression(param, rqlNode, condition.Entry), conditionalExpr);
+        }
+
+        return conditionalExpr;
     }
 
     private Expression MakeBindExpression(Expression param, RqlNode node, RqlMapEntry map)
