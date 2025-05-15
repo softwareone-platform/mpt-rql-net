@@ -97,7 +97,7 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
     {
         var innerMap = GetInnerMapFromEntry(fromExpression.Type, map);
 
-        var subInit = MakeInitExpression(fromExpression, node, fromExpression.Type, innerMap);
+        var subInit = MakeInitExpression(fromExpression, node, map.TargetType, innerMap);
 
         if (node.Property.IsNullable)
         {
