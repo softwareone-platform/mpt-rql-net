@@ -18,14 +18,10 @@ public interface IRqlMapperContext<TStorage, TView>
 
 public interface IRqlMapperSwitchContext<TFromOwner>
 {
-    IRqlMapperSwitchContextFinalizer<TFromOwner> DynamicCase<TFrom>(Expression<Func<TFromOwner, bool>> condition, Expression<Func<TFromOwner, TFrom?>> from);
-
-    IRqlMapperSwitchContextFinalizer<TFromOwner> StaticCase<TFrom>(Expression<Func<TFromOwner, bool>> condition, Expression<Func<TFromOwner, TFrom?>> from);
+    IRqlMapperSwitchContextFinalizer<TFromOwner> Case<TFrom>(Expression<Func<TFromOwner, bool>> condition, Expression<Func<TFromOwner, TFrom?>> from, bool mapStatic = false);
 }
 
 public interface IRqlMapperSwitchContextFinalizer<TFromOwner> : IRqlMapperSwitchContext<TFromOwner>
 {
-    void DynamicDefault<TFrom>(Expression<Func<TFromOwner, TFrom?>> from);
-
-    void StaticDefault<TFrom>(Expression<Func<TFromOwner, TFrom?>> from);
+    void Default<TFrom>(Expression<Func<TFromOwner, TFrom?>> from, bool mapStatic = false);
 }

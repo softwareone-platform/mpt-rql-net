@@ -4,19 +4,7 @@ namespace SoftwareOne.Rql.Linq.Services.Mapping;
 
 internal class RqlMapperSwitchContext<TFromOwner>(RqlMapEntry parentEntry) : IRqlMapperSwitchContext<TFromOwner>, IRqlMapperSwitchContextFinalizer<TFromOwner>
 {
-    public IRqlMapperSwitchContextFinalizer<TFromOwner> DynamicCase<TFrom>(Expression<Func<TFromOwner, bool>> condition, Expression<Func<TFromOwner, TFrom?>> from) 
-        => Case(condition, from, true);
-
-    public IRqlMapperSwitchContextFinalizer<TFromOwner> StaticCase<TFrom>(Expression<Func<TFromOwner, bool>> condition, Expression<Func<TFromOwner, TFrom?>> from)
-        => Case(condition, from, false);
-
-    public void DynamicDefault<TFrom>(Expression<Func<TFromOwner, TFrom?>> from)
-        => Default(from, true);
-
-    public void StaticDefault<TFrom>(Expression<Func<TFromOwner, TFrom?>> from)
-        => Default(from, false);
-
-    private RqlMapperSwitchContext<TFromOwner> Case<TFrom>(Expression<Func<TFromOwner, bool>> condition, Expression<Func<TFromOwner, TFrom?>> from, bool isDynamic)
+    public IRqlMapperSwitchContextFinalizer<TFromOwner> Case<TFrom>(Expression<Func<TFromOwner, bool>> condition, Expression<Func<TFromOwner, TFrom?>> from, bool mapStatic = false)
     {
         parentEntry.Conditions ??= [];
         parentEntry.Conditions.Add(new RqlMapEntryCondition
@@ -26,7 +14,7 @@ internal class RqlMapperSwitchContext<TFromOwner>(RqlMapEntry parentEntry) : IRq
             {
                 TargetProperty = parentEntry.TargetProperty,
                 SourceExpression = from,
-                IsDynamic = isDynamic,
+                IsDynamic = !mapStatic,
                 InlineMap = null,
                 Conditions = null
             }
@@ -35,9 +23,9 @@ internal class RqlMapperSwitchContext<TFromOwner>(RqlMapEntry parentEntry) : IRq
         return this;
     }
 
-    private void Default<TFrom>(Expression<Func<TFromOwner, TFrom?>> from, bool isDynamic)
+    public void Default<TFrom>(Expression<Func<TFromOwner, TFrom?>> from, bool mapStatic = false)
     {
         parentEntry.SourceExpression = from;
-        parentEntry.IsDynamic = isDynamic;
+        parentEntry.IsDynamic = !mapStatic;
     }
 }

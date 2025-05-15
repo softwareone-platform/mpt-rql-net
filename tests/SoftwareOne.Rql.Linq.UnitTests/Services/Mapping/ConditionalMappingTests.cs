@@ -118,9 +118,9 @@ public class ConditionalMappingTests
         public void MapEntity(IRqlMapperContext<DbPost, Post> context)
         {
             context.Switch(t => t.User)
-                .DynamicCase(t => t.Type == 1, t => t.User)
-                .DynamicCase(t => t.Type == 2, t => t.User.Contact)
-                .StaticDefault(t => new User { Name = "Default Name" });
+                .Case(t => t.Type == 1, t => t.User)
+                .Case(t => t.Type == 2, t => t.User.Contact)
+                .Default(t => new User { Name = "Default Name" }, true);
         }
     }
 
@@ -129,9 +129,9 @@ public class ConditionalMappingTests
         public void MapEntity(IRqlMapperContext<DbUser, User> context)
         {
             context.Switch(t => t.Name)
-                .DynamicCase(t => t.Type == 1, t => t.Name)
-                .DynamicCase(t => t.Type == 2, t => t.Contact.Name)
-                .StaticDefault(t => "Default Name");
+                .Case(t => t.Type == 1, t => t.Name)
+                .Case(t => t.Type == 2, t => t.Contact.Name)
+                .Default(t => "Default Name", true);
         }
     }
 
@@ -140,8 +140,8 @@ public class ConditionalMappingTests
         public void MapEntity(IRqlMapperContext<DbPost, Post> context)
         {
             context.Switch(t => t.User)
-                .DynamicCase(t => t.Type == 1, t => t.User)
-                .DynamicCase(t => t.Type == 2, t => t.User.Contact);
+                .Case(t => t.Type == 1, t => t.User)
+                .Case(t => t.Type == 2, t => t.User.Contact);
         }
     }
 }
