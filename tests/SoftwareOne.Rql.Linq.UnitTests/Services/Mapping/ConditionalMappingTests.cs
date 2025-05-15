@@ -7,12 +7,37 @@ namespace SoftwareOne.Rql.Linq.UnitTests.Services.Mapping;
 public class ConditionalMappingTests
 {
     [Fact]
-    public void MapConditional_NameProperty_MapsBasedOnTypeCorrectly()
+    public void MapConditional_WithComplexObject_MapsCorrectly()
     {
         // Arrange, Act, Assert
         var sp = MakeServiceProvider(t =>
         {
-            t.AddScoped(typeof(IRqlMapper<DbUser, User>), typeof(ConditionalMapper));
+            t.AddScoped(typeof(IRqlMapper<DbPost, Post>), typeof(PostConditionalMapper));
+        });
+        var rql = sp.GetRequiredService<IRqlQueryable<DbPost, Post>>();
+        var data = new List<DbPost>
+        {
+            new () { Type = 1, User = new() { Name = "User Name", Contact = new () { Name = "Contact Name" } }},
+            new () { Type = 2, User = new() { Name = "User Name", Contact = new () { Name = "Contact Name" } }},
+            new () { Type = 3, User = new() { Name = "User Name", Contact = new () { Name = "Contact Name" } }},
+        };
+
+        var transformed = rql.Transform(data.AsQueryable(), new RqlRequest());
+        var result = transformed.Query.ToList();
+        result.Should().HaveCount(3);
+
+        result[0].User.Name.Should().Be("User Name");
+        result[1].User.Name.Should().Be("Contact Name");
+        result[2].User.Name.Should().Be("Default Name");
+    }
+
+    [Fact]
+    public void MapConditional_WithSimpleObject_MapsCorrectly()
+    {
+        // Arrange, Act, Assert
+        var sp = MakeServiceProvider(t =>
+        {
+            t.AddScoped(typeof(IRqlMapper<DbUser, User>), typeof(UserConditionalMapper));
         });
         var rql = sp.GetRequiredService<IRqlQueryable<DbUser, User>>();
         var data = new List<DbUser>
@@ -37,13 +62,13 @@ public class ConditionalMappingTests
         // Arrange, Act, Assert
         var sp = MakeServiceProvider(t =>
         {
-            t.AddScoped(typeof(IRqlMapper<DbUser, User>), typeof(IncorrectConditionalMapper));
+            t.AddScoped(typeof(IRqlMapper<DbPost, Post>), typeof(IncorrectPostConditionalMapper));
         });
 
-        var rql = sp.GetRequiredService<IRqlQueryable<DbUser, User>>();
-        var data = new List<DbUser>();
+        var rql = sp.GetRequiredService<IRqlQueryable<DbPost, Post>>();
+        var data = new List<DbPost>();
         var exception = Assert.Throws<RqlMappingException>(() => rql.Transform(data.AsQueryable(), new RqlRequest()));
-        Assert.Equal("'Else' expression cannot be empty.", exception.Message);
+        Assert.Equal("Switch mapping for property 'user' must have default case.", exception.Message);
     }
 
     private static ServiceProvider MakeServiceProvider(Action<ServiceCollection> configure)
@@ -57,9 +82,21 @@ public class ConditionalMappingTests
         return services.BuildServiceProvider();
     }
 
+    internal class Post
+    {
+        public User User { get; set; } = null!;
+    }
+
     internal class User
     {
         public string Name { get; set; } = null!;
+    }
+
+    internal class DbPost
+    {
+        public DbUser User { get; set; } = null!;
+
+        public int Type { get; set; }
     }
 
     internal class DbUser
@@ -69,7 +106,6 @@ public class ConditionalMappingTests
         public DbContact Contact { get; set; } = null!;
 
         public int Type { get; set; }
-
     }
 
     internal class DbContact
@@ -77,28 +113,35 @@ public class ConditionalMappingTests
         public string Name { get; set; } = null!;
     }
 
-    internal class ConditionalMapper : IRqlMapper<DbUser, User>
+    internal class PostConditionalMapper : IRqlMapper<DbPost, Post>
     {
-        public void MapEntity(IRqlMapperContext<DbUser, User> context)
+        public void MapEntity(IRqlMapperContext<DbPost, Post> context)
         {
-            context.MapConditional(t => t.Name, c =>
-            {
-                c.If(t => t.Type == 1, t => t.Name);
-                c.If(t => t.Type == 2, t => t.Contact.Name);
-                c.Else(t => "Default Name");
-            });
+            context.Switch(t => t.User)
+                .DynamicCase(t => t.Type == 1, t => t.User)
+                .DynamicCase(t => t.Type == 2, t => t.User.Contact)
+                .StaticDefault(t => new User { Name = "Default Name" });
         }
     }
 
-    internal class IncorrectConditionalMapper : IRqlMapper<DbUser, User>
+    internal class UserConditionalMapper : IRqlMapper<DbUser, User>
     {
         public void MapEntity(IRqlMapperContext<DbUser, User> context)
         {
-            context.MapConditional(t => t.Name, c =>
-            {
-                c.If(t => t.Type == 1, t => t.Name);
-                c.If(t => t.Type == 2, t => t.Contact.Name);
-            });
+            context.Switch(t => t.Name)
+                .DynamicCase(t => t.Type == 1, t => t.Name)
+                .DynamicCase(t => t.Type == 2, t => t.Contact.Name)
+                .StaticDefault(t => "Default Name");
+        }
+    }
+
+    internal class IncorrectPostConditionalMapper : IRqlMapper<DbPost, Post>
+    {
+        public void MapEntity(IRqlMapperContext<DbPost, Post> context)
+        {
+            context.Switch(t => t.User)
+                .DynamicCase(t => t.Type == 1, t => t.User)
+                .DynamicCase(t => t.Type == 2, t => t.User.Contact);
         }
     }
 }

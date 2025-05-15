@@ -11,14 +11,21 @@ public interface IRqlMapperContext<TStorage, TView>
 
     IRqlMapperContext<TStorage, TView> MapDynamic<TFrom, TTo>(Expression<Func<TView, IEnumerable<TTo>?>> to, Expression<Func<TStorage, IEnumerable<TFrom>?>> from, Action<IRqlMapperContext<TFrom, TTo>>? configureInline = null);
 
-    IRqlMapperContext<TStorage, TView> MapConditional<TTo>(Expression<Func<TView, TTo?>> to, Action<IRqlConditionMapperContext<TStorage>> configure);
+    IRqlMapperSwitchContext<TStorage> Switch<TTo>(Expression<Func<TView, TTo?>> to);
 
     IRqlMapperContext<TStorage, TView> Ignore<TTo>(Expression<Func<TView, TTo?>> toIgnore);
 }
 
-public interface IRqlConditionMapperContext<TFromOwner>
+public interface IRqlMapperSwitchContext<TFromOwner>
 {
-    void If<TFrom>(Expression<Func<TFromOwner, bool>> condition, Expression<Func<TFromOwner, TFrom?>> from);
+    IRqlMapperSwitchContextFinalizer<TFromOwner> DynamicCase<TFrom>(Expression<Func<TFromOwner, bool>> condition, Expression<Func<TFromOwner, TFrom?>> from);
 
-    void Else<TFrom>(Expression<Func<TFromOwner, TFrom?>> from);
+    IRqlMapperSwitchContextFinalizer<TFromOwner> StaticCase<TFrom>(Expression<Func<TFromOwner, bool>> condition, Expression<Func<TFromOwner, TFrom?>> from);
+}
+
+public interface IRqlMapperSwitchContextFinalizer<TFromOwner> : IRqlMapperSwitchContext<TFromOwner>
+{
+    void DynamicDefault<TFrom>(Expression<Func<TFromOwner, TFrom?>> from);
+
+    void StaticDefault<TFrom>(Expression<Func<TFromOwner, TFrom?>> from);
 }

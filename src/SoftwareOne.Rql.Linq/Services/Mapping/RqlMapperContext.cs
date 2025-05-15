@@ -16,11 +16,13 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
     private readonly Dictionary<string, IRqlPropertyInfo> _targetProperties;
     private readonly Dictionary<string, RqlMapEntry> _mapping;
     private readonly HashSet<string> _ignored;
+    private readonly HashSet<RqlMapEntry> _switch;
 
     public RqlMapperContext(IRqlMetadataProvider rqlMetadataProvider)
     {
         _mapping = [];
         _ignored = [];
+        _switch = [];
         _rqlMetadataProvider = rqlMetadataProvider;
 
         _targetProperties = _rqlMetadataProvider.GetPropertiesByDeclaringType(typeof(TView)).ToDictionary(k => k.Property.Name);
@@ -42,7 +44,7 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
     public IRqlMapperContext<TStorage, TView> MapDynamic<TFrom, TTo>(Expression<Func<TView, IEnumerable<TTo>?>> to, Expression<Func<TStorage, IEnumerable<TFrom>?>> from, Action<IRqlMapperContext<TFrom, TTo>>? configureInline = null)
         => MapInternal(GetTargetProperty(to), from, true, configureInline);
 
-    public IRqlMapperContext<TStorage, TView> MapConditional<TTo>(Expression<Func<TView, TTo?>> to, Action<IRqlConditionMapperContext<TStorage>> configure)
+    public IRqlMapperSwitchContext<TStorage> Switch<TTo>(Expression<Func<TView, TTo?>> to)
     {
         var entry = new RqlMapEntry
         {
@@ -51,13 +53,8 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
             IsDynamic = true,
         };
 
-        var context = new RqlConditionalMapperContext<TStorage>(entry);
-        configure(context);
-
-        if(entry.SourceExpression == null)
-            throw new RqlMappingException("'Else' expression cannot be empty.");
-
-        return MapInternal(entry);
+        _switch.Add(entry);
+        return new RqlMapperSwitchContext<TStorage>(entry);
     }
 
     public IRqlMapperContext<TStorage, TView> Ignore<TTo>(Expression<Func<TView, TTo?>> toIgnore)
@@ -70,6 +67,14 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
 
     public override void AddMissing()
     {
+        foreach (var switchEntry in _switch)
+        {
+            if (switchEntry.SourceExpression == null)
+                throw new RqlMappingException($"Switch mapping for property '{switchEntry.TargetProperty.Name}' must have default case.");
+
+            MapInternal(switchEntry);
+        }
+
         var fromProps = _rqlMetadataProvider.GetPropertiesByDeclaringType(typeof(TStorage)).ToDictionary(k => k.Property.Name);
 
         foreach (var targetProp in _targetProperties.Values)
