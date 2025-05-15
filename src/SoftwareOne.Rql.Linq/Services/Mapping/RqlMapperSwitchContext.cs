@@ -2,7 +2,7 @@
 
 namespace SoftwareOne.Rql.Linq.Services.Mapping;
 
-internal class RqlMapperSwitchContext<TFromOwner>(RqlMapEntry parentEntry) : IRqlMapperSwitchContext<TFromOwner>, IRqlMapperSwitchContextFinalizer<TFromOwner>
+internal class RqlMapperSwitchContext<TFromOwner>(RqlMapEntry parentEntry) : IRqlMapperSwitchContextFinalizer<TFromOwner>
 {
     public IRqlMapperSwitchContextFinalizer<TFromOwner> Case<TFrom>(Expression<Func<TFromOwner, bool>> condition, Expression<Func<TFromOwner, TFrom?>> from, bool mapStatic = false)
     {
