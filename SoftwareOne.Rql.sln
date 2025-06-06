@@ -35,25 +35,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rql.Sample.Domain", "sample
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rql.Sample.Infrastructure", "samples\Rql.Sample.Infrastructure\Rql.Sample.Infrastructure.csproj", "{CFFB44E6-0321-480B-B258-9B9A22D3D0CD}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipelines", "pipelines", "{73947017-5B82-4F5D-A273-142E0B58AEC4}"
-	ProjectSection(SolutionItems) = preProject
-		pipelines\build.ps1 = pipelines\build.ps1
-		pipelines\rql-test.yaml = pipelines\rql-test.yaml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{4B53A37B-A23C-46F6-B53E-54F6017D0541}"
-	ProjectSection(SolutionItems) = preProject
-		pipelines\templates\build_and_pack.yaml = pipelines\templates\build_and_pack.yaml
-		pipelines\templates\run_tests.yaml = pipelines\templates\run_tests.yaml
-		pipelines\templates\sonar_cloud_prepare.yaml = pipelines\templates\sonar_cloud_prepare.yaml
-		pipelines\templates\use_dotnet_steps.yaml = pipelines\templates\use_dotnet_steps.yaml
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftwareOne.Rql.Parsers.Linear.UnitTests", "tests\SoftwareOne.Rql.Parsers.Linear.UnitTests\SoftwareOne.Rql.Parsers.Linear.UnitTests.csproj", "{56074B20-CCE8-448A-B116-ACC5BFBC54E5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftwareOne.UnitTests.Common", "tests\SoftwareOne.UnitTests.Common\SoftwareOne.UnitTests.Common.csproj", "{7CD68018-2867-4169-AD97-514DBBEFB52A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftwareOne.Rql.Linq.UnitTests", "tests\SoftwareOne.Rql.Linq.UnitTests\SoftwareOne.Rql.Linq.UnitTests.csproj", "{E66632A3-4C40-4489-80F6-6BCF1F5B19B8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{DDFA7176-50DA-479F-AC5A-06EE6728F0C2}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\sonar.yaml = .github\workflows\sonar.yaml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -123,11 +116,11 @@ Global
 		{F0F12C1B-3DDE-4EDD-B632-FDFEF106AC31} = {AEFB19FB-136A-4DAF-BBB0-F864315A9D0F}
 		{50026E65-689A-402A-B2CA-C7A71A000E12} = {AEFB19FB-136A-4DAF-BBB0-F864315A9D0F}
 		{CFFB44E6-0321-480B-B258-9B9A22D3D0CD} = {AEFB19FB-136A-4DAF-BBB0-F864315A9D0F}
-		{73947017-5B82-4F5D-A273-142E0B58AEC4} = {F624E774-7C26-40D1-BCBA-1574F88B28D5}
-		{4B53A37B-A23C-46F6-B53E-54F6017D0541} = {73947017-5B82-4F5D-A273-142E0B58AEC4}
 		{56074B20-CCE8-448A-B116-ACC5BFBC54E5} = {D980A974-8FE2-479D-B67E-E544F3904994}
 		{7CD68018-2867-4169-AD97-514DBBEFB52A} = {D980A974-8FE2-479D-B67E-E544F3904994}
 		{E66632A3-4C40-4489-80F6-6BCF1F5B19B8} = {D980A974-8FE2-479D-B67E-E544F3904994}
+		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {F624E774-7C26-40D1-BCBA-1574F88B28D5}
+		{DDFA7176-50DA-479F-AC5A-06EE6728F0C2} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A3AD745F-6707-49CB-8A5B-301F8D55333A}
