@@ -2,7 +2,9 @@
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
-	  <TargetFramework>net8.0</TargetFramework>
+	<TargetFramework>net8.0</TargetFramework>
+	<PackageId>Mpt.Rql.Parsers.Linear</PackageId>
+	<Description>RQL parser. Not to be referenced directly.</Description>
 	<IsPackable>true</IsPackable>
   </PropertyGroup>
 

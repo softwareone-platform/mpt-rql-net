@@ -48,6 +48,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{02EA
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{DDFA7176-50DA-479F-AC5A-06EE6728F0C2}"
 	ProjectSection(SolutionItems) = preProject
+		.github\workflows\release.yaml = .github\workflows\release.yaml
 		.github\workflows\sonar.yaml = .github\workflows\sonar.yaml
 	EndProjectSection
 EndProject
