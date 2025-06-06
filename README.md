@@ -42,58 +42,6 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-### Using RQL in a Controller
-
-```csharp
-[ApiController]
-[Route("api/[controller]")]
-public class UsersController : ControllerBase
-{
-    private readonly IQueryable<User> _users;
-    private readonly IRqlProcessor _rqlProcessor;
-
-    public UsersController(DbContext context, IRqlProcessor rqlProcessor)
-    {
-        _users = context.Users;
-        _rqlProcessor = rqlProcessor;
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> GetUsers([FromQuery] string filter, 
-                                              [FromQuery] string sort,
-                                              [FromQuery] int? limit,
-                                              [FromQuery] int? skip,
-                                              [FromQuery] string fields)
-    {
-        // Apply RQL processing to the queryable
-        var result = await _rqlProcessor.ProcessAsync(_users, new RqlOptions
-        {
-            Filter = filter,
-            Sort = sort,
-            Limit = limit,
-            Skip = skip,
-            Fields = fields
-        });
-
-        return Ok(result);
-    }
-}
-```
-
-## Advanced Usage Examples
-
-### Custom Field Mapping
-
-```csharp
-services.AddRql(options =>
-{
-    options.ConfigureFieldMap<User>(map =>
-    {
-        map.MapField("fullName", user => $"{user.FirstName} {user.LastName}");
-    });
-});
-```
-
 ## Contributing
 
 We welcome contributions to enhance the library. Please see our Contributing Guide for details:
