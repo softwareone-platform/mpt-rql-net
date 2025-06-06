@@ -3,7 +3,8 @@
         <Nullable>enable</Nullable>
         <Authors>RQL Development Group</Authors>
         <Company>SoftwareOne</Company>
-        <Copyright>SoftwareOne © 2024</Copyright>
+        <Copyright>SoftwareOne © 2025</Copyright>
         <IsPackable>false</IsPackable>
+		<Version>0.1.0</Version>
     </PropertyGroup>
 </Project>

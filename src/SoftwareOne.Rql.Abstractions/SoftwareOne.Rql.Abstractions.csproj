@@ -3,9 +3,8 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<Product>SoftwareOne.Rql.Linq</Product>
+		<PackageId>Mpt.Rql.Abstractions</PackageId>
 		<Description>RQL abstraction definitions. Not to be referenced directly.</Description>
-		<RepositoryUrl>https://dev.azure.com/softwareone-pc/PyraCloud/_git/one-lib-rql-extensions</RepositoryUrl>
 		<IsPackable>true</IsPackable>
 	</PropertyGroup>
 

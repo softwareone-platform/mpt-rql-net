@@ -5,8 +5,8 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Description>RQL implementation for .Net.</Description>
 		<IsPackable>true</IsPackable>
-		<RepositoryUrl>https://dev.azure.com/softwareone-pc/MPT/_git/mpt-library-rql</RepositoryUrl>
-		<PackageId>SoftwareOne.Rql</PackageId>
+		<RepositoryUrl>https://github.com/softwareone-platform/mpt-rql-net</RepositoryUrl>
+		<PackageId>Mpt.Rql</PackageId>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 
