@@ -5,16 +5,22 @@ namespace SoftwareOne.Rql;
 
 public interface IRqlMapAccessor
 {
-    RqlMapDescriptor Get<TFrom, TTo>();
+    Dictionary<string, RqlMapEntry> GetMap<TFrom, TTo>()
+        => GetMap(typeof(TFrom), typeof(TTo));
 
-    RqlMapDescriptor Get(Type typeFrom, Type typeTo);
+    Dictionary<string, RqlMapEntry> GetMap(Type typeFrom, Type typeTo);
+
+    public IEnumerable<RqlMapEntry> GetEntries<TFrom, TTo>()
+        => GetEntries(typeof(TFrom), typeof(TTo));
+
+    public IEnumerable<RqlMapEntry> GetEntries(Type typeFrom, Type typeTo);
 }
 
 internal class RqlMapAccessor(IEntityMapCache mapCache) : IRqlMapAccessor
 {
-    public RqlMapDescriptor Get<TFrom, TTo>()
-        => Get(typeof(TFrom), typeof(TTo));
+    public IEnumerable<RqlMapEntry> GetEntries(Type typeFrom, Type typeTo)
+        => GetMap(typeFrom, typeTo).Values;
 
-    public RqlMapDescriptor Get(Type typeFrom, Type typeTo)
-        => new(mapCache.Get(typeFrom, typeTo));
+    public Dictionary<string, RqlMapEntry> GetMap(Type typeFrom, Type typeTo)
+        => mapCache.Get(typeFrom, typeTo);
 }

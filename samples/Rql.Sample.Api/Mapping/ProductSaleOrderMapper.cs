@@ -8,11 +8,11 @@ namespace Rql.Sample.Api.Mapping
     {
         public void MapEntity(IRqlMapperContext<SalesOrderDetail, ProductSaleOrder> context)
         {
-            context.Map(t => t.OrderQty, t => t.OrderQty)
-                .Map(t => t.SalesOrderDetailId, t => t.SalesOrderDetailId)
-                .Map(t => t.SalesOrderId, t => t.SalesOrderId)
-                .Map(t => t.AddressLine1, t => t.SalesOrder.BillToAddress!.AddressLine1)
-                .Map(t => t.City, t => t.SalesOrder.BillToAddress!.City)
+            context.MapStatic(t => t.OrderQty, t => t.OrderQty)
+                .MapStatic(t => t.SalesOrderDetailId, t => t.SalesOrderDetailId)
+                .MapStatic(t => t.SalesOrderId, t => t.SalesOrderId)
+                .MapStatic(t => t.AddressLine1, t => t.SalesOrder.BillToAddress!.AddressLine1)
+                .MapStatic(t => t.City, t => t.SalesOrder.BillToAddress!.City)
                 ;
         }
     }

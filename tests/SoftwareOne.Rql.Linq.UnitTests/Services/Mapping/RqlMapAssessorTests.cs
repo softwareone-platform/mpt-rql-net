@@ -19,14 +19,13 @@ public class RqlMapAssessorTests
     }
 
     [Fact]
-    public void Get_WhenCalledForExistingMap_ReturnsMap()
+    public void GetEntries_WhenCalledForExistingMap_ReturnsMap()
     {
         // Arrange, Act
         var accessor = _serviceProvider.GetRequiredService<IRqlMapAccessor>();
-        var map = accessor.Get<DbEntity, Entity>();
+        var entries = accessor.GetEntries<DbEntity, Entity>().ToList();
 
         // Assert
-        var entries = map.GetEntries().ToList();
         entries.Should().HaveCount(3);
 
         var cache = entries.ToDictionary(t => t.TargetProperty.Property.Name);
@@ -68,7 +67,7 @@ public class RqlMapAssessorTests
     {
         public void MapEntity(IRqlMapperContext<DbEntity, Entity> context)
         {
-            context.Map(t => t.DsplayName, t => t.Name);
+            context.MapStatic(t => t.DsplayName, t => t.Name);
             context.MapDynamic(t => t.Item, t => t.DbItem);
         }
     }

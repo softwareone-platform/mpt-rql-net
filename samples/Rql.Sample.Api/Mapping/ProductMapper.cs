@@ -8,10 +8,10 @@ namespace Rql.Sample.Api.Mapping
     {
         public void MapEntity(IRqlMapperContext<Product, ProductView> context)
         {
-            context.Map(t => t.Id, t => t.ProductId)
+            context.MapStatic(t => t.Id, t => t.ProductId)
                 .MapDynamic(t => t.Model, t => t.ProductModel)
                 .MapDynamic(t => t.SaleDetails, t => t.SalesOrderDetails)
-                .Map(t => t.SaleDetailIds, t => t.SalesOrderDetails.Select(s => s.SalesOrderDetailId));
+                .MapStatic(t => t.SaleDetailIds, t => t.SalesOrderDetails.Select(s => s.SalesOrderDetailId));
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Rql.Tests.Integration.Tests.Extensibility.Utility
         //    };
         public void MapEntity(IRqlMapperContext<Product, ProductView> context)
         {
-            context.Map(t => t.Id, t => t.Id);
+            context.MapStatic(t => t.Id, t => t.Id);
         }
     }
 }
