@@ -42,6 +42,77 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
+### Applying RQL to IQueryable<>
+```csharp
+public class UserQueryBuilder(IRqlQueryable<User> rql)
+{
+    public IQueryable<User> GetUsersOlderThan(IQueryable<User> sourceQuery, int age)
+    {
+        var request = new RqlRequest
+        {
+            Filter = $"gt(age,{age})",          // Age must be greater than age specified
+            Order = "-age",                     // Order by age desc
+            Select = "id,name"                  // Select id and name
+        };
+
+        var response = rql.Transform(sourceQuery, request);
+
+        if (response.IsSuccess)
+            return response.Query;              // Return transformed query
+
+        response.Errors.ForEach(t => { });      // Iterate through transformation errors (optional)
+
+        Console.WriteLine(res.Graph.Print())    // Visualize the decision graph (optional)
+    }
+}
+```
+
+## Using RQL mapping
+In many projects, developers prefer to keep database entities separate from data transfer objects (DTOs), especially when their structures differ. To support this approach, Mpt.Rql includes built-in mapping functionality, which is enabled by default and relies on name-based matching. For more advanced scenarios, custom mappings can also be defined manually 
+
+### Configure RQL
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddRql(options =>
+    {
+        // Instruct RQL to look for mappers in specific asembly 
+        options.ScanForMappers(typeof(Program).Assembly); 
+    });
+}
+```
+
+### Specify mapping
+```csharp
+internal class UserMapper : IRqlMapper<DbUser, User>
+{
+    public void MapEntity(IRqlMapperContext<DbUser, User> context)
+    {
+        context
+        .MapStatic(t => t.Id, t => t.UserId)
+        .MapStatic(t => t.Age, t => t.AgeInYears);
+    }
+}
+```
+
+### Apply RQL
+```csharp
+public class UserQueryBuilder(IRqlQueryable<DbUser, User> rql)
+{
+    public IQueryable<User> GetUsersOlderThan(IQueryable<DbUser> sourceQuery, int age)
+    {
+        var request = new RqlRequest
+        {
+            Filter = $"gt(age,{age})",          // Age must be greater than age specified
+            Order = "-age",                     // Order by age desc
+            Select = "id,name"                  // Select id and name
+        };
+
+        return rql.Transform(sourceQuery, request).Query;
+    }
+}
+```
+
 ## Contributing
 
 We welcome contributions to enhance the library. Please see our Contributing Guide for details:
