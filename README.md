@@ -6,14 +6,13 @@
 
 ## Overview
 
-SoftwareOne.Rql is a high-performance implementation of [Resource Query Language (RQL)](https://docs.platform.softwareone.com/developer-resources/rest-api/resource-query-language) for .NET applications. It enables API consumers to efficiently filter, sort, and paginate data with an intuitive and expressive syntax, delivering precise data retrieval capabilities.
+Mpt.Rql is a high-performance implementation of [Resource Query Language (RQL)](https://docs.platform.softwareone.com/developer-resources/rest-api/resource-query-language) for .NET applications. It enables API consumers to efficiently filter, sort, and paginate data with an intuitive and expressive syntax, delivering precise data retrieval capabilities.
 
 ## Features
 
-- **Advanced Filtering** - Support for complex logical expressions (AND, OR, NOT)
-- **Dynamic Sorting** - Multiple fields with ascending/descending options
-- **Pagination** - Skip and limit results for efficient data loading
-- **Field Selection** - Return only required fields to minimize payload size
+- **Filtering** - Support for complex logical expressions
+- **Sorting** - Multiple fields with ascending/descending options
+- **Projections** - Return only required fields to minimize payload size
 - **LINQ Integration** - Seamless integration with Entity Framework and other LINQ providers
 - **Validation** - Comprehensive error handling and input validation
 - **Performance Optimized** - Efficient query processing for minimal overhead
@@ -50,19 +49,19 @@ public class UserQueryBuilder(IRqlQueryable<User> rql)
     {
         var request = new RqlRequest
         {
-            Filter = $"gt(age,{age})",          // Age must be greater than age specified
-            Order = "-age",                     // Order by age desc
-            Select = "id,name"                  // Select id and name
+            Filter = $"gt(age,{age})",              // Age must be greater than age specified
+            Order = "-age",                         // Order by age desc
+            Select = "id,name"                      // Select id and name
         };
 
         var response = rql.Transform(sourceQuery, request);
 
         if (response.IsSuccess)
-            return response.Query;              // Return transformed query
+            return response.Query;                  // Return transformed query
 
-        response.Errors.ForEach(t => { });      // Iterate through transformation errors (optional)
+        response.Errors.ForEach(t => { });          // Iterate through transformation errors (optional)
 
-        Console.WriteLine(res.Graph.Print())    // Visualize the decision graph (optional)
+        Console.WriteLine(response.Graph.Print())   // Visualize the decision graph (optional)
     }
 }
 ```
