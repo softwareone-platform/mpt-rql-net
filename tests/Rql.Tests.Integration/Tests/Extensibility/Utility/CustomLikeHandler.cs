@@ -1,14 +1,15 @@
 ﻿using SoftwareOne.Rql.Abstractions;
-using SoftwareOne.Rql.Abstractions.Result;
+using SoftwareOne.Rql.Linq.Core.Result;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search;
 using System.Linq.Expressions;
 
-namespace Rql.Tests.Integration.Tests.Extensibility.Utility;
-
-internal class CustomLikeHandler : ILike
+namespace Rql.Tests.Integration.Tests.Extensibility.Utility
 {
-    public Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, string? value)
+    internal class CustomLikeHandler : ILike
     {
-        throw new NotImplementedException();
+        public Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, string? value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using SoftwareOne.Rql.Abstractions.Result;
+using SoftwareOne.Rql.Linq.Core.Result;
 using System.ComponentModel;
 using System.Globalization;
 

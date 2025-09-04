@@ -3,8 +3,8 @@ using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Binary;
 using SoftwareOne.Rql.Abstractions.Collection;
 using SoftwareOne.Rql.Abstractions.Group;
-using SoftwareOne.Rql.Abstractions.Result;
 using SoftwareOne.Rql.Abstractions.Unary;
+using SoftwareOne.Rql.Linq.Core.Result;
 using System.Linq.Expressions;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Builders;

@@ -1,10 +1,14 @@
 ﻿using SoftwareOne.Rql.Abstractions.Configuration;
-using SoftwareOne.Rql.Abstractions.Operators;
+using SoftwareOne.Rql.Linq.Configuration;
+using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
+using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison;
+using SoftwareOne.Rql.Linq.Services.Filtering.Operators.List;
+using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search;
 using System.Reflection;
 
-namespace SoftwareOne.Rql.Linq;
-
-internal class RqlConfiguration : IRqlConfiguration
+#pragma warning disable IDE0130
+namespace SoftwareOne.Rql;
+public class RqlConfiguration
 {
     public RqlConfiguration()
     {
@@ -33,16 +37,16 @@ internal class RqlConfiguration : IRqlConfiguration
 
     public GlobalRqlSettings Settings { get; init; }
 
-    public IRqlConfiguration SetComparisonHandler<TOperator, THandler>() where TOperator : IComparisonOperator, IActualOperator where THandler : TOperator
+    public RqlConfiguration SetComparisonHandler<TOperator, THandler>() where TOperator : IComparisonOperator, IActualOperator where THandler : TOperator
         => SetOperatorInternal<TOperator, THandler>();
 
-    public IRqlConfiguration SetSearchHandler<TOperator, THandler>() where TOperator : ISearchOperator, IActualOperator where THandler : TOperator
+    public RqlConfiguration SetSearchHandler<TOperator, THandler>() where TOperator : ISearchOperator, IActualOperator where THandler : TOperator
         => SetOperatorInternal<TOperator, THandler>();
 
-    public IRqlConfiguration SetListHandler<TOperator, THandler>() where TOperator : IListOperator, IActualOperator where THandler : TOperator
+    public RqlConfiguration SetListHandler<TOperator, THandler>() where TOperator : IListOperator, IActualOperator where THandler : TOperator
         => SetOperatorInternal<TOperator, THandler>();
 
-    public IRqlConfiguration SetPropertyNameProvider<T>() where T : IPropertyNameProvider
+    public RqlConfiguration SetPropertyNameProvider<T>() where T : IPropertyNameProvider
     {
         PropertyMapperType = typeof(T);
         return this;
@@ -54,7 +58,7 @@ internal class RqlConfiguration : IRqlConfiguration
     /// </summary>
     /// <param name="assembly">Assembly to be scanned</param>
     /// <returns></returns>
-    public IRqlConfiguration ScanForMappers(Assembly assembly)
+    public RqlConfiguration ScanForMappers(Assembly assembly)
     {
         ViewMappersAssembly = assembly;
         return this;

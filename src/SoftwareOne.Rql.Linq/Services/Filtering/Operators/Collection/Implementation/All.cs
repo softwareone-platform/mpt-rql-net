@@ -1,4 +1,5 @@
 ﻿using SoftwareOne.Rql.Abstractions.Result;
+using SoftwareOne.Rql.Linq.Core.Result;
 using System.Reflection;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Collection.Implementation;

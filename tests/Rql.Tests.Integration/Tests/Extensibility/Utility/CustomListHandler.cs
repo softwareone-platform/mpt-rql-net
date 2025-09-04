@@ -1,14 +1,15 @@
 ﻿using SoftwareOne.Rql.Abstractions;
-using SoftwareOne.Rql.Abstractions.Result;
+using SoftwareOne.Rql.Linq.Core.Result;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.List;
 using System.Linq.Expressions;
 
-namespace Rql.Tests.Integration.Tests.Extensibility.Utility;
-
-internal class CustomListHandler : IListIn
+namespace Rql.Tests.Integration.Tests.Extensibility.Utility
 {
-    public Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, IEnumerable<string> list)
+    internal class CustomListHandler : IListIn
     {
-        throw new NotImplementedException();
+        public Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, IEnumerable<string> list)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

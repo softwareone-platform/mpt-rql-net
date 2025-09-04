@@ -1,6 +1,4 @@
-﻿using SoftwareOne.Rql.Abstractions.Operators;
-
-namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators;
+﻿namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators;
 
 internal class OperatorHandlerProvider : IOperatorHandlerProvider
 {

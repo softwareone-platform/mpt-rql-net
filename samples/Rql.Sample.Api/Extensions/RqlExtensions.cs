@@ -10,7 +10,7 @@ public static class RqlExtensions
     public static IServiceCollection AddSoftwareOneRql(this IServiceCollection services)
         => services.AddSoftwareOneRql(null);
 
-    public static IServiceCollection AddSoftwareOneRql(this IServiceCollection services, Action<IRqlConfiguration>? configure)
+    public static IServiceCollection AddSoftwareOneRql(this IServiceCollection services, Action<RqlConfiguration>? configure)
     {
         services.AddScoped<IErrorResultProvider, ErrorResultProvider>();
         services.AddScoped(typeof(IRqlRequest<>), typeof(RqlRequest<>));

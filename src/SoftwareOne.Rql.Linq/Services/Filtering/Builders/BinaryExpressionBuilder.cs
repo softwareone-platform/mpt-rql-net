@@ -3,10 +3,13 @@ using SoftwareOne.Rql.Abstractions.Argument;
 using SoftwareOne.Rql.Abstractions.Argument.Pointer;
 using SoftwareOne.Rql.Abstractions.Binary;
 using SoftwareOne.Rql.Abstractions.Group;
-using SoftwareOne.Rql.Abstractions.Operators;
 using SoftwareOne.Rql.Abstractions.Result;
+using SoftwareOne.Rql.Linq.Core.Result;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
+using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation;
+using SoftwareOne.Rql.Linq.Services.Filtering.Operators.List;
+using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search;
 using System.Linq.Expressions;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Builders;

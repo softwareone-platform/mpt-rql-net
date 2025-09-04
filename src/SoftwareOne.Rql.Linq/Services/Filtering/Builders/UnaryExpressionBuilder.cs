@@ -1,5 +1,5 @@
-﻿using SoftwareOne.Rql.Abstractions.Result;
-using SoftwareOne.Rql.Abstractions.Unary;
+﻿using SoftwareOne.Rql.Abstractions.Unary;
+using SoftwareOne.Rql.Linq.Core.Result;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Unary;
 using System.Linq.Expressions;
