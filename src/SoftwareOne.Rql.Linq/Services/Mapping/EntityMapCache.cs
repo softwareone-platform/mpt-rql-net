@@ -1,19 +1,20 @@
-﻿using System.Collections.Concurrent;
+﻿using SoftwareOne.Rql.Abstractions.Mapping;
+using System.Collections.Concurrent;
 
 namespace SoftwareOne.Rql.Linq.Services.Mapping;
 
 internal interface IEntityMapCache
 {
-    Dictionary<string, RqlMapEntry> Get(Type typeFrom, Type typeTo);
+    Dictionary<string, IRqlMapEntry> Get(Type typeFrom, Type typeTo);
 }
 
 internal class EntityMapCache(IServiceProvider serviceProvider) : IEntityMapCache
 {
-    private readonly ConcurrentDictionary<(Type, Type), Dictionary<string, RqlMapEntry>> _cache = [];
+    private readonly ConcurrentDictionary<(Type, Type), Dictionary<string, IRqlMapEntry>> _cache = [];
 
     private readonly IServiceProvider _serviceProvider = serviceProvider;
 
-    public Dictionary<string, RqlMapEntry> Get(Type typeFrom, Type typeTo)
+    public Dictionary<string, IRqlMapEntry> Get(Type typeFrom, Type typeTo)
     {
         var key = (typeFrom, typeTo);
         return _cache.GetOrAdd(key, k =>

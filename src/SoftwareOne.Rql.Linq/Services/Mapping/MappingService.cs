@@ -1,4 +1,4 @@
-﻿using SoftwareOne.Rql.Abstractions;
+﻿using SoftwareOne.Rql.Abstractions.Mapping;
 using SoftwareOne.Rql.Linq.Core.Metadata;
 using SoftwareOne.Rql.Linq.Services.Context;
 using System.Collections;
@@ -32,7 +32,7 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
         return MakeInitExpression(param, rqlNode, typeTo, typeMap);
     }
 
-    private MemberInitExpression MakeInitExpression(Expression param, IRqlNode rqlNode, Type typeTo, IReadOnlyDictionary<string, RqlMapEntry> typeMap)
+    private MemberInitExpression MakeInitExpression(Expression param, IRqlNode rqlNode, Type typeTo, IReadOnlyDictionary<string, IRqlMapEntry> typeMap)
     {
         var bindings = new List<MemberBinding>(_queryContext.Graph.Count);
 
@@ -49,7 +49,7 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
         return Expression.MemberInit(Expression.New(typeTo.GetConstructor(Type.EmptyTypes)!), bindings);
     }
 
-    private Expression TryMakeConditionalBindExpression(Expression param, IRqlNode rqlNode, Expression defaultExpression, RqlMapEntry parentEntry)
+    private Expression TryMakeConditionalBindExpression(Expression param, IRqlNode rqlNode, Expression defaultExpression, IRqlMapEntry parentEntry)
     {
         if (parentEntry.Conditions == null || parentEntry.Conditions.Count == 0)
             return defaultExpression;
@@ -58,7 +58,7 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
 
         for (int i = parentEntry.Conditions.Count - 1; i >= 0; i--)
         {
-            var condition = parentEntry.Conditions[i];
+            var condition = parentEntry.Conditions.ElementAt(i);
 
             var replaceParamVisitor = new ReplaceParameterVisitor(condition.If.Parameters[0], param);
             var ifExpression = replaceParamVisitor.Visit(condition.If.Body);
@@ -69,7 +69,7 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
         return conditionalExpr;
     }
 
-    private Expression MakeBindExpression(Expression param, IRqlNode node, RqlMapEntry map)
+    private Expression MakeBindExpression(Expression param, IRqlNode node, IRqlMapEntry map)
     {
         var targetType = node.Property.Property.PropertyType;
         var replaceParamVisitor = new ReplaceParameterVisitor(map.SourceExpression.Parameters[0], param);
@@ -94,7 +94,7 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
         return fromExpression;
     }
 
-    private Expression MakeReferenceInit(Expression fromExpression, IRqlNode node, RqlMapEntry map)
+    private Expression MakeReferenceInit(Expression fromExpression, IRqlNode node, IRqlMapEntry map)
     {
         var innerMap = GetInnerMapFromEntry(fromExpression.Type, map);
 
@@ -113,7 +113,7 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
         return fromExpression;
     }
 
-    private Expression MakeCollectionInit(Expression fromExpression, IRqlNode node, RqlMapEntry map)
+    private Expression MakeCollectionInit(Expression fromExpression, IRqlNode node, IRqlMapEntry map)
     {
         // Temporarily only support List
         if (!typeof(IList).IsAssignableFrom(node.Property.Property.PropertyType))
@@ -133,6 +133,6 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
         return Expression.Call(null, functions.GetToList(), selectCall);
     }
 
-    private IReadOnlyDictionary<string, RqlMapEntry> GetInnerMapFromEntry(Type typeFrom, RqlMapEntry map)
+    private IReadOnlyDictionary<string, IRqlMapEntry> GetInnerMapFromEntry(Type typeFrom, IRqlMapEntry map)
         => map.InlineMap ?? _mapCache.Get(typeFrom, map.TargetType);
 }

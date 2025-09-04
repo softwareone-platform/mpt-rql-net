@@ -1,26 +1,13 @@
-﻿using SoftwareOne.Rql.Linq.Services.Mapping;
+﻿using SoftwareOne.Rql.Abstractions.Mapping;
+using SoftwareOne.Rql.Linq.Services.Mapping;
 
-#pragma warning disable IDE0130
 namespace SoftwareOne.Rql;
-
-public interface IRqlMapAccessor
-{
-    Dictionary<string, RqlMapEntry> GetMap<TFrom, TTo>()
-        => GetMap(typeof(TFrom), typeof(TTo));
-
-    Dictionary<string, RqlMapEntry> GetMap(Type typeFrom, Type typeTo);
-
-    public IEnumerable<RqlMapEntry> GetEntries<TFrom, TTo>()
-        => GetEntries(typeof(TFrom), typeof(TTo));
-
-    public IEnumerable<RqlMapEntry> GetEntries(Type typeFrom, Type typeTo);
-}
 
 internal class RqlMapAccessor(IEntityMapCache mapCache) : IRqlMapAccessor
 {
-    public IEnumerable<RqlMapEntry> GetEntries(Type typeFrom, Type typeTo)
+    public IEnumerable<IRqlMapEntry> GetEntries(Type typeFrom, Type typeTo)
         => GetMap(typeFrom, typeTo).Values;
 
-    public Dictionary<string, RqlMapEntry> GetMap(Type typeFrom, Type typeTo)
+    public Dictionary<string, IRqlMapEntry> GetMap(Type typeFrom, Type typeTo)
         => mapCache.Get(typeFrom, typeTo);
 }
