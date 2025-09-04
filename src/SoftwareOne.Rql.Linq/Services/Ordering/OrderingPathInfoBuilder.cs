@@ -1,4 +1,5 @@
-﻿using SoftwareOne.Rql.Linq.Core;
+﻿using SoftwareOne.Rql.Abstractions.Result;
+using SoftwareOne.Rql.Linq.Core;
 using SoftwareOne.Rql.Linq.Core.Metadata;
 using SoftwareOne.Rql.Linq.Core.Result;
 using SoftwareOne.Rql.Linq.Services.Context;

@@ -1,4 +1,4 @@
-﻿namespace SoftwareOne.Rql.Linq.Configuration
+﻿namespace SoftwareOne.Rql.Abstractions.Configuration.Filter
 {
     public class RqlStringFilterSettings
     {

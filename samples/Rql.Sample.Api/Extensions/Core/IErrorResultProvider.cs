@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SoftwareOne.Rql.Linq.Core.Result;
+using SoftwareOne.Rql.Abstractions.Result;
 
 namespace Rql.Sample.Api.Extensions.Core;
 

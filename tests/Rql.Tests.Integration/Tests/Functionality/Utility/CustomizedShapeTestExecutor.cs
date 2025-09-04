@@ -1,5 +1,6 @@
 ﻿using Rql.Tests.Integration.Core;
 using SoftwareOne.Rql;
+using SoftwareOne.Rql.Abstractions.Configuration;
 using SoftwareOne.Rql.Linq.Configuration;
 
 namespace Rql.Tests.Integration.Tests.Functionality.Utility;

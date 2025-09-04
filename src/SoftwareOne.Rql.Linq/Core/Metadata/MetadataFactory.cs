@@ -1,5 +1,5 @@
-﻿using SoftwareOne.Rql.Abstractions.Exception;
-using SoftwareOne.Rql.Linq.Configuration;
+﻿using SoftwareOne.Rql.Abstractions.Configuration;
+using SoftwareOne.Rql.Abstractions.Exception;
 using System.Collections;
 using System.Reflection;
 

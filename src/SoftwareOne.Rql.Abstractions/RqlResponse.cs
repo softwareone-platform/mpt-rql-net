@@ -1,5 +1,6 @@
 ﻿#pragma warning disable IDE0130
-using SoftwareOne.Rql.Linq.Core.Result;
+using SoftwareOne.Rql.Abstractions;
+using SoftwareOne.Rql.Abstractions.Result;
 
 namespace SoftwareOne.Rql;
 
@@ -9,7 +10,7 @@ public class RqlGraphResponse
     
     public List<Error> Errors { get; set; } = null!;
     
-    public RqlNode Graph { get; set; } = null!;
+    public IRqlNode Graph { get; set; } = null!;
 }
 
 

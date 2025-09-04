@@ -1,5 +1,6 @@
 ﻿using SoftwareOne.Rql;
 using SoftwareOne.Rql.Abstractions;
+using SoftwareOne.Rql.Abstractions.Configuration;
 using SoftwareOne.Rql.Linq.Configuration;
 using SoftwareOne.Rql.Linq.Core.Metadata;
 using SoftwareOne.UnitTests.Common;

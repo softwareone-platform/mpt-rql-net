@@ -1,4 +1,6 @@
-﻿namespace SoftwareOne.Rql.Linq.UnitTests.Services;
+﻿using SoftwareOne.Rql.Abstractions;
+
+namespace SoftwareOne.Rql.Linq.UnitTests.Services;
 
 internal class GraphPrinter
 {
@@ -9,7 +11,7 @@ internal class GraphPrinter
         _properties = [];
     }
 
-    public void Graph(RqlNode node)
+    public void Graph(IRqlNode node)
     {
         foreach (var child in node.Children.OrderBy(t => t.Name))
         {

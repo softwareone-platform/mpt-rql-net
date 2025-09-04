@@ -3,7 +3,6 @@ using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Argument;
 using SoftwareOne.Rql.Abstractions.Collection;
 using SoftwareOne.Rql.Linq.Core;
-using SoftwareOne.Rql.Linq.Core.Result;
 using SoftwareOne.Rql.Linq.Services.Filtering;
 using SoftwareOne.Rql.Linq.Services.Filtering.Builders;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
@@ -11,6 +10,7 @@ using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Collection;
 using System.Linq.Expressions;
 using SoftwareOne.Rql.Linq.Services.Context;
 using Xunit;
+using SoftwareOne.Rql.Abstractions.Result;
 
 namespace SoftwareOne.Rql.Linq.UnitTests.Filtering.Builders;
 
