@@ -1,8 +1,7 @@
-﻿#pragma warning disable IDE0130
-using SoftwareOne.Rql.Abstractions;
+﻿using SoftwareOne.Rql.Abstractions;
 using System.Text;
 
-namespace SoftwareOne.Rql;
+namespace SoftwareOne.Rql.Linq;
 
 internal class RqlNode : IRqlNode
 {

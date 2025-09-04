@@ -1,7 +1,6 @@
 ﻿using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Result;
 using SoftwareOne.Rql.Linq.Core.Expressions;
-using SoftwareOne.Rql.Linq.Core.Result;
 using System.Collections;
 using System.Linq.Expressions;
 using System.Reflection;

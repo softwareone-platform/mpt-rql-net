@@ -1,6 +1,4 @@
-﻿using SoftwareOne.Rql.Abstractions.Result;
-
-namespace SoftwareOne.Rql.Linq.Core.Result;
+﻿namespace SoftwareOne.Rql.Abstractions.Result;
 
 public class Result<T>
 {

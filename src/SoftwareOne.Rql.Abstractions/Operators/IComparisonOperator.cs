@@ -1,8 +1,7 @@
-﻿using SoftwareOne.Rql.Abstractions;
-using SoftwareOne.Rql.Linq.Core.Result;
+﻿using SoftwareOne.Rql.Abstractions.Result;
 using System.Linq.Expressions;
 
-namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison;
+namespace SoftwareOne.Rql.Abstractions.Operators;
 
 public interface IComparisonOperator : IOperator
 {

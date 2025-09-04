@@ -1,6 +1,6 @@
 ﻿using SoftwareOne.Rql.Abstractions;
+using SoftwareOne.Rql.Abstractions.Result;
 using SoftwareOne.Rql.Linq.Core.Expressions;
-using SoftwareOne.Rql.Linq.Core.Result;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -12,7 +12,7 @@ internal class Like : ILike
     private static readonly MethodInfo _methodEndsWith = typeof(string).GetMethod(nameof(string.EndsWith), [typeof(string)])!;
     private static readonly MethodInfo _methodContains = typeof(string).GetMethod(nameof(string.Contains), [typeof(string)])!;
     private static readonly MethodInfo _methodEquals = typeof(string).GetMethod(nameof(string.Equals), [typeof(string)])!;
-    private static readonly char _escapeCharacter = '\\'; 
+    private static readonly char _escapeCharacter = '\\';
     private static readonly char _wildcard = '*';
     private static readonly string _escapedWildcard = $"{_escapeCharacter}{_wildcard}";
 

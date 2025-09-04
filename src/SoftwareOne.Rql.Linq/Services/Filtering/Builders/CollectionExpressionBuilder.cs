@@ -1,6 +1,5 @@
 ﻿using SoftwareOne.Rql.Abstractions.Collection;
 using SoftwareOne.Rql.Abstractions.Result;
-using SoftwareOne.Rql.Linq.Core.Result;
 using SoftwareOne.Rql.Linq.Services.Context;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Collection;

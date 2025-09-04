@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using SoftwareOne.Rql.Abstractions;
+using SoftwareOne.Rql.Abstractions.Operators;
 using SoftwareOne.Rql.Linq.Services.Filtering;
 using SoftwareOne.Rql.Linq.Services.Filtering.Builders;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;

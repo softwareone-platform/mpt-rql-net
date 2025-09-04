@@ -33,7 +33,7 @@ public static class RqlExtensions
     public static IServiceCollection AddRql(this IServiceCollection services)
         => services.AddRql(null);
 
-    public static IServiceCollection AddRql(this IServiceCollection services, Action<RqlConfiguration>? configure)
+    public static IServiceCollection AddRql(this IServiceCollection services, Action<IRqlConfiguration>? configure)
     {
         var options = new RqlConfiguration();
         configure?.Invoke(options);
@@ -110,9 +110,9 @@ public static class RqlExtensions
     private static void RegisterOperatorExpressions(IServiceCollection services, RqlConfiguration options)
     {
         var expMapping = new OperatorHandlerMapper();
-        var producerType = typeof(SoftwareOne.Rql.Linq.Services.Filtering.Operators.IOperator);
+        var producerType = typeof(SoftwareOne.Rql.Abstractions.Operators.IOperator);
         var types =
-            producerType.Assembly.GetTypes().Where(t => t.IsInterface && producerType.IsAssignableFrom(t) && t != producerType).ToList();
+            typeof(RqlExtensions).Assembly.GetTypes().Where(t => t.IsInterface && producerType.IsAssignableFrom(t) && t != producerType).ToList();
 
         foreach (var type in types)
         {

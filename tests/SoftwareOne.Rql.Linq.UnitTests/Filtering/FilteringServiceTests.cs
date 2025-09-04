@@ -1,9 +1,9 @@
 ﻿using Moq;
 using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Configuration;
+using SoftwareOne.Rql.Abstractions.Operators;
 using SoftwareOne.Rql.Linq.Services.Context;
 using SoftwareOne.Rql.Linq.Services.Filtering;
-using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.List.Implementation;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search.Implementation;
