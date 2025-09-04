@@ -7,7 +7,7 @@ internal class RqlMapperSwitchContext<TFromOwner>(RqlMapEntry parentEntry) : IRq
     public IRqlMapperSwitchContextFinalizer<TFromOwner> Case<TFrom>(Expression<Func<TFromOwner, bool>> condition, Expression<Func<TFromOwner, TFrom?>> from, bool mapStatic = false)
     {
         parentEntry.Conditions ??= [];
-        parentEntry.AddCondition(new RqlMapEntryCondition
+        parentEntry.Conditions.Add(new RqlMapEntryCondition
         {
             If = condition,
             Entry = new RqlMapEntry

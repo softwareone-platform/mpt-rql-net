@@ -4,7 +4,6 @@ using SoftwareOne.Rql.Abstractions.Binary;
 using SoftwareOne.Rql.Abstractions.Collection;
 using SoftwareOne.Rql.Abstractions.Configuration;
 using SoftwareOne.Rql.Abstractions.Group;
-using SoftwareOne.Rql.Abstractions.Mapping;
 using SoftwareOne.Rql.Abstractions.Unary;
 using SoftwareOne.Rql.Client;
 using SoftwareOne.Rql.Linq;

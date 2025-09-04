@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using SoftwareOne.Rql.Abstractions.Mapping;
 using Xunit;
 
 namespace SoftwareOne.Rql.Linq.UnitTests.Services.Mapping;

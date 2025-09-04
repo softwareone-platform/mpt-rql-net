@@ -1,12 +1,11 @@
 ﻿using SoftwareOne.Rql.Abstractions;
-using SoftwareOne.Rql.Abstractions.Mapping;
 using System.Linq.Expressions;
 
 namespace SoftwareOne.Rql.Linq.Services.Mapping;
 
 internal abstract class RqlMapperContext
 {
-    public abstract Dictionary<string, IRqlMapEntry> Mapping { get; }
+    public abstract Dictionary<string, RqlMapEntry> Mapping { get; }
 
     public abstract void AddMissing();
 }
@@ -15,9 +14,9 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
 {
     private readonly IRqlMetadataProvider _rqlMetadataProvider;
     private readonly Dictionary<string, IRqlPropertyInfo> _targetProperties;
-    private readonly Dictionary<string, IRqlMapEntry> _mapping;
+    private readonly Dictionary<string, RqlMapEntry> _mapping;
     private readonly HashSet<string> _ignored;
-    private readonly HashSet<IRqlMapEntry> _switch;
+    private readonly HashSet<RqlMapEntry> _switch;
 
     public RqlMapperContext(IRqlMetadataProvider rqlMetadataProvider)
     {
@@ -64,7 +63,7 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
         return this;
     }
 
-    public override Dictionary<string, IRqlMapEntry> Mapping => _mapping;
+    public override Dictionary<string, RqlMapEntry> Mapping => _mapping;
 
     public override void AddMissing()
     {
@@ -109,7 +108,7 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
 
     private RqlMapperContext<TStorage, TView> MapInternal<TFrom, TTo>(IRqlPropertyInfo target, LambdaExpression source, bool isDynamic, Action<IRqlMapperContext<TFrom, TTo>>? configureInline)
     {
-        Dictionary<string, IRqlMapEntry>? inline = null;
+        Dictionary<string, RqlMapEntry>? inline = null;
         if (configureInline != null)
         {
             var mapperContext = new RqlMapperContext<TFrom, TTo>(_rqlMetadataProvider);
@@ -128,7 +127,7 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
         });
     }
 
-    private RqlMapperContext<TStorage, TView> MapInternal(IRqlMapEntry mapEntry)
+    private RqlMapperContext<TStorage, TView> MapInternal(RqlMapEntry mapEntry)
     {
         _mapping.Add(mapEntry.TargetProperty.Property.Name, mapEntry);
         return this;
