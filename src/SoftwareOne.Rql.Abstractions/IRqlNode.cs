@@ -1,4 +1,7 @@
-﻿namespace SoftwareOne.Rql.Abstractions;
+﻿#pragma warning disable IDE0130
+using SoftwareOne.Rql.Abstractions;
+
+namespace SoftwareOne.Rql;
 
 public interface IRqlNode
 {
