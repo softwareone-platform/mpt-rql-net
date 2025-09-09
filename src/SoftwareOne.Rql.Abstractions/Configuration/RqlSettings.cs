@@ -1,6 +1,6 @@
-﻿using SoftwareOne.Rql.Linq.Configuration.Filter;
+﻿using SoftwareOne.Rql.Abstractions.Configuration.Filter;
 
-namespace SoftwareOne.Rql.Linq.Configuration;
+namespace SoftwareOne.Rql.Abstractions.Configuration;
 
 public class RqlSettings : IRqlSettings
 {

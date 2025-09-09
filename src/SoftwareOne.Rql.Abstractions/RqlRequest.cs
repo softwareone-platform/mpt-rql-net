@@ -1,5 +1,5 @@
 ﻿#pragma warning disable IDE0130
-using SoftwareOne.Rql.Linq.Configuration;
+using SoftwareOne.Rql.Abstractions.Configuration;
 
 namespace SoftwareOne.Rql;
 

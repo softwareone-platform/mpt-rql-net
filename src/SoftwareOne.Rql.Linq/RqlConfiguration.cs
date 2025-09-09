@@ -1,4 +1,5 @@
-﻿using SoftwareOne.Rql.Linq.Configuration;
+﻿using SoftwareOne.Rql.Abstractions.Configuration;
+using SoftwareOne.Rql.Linq.Configuration;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators.List;

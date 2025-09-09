@@ -1,4 +1,4 @@
-﻿using SoftwareOne.Rql.Linq.Core.Result;
+﻿using SoftwareOne.Rql.Abstractions.Result;
 using Xunit;
 
 namespace SoftwareOne.Rql.Linq.UnitTests.Result;

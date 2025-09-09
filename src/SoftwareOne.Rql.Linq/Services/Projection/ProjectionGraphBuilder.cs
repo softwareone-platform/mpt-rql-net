@@ -1,8 +1,8 @@
 ﻿using SoftwareOne.Rql.Abstractions;
-using SoftwareOne.Rql.Linq.Configuration;
+using SoftwareOne.Rql.Abstractions.Configuration;
+using SoftwareOne.Rql.Abstractions.Result;
 using SoftwareOne.Rql.Linq.Core;
 using SoftwareOne.Rql.Linq.Core.Metadata;
-using SoftwareOne.Rql.Linq.Core.Result;
 using SoftwareOne.Rql.Linq.Services.Context;
 using SoftwareOne.Rql.Linq.Services.Graph;
 

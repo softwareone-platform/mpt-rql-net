@@ -2,8 +2,8 @@
 using SoftwareOne.Rql.Abstractions.Argument;
 using SoftwareOne.Rql.Abstractions.Binary;
 using SoftwareOne.Rql.Abstractions.Group;
+using SoftwareOne.Rql.Abstractions.Result;
 using SoftwareOne.Rql.Linq.Core;
-using SoftwareOne.Rql.Linq.Core.Result;
 using SoftwareOne.Rql.Linq.Services.Filtering;
 using SoftwareOne.Rql.Linq.Services.Filtering.Builders;
 using SoftwareOne.Rql.Linq.Services.Filtering.Operators;
