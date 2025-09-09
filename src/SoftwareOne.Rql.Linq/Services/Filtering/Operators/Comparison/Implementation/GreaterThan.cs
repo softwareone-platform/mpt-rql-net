@@ -1,4 +1,4 @@
-﻿using SoftwareOne.Rql.Linq.Configuration;
+﻿using SoftwareOne.Rql.Abstractions.Configuration;
 using System.Linq.Expressions;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation;

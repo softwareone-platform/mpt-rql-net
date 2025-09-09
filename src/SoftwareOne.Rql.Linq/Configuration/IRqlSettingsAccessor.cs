@@ -1,4 +1,6 @@
-﻿namespace SoftwareOne.Rql.Linq.Configuration;
+﻿using SoftwareOne.Rql.Abstractions.Configuration;
+
+namespace SoftwareOne.Rql.Linq.Configuration;
 
 internal interface IRqlSettingsAccessor
 {

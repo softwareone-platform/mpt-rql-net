@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SoftwareOne.Rql;
 
-public class RqlNode
+internal class RqlNode : IRqlNode
 {
     private string? _fullpath = null;
     private Dictionary<string, RqlNode>? _children;
@@ -46,19 +46,26 @@ public class RqlNode
         }
     }
 
-    public RqlNode? Parent { get; private set; }
+    public IRqlNode? Parent { get; private set; }
 
     public int Depth { get; init; }
 
     internal RqlSelectModes? AppliedMode { get; set; }
 
-    public bool TryGetChild(string name, out RqlNode? child)
+    public bool TryGetChild(string name, out IRqlNode? child)
     {
         child = null;
-        return _children?.TryGetValue(name, out child) ?? false;
+
+        if (_children != null && _children.TryGetValue(name, out var actualChild))
+        {
+            child = (IRqlNode?)actualChild;
+            return true;
+        }
+
+        return false;
     }
 
-    public IEnumerable<RqlNode> Children => _children != null ? _children.Values : Enumerable.Empty<RqlNode>();
+    public IEnumerable<IRqlNode> Children => _children != null ? _children.Values : Enumerable.Empty<RqlNode>();
 
     public int Count => _children != null ? _children.Count : 0;
 
@@ -106,7 +113,7 @@ public class RqlNode
 
     internal void AddExcludeReason(ExcludeReasons excludeReason) => ExcludeReason |= excludeReason;
 
-    internal string GetFullPath()
+    public string GetFullPath()
     {
         if (_fullpath != null)
             return _fullpath;
@@ -125,7 +132,7 @@ public class RqlNode
             {
                 sb.Add(current.Name);
             }
-            current = current.Parent;
+            current = current.Parent as RqlNode;
         }
 
         sb.Reverse();
@@ -141,7 +148,7 @@ public class RqlNode
         PrintLines(this, sb);
         return sb.ToString();
 
-        static void PrintLines(RqlNode node, StringBuilder sb, string indent = "", bool last = true)
+        static void PrintLines(IRqlNode node, StringBuilder sb, string indent = "", bool last = true)
         {
             var left = indent;
             if (last)
@@ -167,24 +174,4 @@ public class RqlNode
             }
         }
     }
-}
-
-[Flags]
-public enum IncludeReasons
-{
-    None = 0,
-    Default = 1 << 0,
-    Select = 1 << 1,
-    Hierarchy = 1 << 2,
-    Filter = 1 << 3,
-    Order = 1 << 4
-}
-
-[Flags]
-public enum ExcludeReasons
-{
-    None = 0,
-    Default = 1 << 0,
-    Unselected = 1 << 1,
-    Invisible = 1 << 2,
 }

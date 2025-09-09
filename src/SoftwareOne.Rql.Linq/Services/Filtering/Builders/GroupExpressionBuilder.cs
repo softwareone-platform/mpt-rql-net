@@ -1,6 +1,7 @@
 ﻿using SoftwareOne.Rql.Abstractions.Group;
 using System.Linq.Expressions;
 using SoftwareOne.Rql.Linq.Core.Result;
+using SoftwareOne.Rql.Abstractions.Result;
 
 namespace SoftwareOne.Rql.Linq.Services.Filtering.Builders;
 

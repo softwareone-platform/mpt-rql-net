@@ -1,6 +1,7 @@
 ﻿using SoftwareOne.Rql.Abstractions;
 using SoftwareOne.Rql.Abstractions.Argument;
 using SoftwareOne.Rql.Abstractions.Argument.Pointer;
+using SoftwareOne.Rql.Abstractions.Result;
 using SoftwareOne.Rql.Linq.Core.Metadata;
 using SoftwareOne.Rql.Linq.Core.Result;
 using SoftwareOne.Rql.Linq.Services.Context;

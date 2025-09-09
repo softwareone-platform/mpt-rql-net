@@ -16,14 +16,14 @@ internal class BuilderContext : IBuilderContext
         if (CurrentNode?.TryGetChild(rqlProperty.Name, out var child) != true) 
             return false;
 
-        CurrentNode = child;
+        CurrentNode = child as RqlNode;
         return true;
     }
 
     public void GoToRoot()
     {
         while (CurrentNode?.Parent is not null)
-            CurrentNode = CurrentNode.Parent;
+            CurrentNode = CurrentNode.Parent as RqlNode;
     }
 
     public string GetFullPath(string suffix)

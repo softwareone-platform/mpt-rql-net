@@ -1,4 +1,5 @@
 ﻿using SoftwareOne.Rql;
+using SoftwareOne.Rql.Abstractions.Configuration;
 using SoftwareOne.Rql.Linq.Configuration;
 using System.Linq.Expressions;
 using System.Text.Json;
