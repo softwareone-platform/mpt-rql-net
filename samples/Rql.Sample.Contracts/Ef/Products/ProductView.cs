@@ -22,10 +22,9 @@ namespace Rql.Sample.Contracts.Ef.Products
         public decimal ListPrice { get; set; }
         public ViewProductStatus Status { get; set; }
 
-        [RqlProperty(IsNullable = true)]
         public ProductCategoryView? Category { get; set; }
 
-        [RqlProperty(IsCore = true, IsNullable = true)]
+        [RqlProperty(IsCore = true)]
         public ProductModelView? Model { get; set; }
 
         public List<ProductSaleOrder>? SaleDetails { get; set; }

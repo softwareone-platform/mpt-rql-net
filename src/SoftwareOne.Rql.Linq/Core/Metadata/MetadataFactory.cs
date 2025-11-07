@@ -22,7 +22,8 @@ internal class MetadataFactory : IMetadataFactory
             Type = GetRqlPropertyType(property),
             Actions = _settings.General.DefaultActions,
             Operators = _settings.General.AllowedOperators,
-            ElementType = GetCollectionElementType(property.PropertyType)
+            ElementType = GetCollectionElementType(property.PropertyType),
+            IsNullable = IsNullable(property)
         };
 
         var attribute = property.GetCustomAttributes<RqlPropertyAttribute>(true).FirstOrDefault();
@@ -30,7 +31,6 @@ internal class MetadataFactory : IMetadataFactory
         if (attribute != null)
         {
             propertyInfo.IsCore = attribute.IsCore;
-            propertyInfo.IsNullable = attribute.IsNullable;
             propertyInfo.IsIgnored = attribute.IsIgnored;
 
             if (attribute.ActionStrategy != null)
@@ -114,4 +114,18 @@ internal class MetadataFactory : IMetadataFactory
 
         return RqlPropertyType.Primitive;
     }
+
+    private static bool IsNullable(PropertyInfo property)
+    {
+        // Check for nullable value types like int?, DateTime?
+        if (Nullable.GetUnderlyingType(property.PropertyType) != null)
+            return true;
+
+        // Check for nullable reference types like string?
+        var context = new NullabilityInfoContext();
+        var nullabilityInfo = context.Create(property);
+        return nullabilityInfo.ReadState == NullabilityState.Nullable &&
+               !property.PropertyType.IsValueType;
+    }
+
 }
