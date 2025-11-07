@@ -2,9 +2,9 @@ name: Sonar Cloud Analysis
 
 on:
   push:
-    branches: [ master, main, develop, feature/* ]
+    branches: [ master, main ]
   pull_request:
-    branches: [ master, main, develop ]
+    branches: [ master, main ]
   workflow_dispatch:
 
 jobs:
@@ -58,18 +58,7 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       shell: bash
       run: |
-        echo "Starting SonarCloud analysis for project: softwareone-platform_mpt-rql-net"
-        echo "Organization: softwareone-mpt-github"
-        echo "Branch: ${{ github.ref_name }}"
-        .sonar/scanner/dotnet-sonarscanner begin \
-          /k:"softwareone-platform_mpt-rql-net" \
-          /o:"softwareone-mpt-github" \
-          /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
-          /d:sonar.host.url="https://sonarcloud.io" \
-          /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
-          /d:sonar.exclusions="**/bin/**,**/obj/**,**/TestResults/**" \
-          /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs" \
-          /d:sonar.verbose=true
+        .sonar/scanner/dotnet-sonarscanner begin /k:"softwareone-platform_mpt-rql-net" /o:"softwareone-mpt-github" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml"
       
     - name: Build
       run: dotnet build --no-restore --configuration Release
@@ -84,4 +73,4 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       shell: bash
       run: |
-        .sonar/scanner/dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+        .sonar/scanner/dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
