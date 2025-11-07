@@ -47,7 +47,7 @@ jobs:
       shell: bash
       run: |
         mkdir -p .sonar/scanner
-        dotnet tool install dotnet-sonarscanner --tool-path .sonar/scanner
+        dotnet tool install dotnet-sonarscanner --version 10.3.0 --tool-path .sonar/scanner
         
     - name: Restore dependencies
       run: dotnet restore
