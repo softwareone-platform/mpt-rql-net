@@ -2,9 +2,9 @@ name: Sonar Cloud Analysis
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [ master, main, develop, feature/* ]
   pull_request:
-    branches: [ master, main ]
+    branches: [ master, main, develop ]
   workflow_dispatch:
 
 jobs:
@@ -59,22 +59,24 @@ jobs:
       shell: bash
       run: |
         echo "Starting SonarCloud analysis for project: softwareone-platform_mpt-rql-net"
-        echo "Organization: softwareone-mpt-github" 
+        echo "Organization: softwareone-mpt-github"
         echo "Branch: ${{ github.ref_name }}"
         .sonar/scanner/dotnet-sonarscanner begin \
           /k:"softwareone-platform_mpt-rql-net" \
           /o:"softwareone-mpt-github" \
           /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
           /d:sonar.host.url="https://sonarcloud.io" \
-          /d:sonar.exclusions="**/bin/**,**/obj/**,**/TestResults/**,**/samples/**" \
-          /d:sonar.test.exclusions="**/*Tests.cs,**/samples/**"
+          /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
+          /d:sonar.exclusions="**/bin/**,**/obj/**,**/TestResults/**" \
+          /d:sonar.coverage.exclusions="**/*Tests.cs,**/Program.cs" \
+          /d:sonar.verbose=true
       
     - name: Build
       run: dotnet build --no-restore --configuration Release
       
-    - name: Test
+    - name: Test with coverage
       run: |
-        dotnet test --configuration Release --verbosity normal
+        dotnet test --no-build --configuration Release --verbosity normal --results-directory ./TestResults/ /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput="./TestResults/"
       
     - name: End SonarCloud analysis
       env:
