@@ -1,8 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using Rql.Tests.Integration.Core;
 using Mpt.Rql;
 using Mpt.Rql.Abstractions.Configuration;
-using Mpt.Rql.Linq.Configuration;
+using Rql.Tests.Integration.Core;
 
 namespace Rql.Tests.Integration.Tests.Functionality.ActionStrategy.Core;
 

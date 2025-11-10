@@ -1,6 +1,6 @@
 using Mpt.Rql.Abstractions.Configuration;
 
-namespace Mpt.Rql.Linq.Configuration;
+namespace Mpt.Rql.Linq.Settings;
 
 internal record RqlGeneralSettings : IRqlGeneralSettings
 {

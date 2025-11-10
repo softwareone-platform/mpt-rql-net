@@ -11,7 +11,6 @@ using Mpt.Rql.Linq.Client;
 using Mpt.Rql.Linq.Client.Builder.Request;
 using Mpt.Rql.Linq.Client.Core;
 using Mpt.Rql.Linq.Client.Generator;
-using Mpt.Rql.Linq.Configuration;
 using Mpt.Rql.Linq.Core;
 using Mpt.Rql.Linq.Core.Metadata;
 using Mpt.Rql.Linq.Services.Context;
@@ -21,6 +20,7 @@ using Mpt.Rql.Linq.Services.Filtering.Operators;
 using Mpt.Rql.Linq.Services.Mapping;
 using Mpt.Rql.Linq.Services.Ordering;
 using Mpt.Rql.Linq.Services.Projection;
+using Mpt.Rql.Linq.Settings;
 using Mpt.Rql.Parsers.Linear.Domain.Services;
 using System.Reflection;
 

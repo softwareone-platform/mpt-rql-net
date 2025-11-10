@@ -1,6 +1,6 @@
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Linq.Configuration;
 using Mpt.Rql.Linq.Core.Metadata;
+using Mpt.Rql.Linq.Settings;
 using System.Text.Json;
 using Xunit;
 

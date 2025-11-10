@@ -1,7 +1,6 @@
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Abstractions.Configuration;
-using Mpt.Rql.Linq.Configuration;
 using Mpt.Rql.Linq.Core.Metadata;
+using Mpt.Rql.Linq.Settings;
 using Mpt.UnitTests.Common.Factory;
 using Mpt.UnitTests.Common.Utility;
 using System.Text.Json;

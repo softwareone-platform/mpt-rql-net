@@ -1,9 +1,9 @@
 using Mpt.Rql.Abstractions.Configuration;
-using Mpt.Rql.Linq.Configuration;
 using Mpt.Rql.Linq.Services.Filtering.Operators;
 using Mpt.Rql.Linq.Services.Filtering.Operators.Comparison;
 using Mpt.Rql.Linq.Services.Filtering.Operators.List;
 using Mpt.Rql.Linq.Services.Filtering.Operators.Search;
+using Mpt.Rql.Linq.Settings;
 using System.Reflection;
 
 #pragma warning disable IDE0130

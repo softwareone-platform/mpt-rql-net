@@ -1,12 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Mpt.Rql.Abstractions.Configuration;
-using Mpt.Rql.Linq.Configuration;
 using Mpt.Rql.Linq.Core;
 using Mpt.Rql.Linq.Services.Context;
 using Mpt.Rql.Linq.Services.Filtering;
 using Mpt.Rql.Linq.Services.Mapping;
 using Mpt.Rql.Linq.Services.Ordering;
 using Mpt.Rql.Linq.Services.Projection;
+using Mpt.Rql.Linq.Settings;
 
 namespace Mpt.Rql.Linq;
 
