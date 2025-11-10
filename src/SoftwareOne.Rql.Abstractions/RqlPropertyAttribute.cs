@@ -61,9 +61,9 @@ public class RqlPropertyAttribute : Attribute
     }
 
     public bool ActionsSet { get; private set; }
-    
+
     public bool OperatorsSet { get; private set; }
-    
+
     public bool SelectSet { get; private set; }
 
     public bool TreatAsSet { get; private set; }
@@ -75,6 +75,7 @@ public class RqlPropertyAttribute : Attribute
     /// <summary>
     /// Specifies that property can be null
     /// </summary>
+    [Obsolete("Nullability is now determined automatically")]
     public bool IsNullable { get; set; }
 
     /// <summary>
