@@ -12,7 +12,6 @@ public class BasicOrderTests
         _testExecutor = new ProductTestExecutor();
     }
 
-
     [Theory]
     [InlineData("+category,+id,-name")]
     [InlineData("category,id,-name")]

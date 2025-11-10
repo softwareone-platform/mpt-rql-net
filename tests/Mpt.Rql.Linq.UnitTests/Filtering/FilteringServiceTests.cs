@@ -1,6 +1,7 @@
 using Moq;
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Configuration;
+using Mpt.Rql.Linq.Configuration;
 using Mpt.Rql.Linq.Services.Context;
 using Mpt.Rql.Linq.Services.Filtering;
 using Mpt.Rql.Linq.Services.Filtering.Operators;

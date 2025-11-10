@@ -1,6 +1,6 @@
 namespace Mpt.Rql.Abstractions.Configuration;
 
-public interface IRqlGlobalSettings
+public interface IRqlGlobalSettings : IRqlSettings
 {
-    RqlGeneralSettings General { get; }
+    IRqlGeneralSettings General { get; }
 }

@@ -22,7 +22,7 @@ public class RqlConfiguration
 
     internal Dictionary<Type, Type> OperatorOverrides { get; init; }
 
-    public GlobalRqlSettings Settings { get; init; }
+    public IRqlGlobalSettings Settings { get; init; }
 
     public RqlConfiguration SetComparisonHandler<TOperator, THandler>() where TOperator : IComparisonOperator, IActualOperator where THandler : TOperator
         => SetOperatorInternal<TOperator, THandler>();

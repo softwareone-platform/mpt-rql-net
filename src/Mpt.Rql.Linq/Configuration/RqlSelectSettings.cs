@@ -1,6 +1,8 @@
-namespace Mpt.Rql.Abstractions.Configuration;
+using Mpt.Rql.Abstractions.Configuration;
 
-public class RqlSelectSettings
+namespace Mpt.Rql.Linq.Configuration;
+
+internal record RqlSelectSettings : IRqlSelectSettings
 {
     public RqlSelectModes Implicit { get; set; } = RqlSelectModes.Core;
 

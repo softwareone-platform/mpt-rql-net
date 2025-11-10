@@ -1,5 +1,5 @@
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Abstractions.Configuration;
+using Mpt.Rql.Linq.Configuration;
 using Mpt.Rql.Linq.Core.Metadata;
 using System.Text.Json;
 using Xunit;

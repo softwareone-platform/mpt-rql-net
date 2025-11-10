@@ -1,5 +1,5 @@
 using Mpt.Rql;
-using Mpt.Rql.Abstractions.Configuration;
+using Mpt.Rql.Linq.Configuration;
 
 namespace Mpt.UnitTests.Common.Factory;
 

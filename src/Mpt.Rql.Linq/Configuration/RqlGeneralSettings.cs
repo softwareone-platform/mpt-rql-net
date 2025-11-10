@@ -1,6 +1,8 @@
-namespace Mpt.Rql.Abstractions.Configuration;
+using Mpt.Rql.Abstractions.Configuration;
 
-public class RqlGeneralSettings
+namespace Mpt.Rql.Linq.Configuration;
+
+internal record RqlGeneralSettings : IRqlGeneralSettings
 {
     public RqlActions DefaultActions { get; set; } = RqlActions.All;
 
