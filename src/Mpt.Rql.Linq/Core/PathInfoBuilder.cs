@@ -3,7 +3,6 @@ using Mpt.Rql.Abstractions.Argument;
 using Mpt.Rql.Abstractions.Argument.Pointer;
 using Mpt.Rql.Abstractions.Result;
 using Mpt.Rql.Linq.Core.Metadata;
-using Mpt.Rql.Linq.Core.Result;
 using Mpt.Rql.Linq.Services.Context;
 using System.Linq.Expressions;
 

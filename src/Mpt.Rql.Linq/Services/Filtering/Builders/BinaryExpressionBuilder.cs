@@ -4,7 +4,7 @@ using Mpt.Rql.Abstractions.Argument.Pointer;
 using Mpt.Rql.Abstractions.Binary;
 using Mpt.Rql.Abstractions.Group;
 using Mpt.Rql.Abstractions.Result;
-using Mpt.Rql.Linq.Core.Result;
+using Mpt.Rql.Linq.Core;
 using Mpt.Rql.Linq.Services.Filtering.Operators;
 using Mpt.Rql.Linq.Services.Filtering.Operators.Comparison;
 using Mpt.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation;

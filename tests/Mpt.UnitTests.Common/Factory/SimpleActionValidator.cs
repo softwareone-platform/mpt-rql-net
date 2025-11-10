@@ -1,7 +1,7 @@
 using Mpt.Rql;
 using Mpt.Rql.Linq.Core;
 
-namespace Mpt.UnitTests.Common;
+namespace Mpt.UnitTests.Common.Factory;
 
 internal class SimpleActionValidator : IActionValidator
 {

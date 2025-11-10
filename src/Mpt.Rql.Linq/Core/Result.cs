@@ -1,6 +1,6 @@
 using Mpt.Rql.Abstractions.Result;
 
-namespace Mpt.Rql.Linq.Core.Result;
+namespace Mpt.Rql.Linq.Core;
 
 public class Result<T>
 {

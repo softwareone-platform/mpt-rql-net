@@ -3,10 +3,10 @@ using Mpt.Rql.Abstractions.Argument;
 using Mpt.Rql.Abstractions.Exception;
 using Mpt.Rql.Parsers.Linear.Domain.Core;
 using Mpt.Rql.Parsers.Linear.Domain.Services;
-using Mpt.UnitTests.Common;
+using Mpt.UnitTests.Common.Factory;
 using Xunit;
 
-namespace Rql.Tests.Unit.Parsers.Linear.Domain.Services;
+namespace Mpt.Rql.Parsers.Linear.UnitTests.Domain.Services;
 
 public class RqlArgumentParserTests
 {

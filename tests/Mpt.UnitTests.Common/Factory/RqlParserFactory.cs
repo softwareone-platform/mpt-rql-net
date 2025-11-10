@@ -4,7 +4,7 @@ using Mpt.Rql.Abstractions.Argument;
 using Mpt.Rql.Abstractions.Binary;
 using System.Globalization;
 
-namespace Mpt.UnitTests.Common;
+namespace Mpt.UnitTests.Common.Factory;
 
 internal static class RqlParserFactory
 {

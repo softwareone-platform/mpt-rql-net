@@ -2,7 +2,7 @@ using Mpt.Rql;
 using Mpt.Rql.Abstractions.Configuration;
 using Mpt.Rql.Linq.Configuration;
 
-namespace Mpt.UnitTests.Common;
+namespace Mpt.UnitTests.Common.Factory;
 
 internal static class RqlSettingsFactory
 {

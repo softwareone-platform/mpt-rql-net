@@ -5,7 +5,7 @@ using Mpt.Rql.Abstractions.Group;
 using Mpt.Rql.Parsers.Linear.Domain.Core.Enumerations;
 using Mpt.Rql.Parsers.Linear.Domain.Core.ValueTypes;
 
-namespace Mpt.UnitTests.Common;
+namespace Mpt.UnitTests.Common.Factory;
 
 internal static class RqlExpressionFactory
 {

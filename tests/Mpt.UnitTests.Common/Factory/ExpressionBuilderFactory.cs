@@ -5,7 +5,7 @@ using Mpt.Rql.Linq.Services.Filtering;
 using Mpt.Rql.Linq.Services.Filtering.Builders;
 using Mpt.Rql.Linq.Services.Filtering.Operators;
 
-namespace Mpt.UnitTests.Common;
+namespace Mpt.UnitTests.Common.Factory;
 
 internal static class ExpressionBuilderFactory
 {

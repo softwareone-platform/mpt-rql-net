@@ -1,7 +1,7 @@
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Linq.Core.Metadata;
 
-namespace Mpt.UnitTests.Common;
+namespace Mpt.UnitTests.Common.Factory;
 
 internal static class MetadataProviderFactory
 {

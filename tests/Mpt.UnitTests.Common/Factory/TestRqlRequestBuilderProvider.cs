@@ -7,7 +7,7 @@ using Mpt.Rql.Linq.Client.Core;
 using Mpt.Rql.Linq.Client.Generator;
 using Mpt.Rql.Linq.Core.Metadata;
 
-namespace Mpt.UnitTests.Common;
+namespace Mpt.UnitTests.Common.Factory;
 
 internal class TestRqlRequestBuilderProvider : IRqlRequestBuilderProvider
 {

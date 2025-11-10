@@ -1,5 +1,5 @@
 using Mpt.Rql.Abstractions;
-using Mpt.UnitTests.Common;
+using Mpt.UnitTests.Common.Factory;
 using Mpt.UnitTests.Common.Utility;
 using Xunit;
 

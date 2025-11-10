@@ -1,6 +1,6 @@
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Result;
-using Mpt.Rql.Linq.Core.Result;
+using Mpt.Rql.Linq.Core;
 
 namespace Mpt.Rql.Linq.Services.Filtering.Operators;
 internal static class ValidationHelper

@@ -1,6 +1,6 @@
 using Mpt.UnitTests.Common.Utility;
 
-namespace Mpt.UnitTests.Common;
+namespace Mpt.UnitTests.Common.Factory;
 
 internal static class QueryableSampleEntityCollection
 {

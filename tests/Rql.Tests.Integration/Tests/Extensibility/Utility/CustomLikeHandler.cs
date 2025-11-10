@@ -1,5 +1,5 @@
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Linq.Core.Result;
+using Mpt.Rql.Linq.Core;
 using Mpt.Rql.Linq.Services.Filtering.Operators.Search;
 using System.Linq.Expressions;
 

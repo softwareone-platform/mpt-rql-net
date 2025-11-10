@@ -1,6 +1,6 @@
 using Mpt.Rql.Abstractions;
+using Mpt.Rql.Linq.Core;
 using Mpt.Rql.Linq.Core.Expressions;
-using Mpt.Rql.Linq.Core.Result;
 using System.Linq.Expressions;
 using System.Reflection;
 

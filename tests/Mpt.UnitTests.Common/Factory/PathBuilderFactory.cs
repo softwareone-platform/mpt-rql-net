@@ -1,7 +1,7 @@
 using Mpt.Rql.Linq.Services.Context;
 using Mpt.Rql.Linq.Services.Filtering;
 
-namespace Mpt.UnitTests.Common;
+namespace Mpt.UnitTests.Common.Factory;
 
 internal static class PathBuilderFactory
 {

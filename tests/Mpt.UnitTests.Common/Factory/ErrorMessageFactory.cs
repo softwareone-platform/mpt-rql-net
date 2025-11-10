@@ -1,6 +1,6 @@
 using Mpt.Rql;
 
-namespace Mpt.UnitTests.Common;
+namespace Mpt.UnitTests.Common.Factory;
 
 internal static class ErrorMessageFactory
 {

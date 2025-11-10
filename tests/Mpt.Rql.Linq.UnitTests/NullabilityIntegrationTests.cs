@@ -1,4 +1,4 @@
-using Mpt.UnitTests.Common;
+using Mpt.UnitTests.Common.Factory;
 using Xunit;
 
 namespace Mpt.Rql.Linq.UnitTests;

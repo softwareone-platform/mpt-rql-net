@@ -1,6 +1,6 @@
 using FluentAssertions;
 using Mpt.Rql.Linq.UnitTests.Client.Samples;
-using Mpt.UnitTests.Common;
+using Mpt.UnitTests.Common.Factory;
 using Xunit;
 
 namespace Mpt.Rql.Linq.UnitTests.Client.RqlGenerator;
