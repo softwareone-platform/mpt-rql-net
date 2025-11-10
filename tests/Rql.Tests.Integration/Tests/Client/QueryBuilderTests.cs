@@ -1,6 +1,6 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Rql.Tests.Integration.Core;
-using SoftwareOne.Rql.Client;
+using Mpt.Rql.Client;
 using Xunit;
 
 namespace Rql.Tests.Integration.Tests.Client;

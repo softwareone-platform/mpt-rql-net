@@ -1,5 +1,5 @@
 using Rql.Tests.Integration.Core;
-using SoftwareOne.Rql;
+using Mpt.Rql;
 using System.Linq.Expressions;
 
 namespace Rql.Tests.Integration.Tests.Extensibility.Utility;

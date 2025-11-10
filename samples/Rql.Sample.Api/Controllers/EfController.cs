@@ -4,7 +4,7 @@ using Rql.Sample.Application.Products.Queries.ListAddresses;
 using Rql.Sample.Application.Products.Queries.ListProducts;
 using Rql.Sample.Contracts.Ef.Products;
 using Rql.Sample.Domain.Ef;
-using SoftwareOne.Rql;
+using Mpt.Rql;
 
 namespace Rql.Sample.Api.Controllers;
 

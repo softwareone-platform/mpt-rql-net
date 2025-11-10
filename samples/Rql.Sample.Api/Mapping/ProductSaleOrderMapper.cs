@@ -1,6 +1,6 @@
 using Rql.Sample.Contracts.Ef.Products;
 using Rql.Sample.Domain.Ef;
-using SoftwareOne.Rql;
+using Mpt.Rql;
 
 namespace Rql.Sample.Api.Mapping;
 

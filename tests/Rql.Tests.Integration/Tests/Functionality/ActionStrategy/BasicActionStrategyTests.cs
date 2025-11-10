@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Rql.Tests.Integration.Tests.Functionality.ActionStrategy.Core;
-using SoftwareOne.Rql.Abstractions.Exception;
+using Mpt.Rql.Abstractions.Exception;
 using Xunit;
 
 namespace Rql.Tests.Integration.Tests.Functionality.ActionStrategy;

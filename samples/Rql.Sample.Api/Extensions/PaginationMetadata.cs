@@ -1,5 +1,5 @@
-﻿#pragma warning disable IDE0130
-namespace SoftwareOne.Rql;
+#pragma warning disable IDE0130
+namespace Mpt.Rql;
 
 public class PaginationMetadata
 {

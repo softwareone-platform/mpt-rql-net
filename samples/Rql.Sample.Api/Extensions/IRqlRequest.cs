@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using System.Linq.Expressions;
 
 #pragma warning disable IDE0130
-namespace SoftwareOne.Rql;
+namespace Mpt.Rql;
 
 public interface IRqlRequest<TStorage, TView>
 {

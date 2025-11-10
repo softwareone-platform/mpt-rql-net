@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SoftwareOne.Rql.Abstractions.Result;
+using Microsoft.AspNetCore.Mvc;
+using Mpt.Rql.Abstractions.Result;
 
 namespace Rql.Sample.Api.Extensions.Core;
 

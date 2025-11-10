@@ -1,4 +1,4 @@
-using SoftwareOne.Rql;
+using Mpt.Rql;
 using System.Text.Json.Serialization;
 
 namespace Rql.Sample.Contracts.Ef.Products;

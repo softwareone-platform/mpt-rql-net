@@ -1,5 +1,5 @@
 using Newtonsoft.Json;
-using SoftwareOne.Rql;
+using Mpt.Rql;
 
 namespace Rql.Tests.Integration.Core;
 

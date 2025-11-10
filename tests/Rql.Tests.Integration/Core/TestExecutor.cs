@@ -1,6 +1,6 @@
-﻿using SoftwareOne.Rql;
-using SoftwareOne.Rql.Abstractions.Configuration;
-using SoftwareOne.Rql.Linq.Configuration;
+using Mpt.Rql;
+using Mpt.Rql.Abstractions.Configuration;
+using Mpt.Rql.Linq.Configuration;
 using System.Linq.Expressions;
 using System.Text.Json;
 using Xunit;

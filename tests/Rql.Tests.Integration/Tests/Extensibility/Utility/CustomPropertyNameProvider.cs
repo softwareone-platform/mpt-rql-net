@@ -1,4 +1,4 @@
-using SoftwareOne.Rql;
+using Mpt.Rql;
 using System.Reflection;
 
 namespace Rql.Tests.Integration.Tests.Extensibility.Utility;

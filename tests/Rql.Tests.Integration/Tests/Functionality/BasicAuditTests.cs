@@ -1,7 +1,7 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Rql.Tests.Integration.Tests.Functionality.Utility;
-using SoftwareOne.Rql;
-using SoftwareOne.Rql.Abstractions;
+using Mpt.Rql;
+using Mpt.Rql.Abstractions;
 using Xunit;
 
 namespace Rql.Tests.Integration.Tests.Functionality;

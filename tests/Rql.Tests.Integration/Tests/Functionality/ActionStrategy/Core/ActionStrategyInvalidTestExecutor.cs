@@ -1,7 +1,7 @@
-﻿using Rql.Tests.Integration.Core;
-using SoftwareOne.Rql;
-using SoftwareOne.Rql.Abstractions.Configuration;
-using SoftwareOne.Rql.Linq.Configuration;
+using Rql.Tests.Integration.Core;
+using Mpt.Rql;
+using Mpt.Rql.Abstractions.Configuration;
+using Mpt.Rql.Linq.Configuration;
 
 namespace Rql.Tests.Integration.Tests.Functionality.ActionStrategy.Core;
 

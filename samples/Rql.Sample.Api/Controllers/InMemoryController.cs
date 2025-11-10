@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Rql.Sample.Application.SampleEntities.Queries.ListSampleEntities;
 using Rql.Sample.Contracts.InMemory;
 using Rql.Sample.Domain.InMemory;
-using SoftwareOne.Rql;
+using Mpt.Rql;
 
 namespace Rql.Sample.Api.Controllers;
 

@@ -1,9 +1,9 @@
-﻿using Rql.Tests.Integration.Core;
+using Rql.Tests.Integration.Core;
 using Rql.Tests.Integration.Tests.Extensibility.Utility;
-using SoftwareOne.Rql;
-using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Comparison;
-using SoftwareOne.Rql.Linq.Services.Filtering.Operators.List;
-using SoftwareOne.Rql.Linq.Services.Filtering.Operators.Search;
+using Mpt.Rql;
+using Mpt.Rql.Linq.Services.Filtering.Operators.Comparison;
+using Mpt.Rql.Linq.Services.Filtering.Operators.List;
+using Mpt.Rql.Linq.Services.Filtering.Operators.Search;
 using Xunit;
 
 namespace Rql.Tests.Integration.Tests.Extensibility;
