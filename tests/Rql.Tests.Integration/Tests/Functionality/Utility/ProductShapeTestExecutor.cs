@@ -1,7 +1,6 @@
-using Rql.Tests.Integration.Core;
 using Mpt.Rql;
 using Mpt.Rql.Abstractions.Configuration;
-using Mpt.Rql.Linq.Configuration;
+using Rql.Tests.Integration.Core;
 
 namespace Rql.Tests.Integration.Tests.Functionality.Utility;
 
@@ -12,7 +11,7 @@ public class ProductShapeTestExecutor : TestExecutor<ShapedProduct>
 
     public override IQueryable<ShapedProduct> GetQuery() => ShapedProductRepository.Query();
 
-    protected override void Customize(RqlSettings settings)
+    protected override void Customize(IRqlSettings settings)
     {
         settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
         settings.Select.Explicit = RqlSelectModes.All;

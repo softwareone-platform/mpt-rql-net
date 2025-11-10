@@ -1,14 +1,12 @@
 using FluentAssertions;
 using Moq;
-using Mpt.Rql.Abstractions;
-using Mpt.Rql.Abstractions.Configuration;
-using Mpt.Rql.Linq.Configuration;
 using Mpt.Rql.Linq.Core;
 using Mpt.Rql.Linq.Core.Metadata;
 using Mpt.Rql.Linq.Services.Context;
 using Mpt.Rql.Linq.Services.Filtering;
 using Mpt.Rql.Linq.Services.Ordering;
 using Mpt.Rql.Linq.Services.Projection;
+using Mpt.Rql.Linq.Settings;
 using Mpt.Rql.Linq.UnitTests.Services.Models;
 using Mpt.Rql.Parsers.Linear.Domain.Services;
 using Xunit;
@@ -31,7 +29,10 @@ public class GraphBuilderTests
         _queryContext = new QueryContext<Product>();
         _rqlParser = new RqlParser();
 
-        var settings = new GlobalRqlSettings { Select = new RqlSelectSettings { Explicit = RqlSelectModes.All, Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive } };
+        var settings = new GlobalRqlSettings();
+        settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive;
+        settings.Select.Explicit = RqlSelectModes.All;
+
         var metadataProvider = new MetadataProvider(new PropertyNameProvider(), new MetadataFactory(settings));
         var builderContext = new BuilderContext();
 
@@ -43,23 +44,23 @@ public class GraphBuilderTests
     [Fact]
     public void TraverseRqlExpression_WithEmptyExpression_BuildsDefaultGraph()
         => RunTest(string.Empty, string.Empty, string.Empty);
-    
+
     [Fact]
     public void TraverseRqlExpression_WhenHidingProperty_propertyIsHidden()
         => RunTest(string.Empty, string.Empty, "-coreCategory", CoreCategoryHidden);
-    
+
     [Fact]
     public void TraverseRqlExpression_WhenSelectingAndHidingProperty_propertyIsSelectedAndHidden()
         => RunTest(string.Empty, string.Empty, "coreCategory,-coreCategory", CoreCategorySelectedAndHidden);
-    
+
     [Fact]
     public void TraverseRqlExpression_WhenHidingHiddenProperty_propertyIsHiddenForTwoReasons()
         => RunTest(string.Empty, string.Empty, "-hiddenCategory", HiddenCategoryHidden);
-    
+
     [Fact]
     public void TraverseRqlExpression_WhenSelectingAndHidingHiddenProperty_propertyIsSelectedAndHiddenForTwoReasons()
         => RunTest(string.Empty, string.Empty, "hiddenCategory,-hiddenCategory", HiddenCategorySelectedAndHidden);
-    
+
     [Fact]
     public void TraverseRqlExpression_WhenHidingAllProperties_propertiesAreHidden()
         => RunTest(string.Empty, string.Empty, "-*", p =>
@@ -67,7 +68,7 @@ public class GraphBuilderTests
             p.Property("id", IncludeReasons.Default, ExcludeReasons.Unselected);
             p.Property("name", IncludeReasons.Default, ExcludeReasons.Unselected);
             p.Property("description", IncludeReasons.Default, ExcludeReasons.Unselected);
-            
+
             p.Property("category", IncludeReasons.Default, ExcludeReasons.Unselected);
             p.Property("category.description", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("category.id", IncludeReasons.None, ExcludeReasons.Default);
@@ -75,7 +76,7 @@ public class GraphBuilderTests
             p.Property("category.products", IncludeReasons.None, ExcludeReasons.Default);
 
             CoreCategoryHidden(p);
-            
+
             p.Property("ignoredCategory", IncludeReasons.None, ExcludeReasons.Unselected);
             p.Property("ignoredCategory.description", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("ignoredCategory.id", IncludeReasons.None, ExcludeReasons.Default);
@@ -83,12 +84,12 @@ public class GraphBuilderTests
             p.Property("ignoredCategory.products", IncludeReasons.None, ExcludeReasons.Default);
 
             HiddenCategoryHidden(p);
-            
+
             p.Property("items", IncludeReasons.Default, ExcludeReasons.Unselected);
             p.Property("items.description", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("items.id", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("items.name", IncludeReasons.None, ExcludeReasons.Default);
-            
+
             p.Property("coreItems", IncludeReasons.Default, ExcludeReasons.Unselected);
             p.Property("coreItems.description", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("coreItems.id", IncludeReasons.None, ExcludeReasons.Default);
@@ -106,7 +107,7 @@ public class GraphBuilderTests
             p.Property("items", IncludeReasons.Default | IncludeReasons.Select, ExcludeReasons.None);
             p.Property("category", IncludeReasons.Default | IncludeReasons.Select, ExcludeReasons.None);
             p.Property("category.products", IncludeReasons.Default, ExcludeReasons.None);
-            
+
             p.Property("category.products.category", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("category.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("category.products.coreCategory.description", IncludeReasons.Default, ExcludeReasons.None);
@@ -122,10 +123,10 @@ public class GraphBuilderTests
             p.Property("category.products.id", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("category.products.items", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("category.products.name", IncludeReasons.Default, ExcludeReasons.None);
-            
+
             p.Property("coreCategory", IncludeReasons.Default | IncludeReasons.Select, ExcludeReasons.None);
             p.Property("coreCategory.products", IncludeReasons.Default, ExcludeReasons.None);
-            
+
             p.Property("coreCategory.products.category", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("coreCategory.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("coreCategory.products.coreCategory.description", IncludeReasons.Default, ExcludeReasons.None);
@@ -147,7 +148,7 @@ public class GraphBuilderTests
             p.Property("ignoredCategory.id", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("ignoredCategory.name", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("ignoredCategory.products", IncludeReasons.Default, ExcludeReasons.None);
-            
+
             p.Property("ignoredCategory.products.category", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("ignoredCategory.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("ignoredCategory.products.coreCategory.description", IncludeReasons.Default, ExcludeReasons.None);
@@ -164,12 +165,12 @@ public class GraphBuilderTests
             p.Property("ignoredCategory.products.items", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("ignoredCategory.products.name", IncludeReasons.Default, ExcludeReasons.None);
 
-            p.Property("hiddenCategory",  IncludeReasons.Select, ExcludeReasons.Default);
+            p.Property("hiddenCategory", IncludeReasons.Select, ExcludeReasons.Default);
             p.Property("hiddenCategory.description", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("hiddenCategory.id", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("hiddenCategory.name", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("hiddenCategory.products", IncludeReasons.Default, ExcludeReasons.None);
-            
+
             p.Property("hiddenCategory.products.category", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("hiddenCategory.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("hiddenCategory.products.coreCategory.description", IncludeReasons.Default, ExcludeReasons.None);
@@ -186,7 +187,7 @@ public class GraphBuilderTests
             p.Property("hiddenCategory.products.items", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("hiddenCategory.products.name", IncludeReasons.Default, ExcludeReasons.None);
         });
-    
+
     [Fact]
     public void TraverseRqlExpression_WhenSelectingAndHidingAllProperties_propertiesAreSelectedAndHidden()
         => RunTest(string.Empty, string.Empty, "*,-*", p =>
@@ -196,10 +197,10 @@ public class GraphBuilderTests
             p.Property("description", IncludeReasons.Default | IncludeReasons.Select, ExcludeReasons.Unselected);
             p.Property("coreItems", IncludeReasons.Default | IncludeReasons.Select, ExcludeReasons.Unselected);
             p.Property("items", IncludeReasons.Default | IncludeReasons.Select, ExcludeReasons.Unselected);
-            
+
             p.Property("category", IncludeReasons.Default | IncludeReasons.Select, ExcludeReasons.Unselected);
             p.Property("category.products", IncludeReasons.Default, ExcludeReasons.None);
-            
+
             p.Property("category.products.category", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("category.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("category.products.coreCategory.description", IncludeReasons.Default, ExcludeReasons.None);
@@ -223,7 +224,7 @@ public class GraphBuilderTests
             p.Property("ignoredCategory.id", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("ignoredCategory.name", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("ignoredCategory.products", IncludeReasons.Default, ExcludeReasons.None);
-            
+
             p.Property("ignoredCategory.products.category", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("ignoredCategory.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("ignoredCategory.products.coreCategory.description", IncludeReasons.Default, ExcludeReasons.None);
@@ -242,7 +243,7 @@ public class GraphBuilderTests
 
             HiddenCategorySelectedAndHidden(p);
         });
-            
+
     [Fact]
     public void TraverseRqlExpression_WhenHidingAllPropertiesAndSelectingOne_propertiesAreHiddenAndSelectedPropertyIsSelected()
         => RunTest(string.Empty, string.Empty, "coreCategory,-*", p =>
@@ -250,15 +251,15 @@ public class GraphBuilderTests
             p.Property("id", IncludeReasons.Default, ExcludeReasons.Unselected);
             p.Property("name", IncludeReasons.Default, ExcludeReasons.Unselected);
             p.Property("description", IncludeReasons.Default, ExcludeReasons.Unselected);
-            
+
             p.Property("category", IncludeReasons.Default, ExcludeReasons.Unselected);
             p.Property("category.description", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("category.id", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("category.name", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("category.products", IncludeReasons.None, ExcludeReasons.Default);
-            
+
             CoreCategorySelectedAndHidden(p);
-            
+
             p.Property("ignoredCategory", IncludeReasons.None, ExcludeReasons.Unselected);
             p.Property("ignoredCategory.description", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("ignoredCategory.id", IncludeReasons.None, ExcludeReasons.Default);
@@ -266,12 +267,12 @@ public class GraphBuilderTests
             p.Property("ignoredCategory.products", IncludeReasons.None, ExcludeReasons.Default);
 
             HiddenCategoryHidden(p);
-            
+
             p.Property("items", IncludeReasons.Default, ExcludeReasons.Unselected);
             p.Property("items.description", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("items.id", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("items.name", IncludeReasons.None, ExcludeReasons.Default);
-            
+
             p.Property("coreItems", IncludeReasons.Default, ExcludeReasons.Unselected);
             p.Property("coreItems.description", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("coreItems.id", IncludeReasons.None, ExcludeReasons.Default);
@@ -279,7 +280,7 @@ public class GraphBuilderTests
 
 
         });
-    
+
     [Fact]
     public void TraverseRqlExpression_WhenFilteringByHidden_ThenHiddenIsAdded()
         => RunTest("hiddenCategory.id=3", string.Empty, string.Empty, p =>
@@ -348,7 +349,7 @@ public class GraphBuilderTests
 
         printer.Property("name", IncludeReasons.Default, ExcludeReasons.None);
     }
-    
+
     private static void CoreCategoryHidden(GraphPrinter p)
     {
         p.Property("coreCategory", IncludeReasons.Default, ExcludeReasons.Unselected);
@@ -360,7 +361,7 @@ public class GraphBuilderTests
     private static void CoreCategorySelectedAndHidden(GraphPrinter p)
     {
         p.Property("coreCategory", IncludeReasons.Default | IncludeReasons.Select, ExcludeReasons.Unselected);
-        
+
         p.Property("coreCategory.products", IncludeReasons.Default, ExcludeReasons.None);
         p.Property("coreCategory.products.category", IncludeReasons.None, ExcludeReasons.Default);
         p.Property("coreCategory.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
@@ -378,7 +379,7 @@ public class GraphBuilderTests
         p.Property("coreCategory.products.items", IncludeReasons.None, ExcludeReasons.Default);
         p.Property("coreCategory.products.name", IncludeReasons.Default, ExcludeReasons.None);
     }
-    
+
     private static void HiddenCategoryHidden(GraphPrinter p)
     {
         p.Property("hiddenCategory", IncludeReasons.None, ExcludeReasons.Default | ExcludeReasons.Unselected);
@@ -387,15 +388,15 @@ public class GraphBuilderTests
         p.Property("hiddenCategory.name", IncludeReasons.None, ExcludeReasons.Default);
         p.Property("hiddenCategory.products", IncludeReasons.None, ExcludeReasons.Default);
     }
-    
+
     private static void HiddenCategorySelectedAndHidden(GraphPrinter p)
     {
-        p.Property("hiddenCategory",  IncludeReasons.Select, ExcludeReasons.Default | ExcludeReasons.Unselected);
+        p.Property("hiddenCategory", IncludeReasons.Select, ExcludeReasons.Default | ExcludeReasons.Unselected);
         p.Property("hiddenCategory.description", IncludeReasons.Default, ExcludeReasons.None);
         p.Property("hiddenCategory.id", IncludeReasons.Default, ExcludeReasons.None);
         p.Property("hiddenCategory.name", IncludeReasons.Default, ExcludeReasons.None);
         p.Property("hiddenCategory.products", IncludeReasons.Default, ExcludeReasons.None);
-        
+
         p.Property("hiddenCategory.products.category", IncludeReasons.None, ExcludeReasons.Default);
         p.Property("hiddenCategory.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
         p.Property("hiddenCategory.products.coreCategory.description", IncludeReasons.Default, ExcludeReasons.None);

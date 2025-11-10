@@ -1,6 +1,6 @@
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Abstractions.Configuration;
 using Mpt.Rql.Linq.Core.Metadata;
+using Mpt.Rql.Linq.Settings;
 using System.Text.Json;
 using Xunit;
 
@@ -13,7 +13,7 @@ public class NullabilityTests
 
     public NullabilityTests()
     {
-        _metadataFactory = new MetadataFactory(new GlobalRqlSettings { General = new RqlGeneralSettings() });
+        _metadataFactory = new MetadataFactory(new GlobalRqlSettings());
         _provider = new MetadataProvider(new PropertyNameProvider(), _metadataFactory);
     }
 

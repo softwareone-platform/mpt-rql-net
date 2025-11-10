@@ -1,6 +1,6 @@
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Abstractions.Configuration;
 using Mpt.Rql.Linq.Core.Metadata;
+using Mpt.Rql.Linq.Settings;
 using Mpt.UnitTests.Common.Factory;
 using Mpt.UnitTests.Common.Utility;
 using System.Text.Json;
@@ -30,9 +30,12 @@ public class TypeDescriptionProviderTests
     {
 
         // Arrange
+        var globalSettings = new GlobalRqlSettings();
+        globalSettings.General.DefaultActions = RqlActions.Filter | RqlActions.Order;
+
         IRqlMetadataProvider provider = new MetadataProvider(
             new PropertyNameProvider(),
-            new MetadataFactory(new GlobalRqlSettings { General = new RqlGeneralSettings { DefaultActions = RqlActions.Filter | RqlActions.Order } }));
+            new MetadataFactory(globalSettings));
 
         // Act 
         var props = provider.GetPropertiesByDeclaringType(typeof(SampleEntity));
@@ -55,9 +58,12 @@ public class TypeDescriptionProviderTests
     {
 
         // Arrange
+        var globalSettings = new GlobalRqlSettings();
+        globalSettings.General.DefaultActions = globalAction;
+
         IRqlMetadataProvider provider = new MetadataProvider(
             new PropertyNameProvider(),
-            new MetadataFactory(new GlobalRqlSettings { General = new RqlGeneralSettings { DefaultActions = globalAction } }));
+            new MetadataFactory(globalSettings));
 
         // Act 
         var props = provider.GetPropertiesByDeclaringType(typeof(SampleTypeDescriptionEntity));

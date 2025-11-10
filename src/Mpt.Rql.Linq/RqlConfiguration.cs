@@ -1,9 +1,9 @@
 using Mpt.Rql.Abstractions.Configuration;
-using Mpt.Rql.Linq.Configuration;
 using Mpt.Rql.Linq.Services.Filtering.Operators;
 using Mpt.Rql.Linq.Services.Filtering.Operators.Comparison;
 using Mpt.Rql.Linq.Services.Filtering.Operators.List;
 using Mpt.Rql.Linq.Services.Filtering.Operators.Search;
+using Mpt.Rql.Linq.Settings;
 using System.Reflection;
 
 #pragma warning disable IDE0130
@@ -13,20 +13,7 @@ public class RqlConfiguration
     public RqlConfiguration()
     {
         OperatorOverrides = [];
-
-        Settings = new GlobalRqlSettings
-        {
-            General = new RqlGeneralSettings
-            {
-                DefaultActions = RqlActions.All,
-
-            },
-            Select = new RqlSelectSettings
-            {
-                Implicit = RqlSelectModes.Core,
-                Explicit = RqlSelectModes.Core
-            }
-        };
+        Settings = new GlobalRqlSettings();
     }
 
     internal Assembly? ViewMappersAssembly { get; private set; }
@@ -35,7 +22,7 @@ public class RqlConfiguration
 
     internal Dictionary<Type, Type> OperatorOverrides { get; init; }
 
-    public GlobalRqlSettings Settings { get; init; }
+    public IRqlGlobalSettings Settings { get; init; }
 
     public RqlConfiguration SetComparisonHandler<TOperator, THandler>() where TOperator : IComparisonOperator, IActualOperator where THandler : TOperator
         => SetOperatorInternal<TOperator, THandler>();

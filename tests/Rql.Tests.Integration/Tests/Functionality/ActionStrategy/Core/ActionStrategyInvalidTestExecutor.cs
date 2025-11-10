@@ -1,7 +1,6 @@
-using Rql.Tests.Integration.Core;
 using Mpt.Rql;
 using Mpt.Rql.Abstractions.Configuration;
-using Mpt.Rql.Linq.Configuration;
+using Rql.Tests.Integration.Core;
 
 namespace Rql.Tests.Integration.Tests.Functionality.ActionStrategy.Core;
 
@@ -12,5 +11,5 @@ public class ActionStrategyInvalidTestExecutor : TestExecutor<ActionStrategyInva
 
     public override IQueryable<ActionStrategyInvalidTestItem> GetQuery() => Enumerable.Empty<ActionStrategyInvalidTestItem>().AsQueryable();
 
-    protected override void Customize(RqlSettings settings) { }
+    protected override void Customize(IRqlSettings settings) { }
 }

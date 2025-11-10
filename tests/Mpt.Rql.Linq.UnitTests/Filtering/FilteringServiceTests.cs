@@ -7,6 +7,7 @@ using Mpt.Rql.Linq.Services.Filtering.Operators;
 using Mpt.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation;
 using Mpt.Rql.Linq.Services.Filtering.Operators.List.Implementation;
 using Mpt.Rql.Linq.Services.Filtering.Operators.Search.Implementation;
+using Mpt.Rql.Linq.Settings;
 using Mpt.UnitTests.Common.Factory;
 using Mpt.UnitTests.Common.Utility;
 using Xunit;
