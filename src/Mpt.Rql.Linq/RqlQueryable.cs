@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Mpt.Rql.Abstractions.Configuration;
 using Mpt.Rql.Linq.Configuration;
 using Mpt.Rql.Linq.Core;
 using Mpt.Rql.Linq.Services.Context;
@@ -24,19 +25,22 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
     }
 
     public RqlGraphResponse BuildGraph(RqlRequest request)
-        => TransformInternal(null!, request, true);
+        => BuildGraph(request, static _ => { });
 
-    public RqlResponse<TView> Transform(IQueryable<TStorage> source, Action<RqlRequest> configure)
-        => Transform(source, MakeRequest(configure));
+    public RqlGraphResponse BuildGraph(RqlRequest request, Action<IRqlSettings> configure)
+       => TransformInternal(null!, request, configure, true);
 
     public RqlResponse<TView> Transform(IQueryable<TStorage> source, RqlRequest request)
-        => TransformInternal(source, request, false);
+        => Transform(source, request, static _ => { });
 
-    private RqlResponse<TView> TransformInternal(IQueryable<TStorage> source, RqlRequest request, bool skipTransformStage)
+    public RqlResponse<TView> Transform(IQueryable<TStorage> source, RqlRequest request, Action<IRqlSettings> configure)
+        => TransformInternal(source, request, configure, false);
+
+    private RqlResponse<TView> TransformInternal(IQueryable<TStorage> source, RqlRequest request, Action<IRqlSettings> configure, bool skipTransformStage)
     {
         using var scope = _serviceProvider.CreateScope();
         var settingsAccessor = GetService<IRqlSettingsAccessor>();
-        settingsAccessor.Override(request.Settings);
+        configure(settingsAccessor.Current);
 
         var context = GetService<IQueryContext<TView>>();
 

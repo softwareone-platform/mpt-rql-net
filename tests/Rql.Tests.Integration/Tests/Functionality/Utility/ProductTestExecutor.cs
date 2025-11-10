@@ -12,7 +12,7 @@ public class ProductTestExecutor : TestExecutor<Product>
 
     public override IQueryable<Product> GetQuery() => ProductRepository.Query();
 
-    protected override void Customize(RqlSettings settings)
+    protected override void Customize(IRqlSettings settings)
     {
         settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
         settings.Select.Explicit = RqlSelectModes.All;

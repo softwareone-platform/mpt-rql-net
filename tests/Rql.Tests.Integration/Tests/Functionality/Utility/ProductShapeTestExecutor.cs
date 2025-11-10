@@ -12,7 +12,7 @@ public class ProductShapeTestExecutor : TestExecutor<ShapedProduct>
 
     public override IQueryable<ShapedProduct> GetQuery() => ShapedProductRepository.Query();
 
-    protected override void Customize(RqlSettings settings)
+    protected override void Customize(IRqlSettings settings)
     {
         settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
         settings.Select.Explicit = RqlSelectModes.All;

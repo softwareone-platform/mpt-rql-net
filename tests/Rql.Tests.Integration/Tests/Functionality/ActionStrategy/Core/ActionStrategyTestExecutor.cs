@@ -20,7 +20,7 @@ public class ActionStrategyTestExecutor : TestExecutor<ActionStrategyTestItem>
 
     public override IQueryable<ActionStrategyTestItem> GetQuery() => ActionStrategyTestItemRepository.Query();
 
-    protected override void Customize(RqlSettings settings)
+    protected override void Customize(IRqlSettings settings)
     {
         settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
         settings.Select.Explicit = RqlSelectModes.All;

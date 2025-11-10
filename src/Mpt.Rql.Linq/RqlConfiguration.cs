@@ -13,20 +13,7 @@ public class RqlConfiguration
     public RqlConfiguration()
     {
         OperatorOverrides = [];
-
-        Settings = new GlobalRqlSettings
-        {
-            General = new RqlGeneralSettings
-            {
-                DefaultActions = RqlActions.All,
-
-            },
-            Select = new RqlSelectSettings
-            {
-                Implicit = RqlSelectModes.Core,
-                Explicit = RqlSelectModes.Core
-            }
-        };
+        Settings = new GlobalRqlSettings();
     }
 
     internal Assembly? ViewMappersAssembly { get; private set; }

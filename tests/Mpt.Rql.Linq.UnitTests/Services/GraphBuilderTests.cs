@@ -31,7 +31,10 @@ public class GraphBuilderTests
         _queryContext = new QueryContext<Product>();
         _rqlParser = new RqlParser();
 
-        var settings = new GlobalRqlSettings { Select = new RqlSelectSettings { Explicit = RqlSelectModes.All, Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive } };
+        var settings = new GlobalRqlSettings();
+        settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive;
+        settings.Select.Explicit = RqlSelectModes.All;
+
         var metadataProvider = new MetadataProvider(new PropertyNameProvider(), new MetadataFactory(settings));
         var builderContext = new BuilderContext();
 

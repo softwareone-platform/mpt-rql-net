@@ -4,14 +4,14 @@ namespace Mpt.Rql.Abstractions.Configuration;
 
 public class RqlSettings : IRqlSettings
 {
-    public RqlMappingSettings Mapping { get; init; } = new();
+    public RqlMappingSettings Mapping { get; } = new();
 
-    public RqlSelectSettings Select { get; init; } = new();
+    public RqlSelectSettings Select { get; } = new();
 
-    public RqlFilterSettings Filter { get; init; } = new();
+    public RqlFilterSettings Filter { get; } = new();
 }
 
 public class GlobalRqlSettings : RqlSettings, IRqlGlobalSettings
 {
-    public RqlGeneralSettings General { get; init; } = new();
+    public RqlGeneralSettings General { get; } = new();
 }

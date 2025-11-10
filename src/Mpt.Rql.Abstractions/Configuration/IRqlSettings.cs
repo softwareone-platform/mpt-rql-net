@@ -4,9 +4,9 @@ namespace Mpt.Rql.Abstractions.Configuration;
 
 public interface IRqlSettings
 {
-    RqlMappingSettings Mapping { get; init; }
+    RqlMappingSettings Mapping { get; }
 
-    RqlSelectSettings Select { get; init; }
+    RqlSelectSettings Select { get; }
 
-    RqlFilterSettings Filter { get; init; }
+    RqlFilterSettings Filter { get; }
 }
