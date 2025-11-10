@@ -1,14 +1,13 @@
-﻿using Rql.Sample.Contracts.Ef.Products;
+using Rql.Sample.Contracts.Ef.Products;
 using Rql.Sample.Domain.Ef;
-using SoftwareOne.Rql;
+using Mpt.Rql;
 
-namespace Rql.Sample.Api.Mapping
+namespace Rql.Sample.Api.Mapping;
+
+internal class ProductModelMapper : IRqlMapper<ProductModel, ProductModelView>
 {
-    internal class ProductModelMapper : IRqlMapper<ProductModel, ProductModelView>
+    public void MapEntity(IRqlMapperContext<ProductModel, ProductModelView> context)
     {
-        public void MapEntity(IRqlMapperContext<ProductModel, ProductModelView> context)
-        {
-            context.MapStatic(t => t.Name, t => t.Name);
-        }
+        context.MapStatic(t => t.Name, t => t.Name);
     }
 }

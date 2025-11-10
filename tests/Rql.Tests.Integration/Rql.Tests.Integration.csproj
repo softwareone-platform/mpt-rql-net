@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -23,8 +23,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\SoftwareOne.Rql.Abstractions\SoftwareOne.Rql.Abstractions.csproj" />
-        <ProjectReference Include="..\..\src\SoftwareOne.Rql.Linq\SoftwareOne.Rql.Linq.csproj" />
+        <ProjectReference Include="..\..\src\Mpt.Rql.Abstractions\Mpt.Rql.Abstractions.csproj" />
+        <ProjectReference Include="..\..\src\Mpt.Rql.Linq\Mpt.Rql.Linq.csproj" />
     </ItemGroup>
 
 </Project>

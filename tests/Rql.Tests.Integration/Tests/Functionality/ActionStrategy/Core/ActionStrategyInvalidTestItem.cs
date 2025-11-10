@@ -1,13 +1,12 @@
-﻿using Rql.Tests.Integration.Core;
-using SoftwareOne.Rql;
+using Rql.Tests.Integration.Core;
+using Mpt.Rql;
 
-namespace Rql.Tests.Integration.Tests.Functionality.ActionStrategy.Core
+namespace Rql.Tests.Integration.Tests.Functionality.ActionStrategy.Core;
+
+public class ActionStrategyInvalidTestItem : ITestEntity
 {
-    public class ActionStrategyInvalidTestItem : ITestEntity
-    {
-        public int Id { get; set; }
+    public int Id { get; set; }
 
-        [RqlProperty(ActionStrategy = typeof(object))]
-        public int InvalidStrategy { get; set; }
-    }
+    [RqlProperty(ActionStrategy = typeof(object))]
+    public int InvalidStrategy { get; set; }
 }

@@ -1,7 +1,7 @@
-﻿#pragma warning disable IDE0130
+#pragma warning disable IDE0130
 using System.Text.Json.Serialization;
 
-namespace SoftwareOne.Rql;
+namespace Mpt.Rql;
 
 public class ListResponse<T>
 {

@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Rql.Tests.Integration.Tests.Functionality.Utility;
 using Xunit;
 
@@ -16,7 +16,7 @@ public class BasicGraphBuilderTests
     [Fact]
     public void Simple_Request_Should_BuildGraph()
     {
-        var graphResponse = TestExecutor.Rql.BuildGraph(new SoftwareOne.Rql.RqlRequest { });
+        var graphResponse = TestExecutor.Rql.BuildGraph(new Mpt.Rql.RqlRequest { });
         graphResponse.IsSuccess.Should().BeTrue();
     }
 }

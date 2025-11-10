@@ -1,9 +1,8 @@
-﻿using SoftwareOne.Rql;
+using Mpt.Rql;
 
-namespace Rql.Tests.Integration.Tests.Functionality.ActionStrategy.Core
+namespace Rql.Tests.Integration.Tests.Functionality.ActionStrategy.Core;
+
+internal class AllowNothingActionStrategy : IActionStrategy
 {
-    internal class AllowNothingActionStrategy : IActionStrategy
-    {
-        public bool IsAllowed(RqlActions action) => false;
-    }
+    public bool IsAllowed(RqlActions action) => false;
 }

@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SoftwareOne.Rql;
-using SoftwareOne.Rql.Abstractions;
+using Mpt.Rql;
+using Mpt.Rql.Abstractions;
 using System.Globalization;
 using System.Linq.Expressions;
 

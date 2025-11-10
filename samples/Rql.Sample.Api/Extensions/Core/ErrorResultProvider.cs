@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using SoftwareOne.Rql.Abstractions.Result;
+using Mpt.Rql.Abstractions.Result;
 
 namespace Rql.Sample.Api.Extensions.Core;
 

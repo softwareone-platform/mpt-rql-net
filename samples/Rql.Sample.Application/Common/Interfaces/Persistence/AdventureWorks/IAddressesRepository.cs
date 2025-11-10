@@ -1,9 +1,8 @@
-﻿using Rql.Sample.Domain.Ef;
+using Rql.Sample.Domain.Ef;
 
-namespace Rql.Sample.Application.Common.Interfaces.Persistence.AdventureWorks
+namespace Rql.Sample.Application.Common.Interfaces.Persistence.AdventureWorks;
+
+public interface IAddressesRepository
 {
-    public interface IAddressesRepository
-    {
-        public IQueryable<Address> Query();
-    }
+    public IQueryable<Address> Query();
 }
