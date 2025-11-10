@@ -1,7 +1,6 @@
-﻿namespace SoftwareOne.Rql.Abstractions.Argument.Pointer
+namespace SoftwareOne.Rql.Abstractions.Argument.Pointer;
+
+public class RqlSelf : RqlPointer
 {
-    public class RqlSelf : RqlPointer
-    {
-        internal RqlSelf(RqlExpression? inner = null) : base(inner) { }
-    }
+    internal RqlSelf(RqlExpression? inner = null) : base(inner) { }
 }

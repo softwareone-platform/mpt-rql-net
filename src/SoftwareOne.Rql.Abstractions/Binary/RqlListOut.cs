@@ -1,9 +1,8 @@
-﻿namespace SoftwareOne.Rql.Abstractions.Binary
+namespace SoftwareOne.Rql.Abstractions.Binary;
+
+public class RqlListOut : RqlBinary
 {
-    public class RqlListOut : RqlBinary
+    internal RqlListOut(RqlExpression left, RqlExpression right) : base(left, right)
     {
-        internal RqlListOut(RqlExpression left, RqlExpression right) : base(left, right)
-        {
-        }
     }
 }

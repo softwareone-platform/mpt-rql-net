@@ -1,9 +1,8 @@
-﻿using SoftwareOne.Rql.Abstractions.Result;
+using SoftwareOne.Rql.Abstractions.Result;
 
-namespace SoftwareOne.Rql.Linq.Services.Filtering
+namespace SoftwareOne.Rql.Linq.Services.Filtering;
+
+internal static class FilteringError
 {
-    internal static class FilteringError
-    {
-        public static Error Internal { get; } = Error.General("Internal filtering error occurred. Please contact RQL package maintainer.", "internal");
-    }
+    public static Error Internal { get; } = Error.General("Internal filtering error occurred. Please contact RQL package maintainer.", "internal");
 }

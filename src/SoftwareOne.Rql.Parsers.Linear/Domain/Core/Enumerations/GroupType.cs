@@ -1,9 +1,8 @@
-﻿namespace SoftwareOne.Rql.Parsers.Linear.Domain.Core.Enumerations
+namespace SoftwareOne.Rql.Parsers.Linear.Domain.Core.Enumerations;
+
+internal enum GroupType
 {
-    internal enum GroupType
-    {
-        None,
-        And,
-        Or
-    }
+    None,
+    And,
+    Or
 }

@@ -6,44 +6,43 @@ using Rql.Sample.Contracts.Ef.Products;
 using Rql.Sample.Domain.Ef;
 using SoftwareOne.Rql;
 
-namespace Rql.Sample.Api.Controllers
+namespace Rql.Sample.Api.Controllers;
+
+[ApiController]
+[Route("ef")]
+public class EfController : ControllerBase
 {
-    [ApiController]
-    [Route("ef")]
-    public class EfController : ControllerBase
+    private readonly ISender _mediator;
+
+    public EfController(ISender mediator)
     {
-        private readonly ISender _mediator;
+        _mediator = mediator;
+    }
 
-        public EfController(ISender mediator)
-        {
-            _mediator = mediator;
-        }
+    [HttpGet("addresses")]
+    [Produces(typeof(ListResponse<Address>))]
+    public async Task<IActionResult> Addresses(
+        [FromServices] IRqlRequest<Address> rql)
+    {
+        var data = await _mediator.Send(new ListAddressesQuery(string.Empty));
+        return await rql.ProcessAsync(data);
+    }
 
-        [HttpGet("addresses")]
-        [Produces(typeof(ListResponse<Address>))]
-        public async Task<IActionResult> Addresses(
-            [FromServices] IRqlRequest<Address> rql)
-        {
-            var data = await _mediator.Send(new ListAddressesQuery(string.Empty));
-            return await rql.ProcessAsync(data);
-        }
+    [HttpGet("products")]
+    [Produces(typeof(ListResponse<Product>))]
+    public async Task<IActionResult> Products(
+        [FromServices] IRqlRequest<Product> rql)
+    {
+        var data = await _mediator.Send(new ListProductsQuery(string.Empty));
+        return await rql.ProcessAsync(data);
+    }
 
-        [HttpGet("products")]
-        [Produces(typeof(ListResponse<Product>))]
-        public async Task<IActionResult> Products(
-            [FromServices] IRqlRequest<Product> rql)
-        {
-            var data = await _mediator.Send(new ListProductsQuery(string.Empty));
-            return await rql.ProcessAsync(data);
-        }
-
-        [HttpGet("products/view")]
-        [Produces(typeof(ListResponse<ProductView>))]
-        public async Task<IActionResult> ProductsView(
-            [FromServices] IRqlRequest<Product, ProductView> rql)
-        {
-            var data = await _mediator.Send(new ListProductsQuery(string.Empty));
-            return await rql.ProcessAsync(data);
-        }
+    [HttpGet("products/view")]
+    [Produces(typeof(ListResponse<ProductView>))]
+    public async Task<IActionResult> ProductsView(
+        [FromServices] IRqlRequest<Product, ProductView> rql)
+    {
+        var data = await _mediator.Send(new ListProductsQuery(string.Empty));
+        return await rql.ProcessAsync(data);
     }
 }

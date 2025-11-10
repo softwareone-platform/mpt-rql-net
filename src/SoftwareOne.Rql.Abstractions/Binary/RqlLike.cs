@@ -1,11 +1,10 @@
-﻿using SoftwareOne.Rql.Abstractions;
+using SoftwareOne.Rql.Abstractions;
 
-namespace SoftwareOne.Rql.Abstractions.Binary
+namespace SoftwareOne.Rql.Abstractions.Binary;
+
+public class RqlLike : RqlBinary
 {
-    public class RqlLike : RqlBinary
+    internal RqlLike(RqlExpression left, RqlExpression right) : base(left, right)
     {
-        internal RqlLike(RqlExpression left, RqlExpression right) : base(left, right)
-        {
-        }
     }
 }

@@ -1,14 +1,13 @@
-﻿namespace SoftwareOne.Rql.Abstractions.Argument.Pointer
+namespace SoftwareOne.Rql.Abstractions.Argument.Pointer;
+
+public abstract class RqlPointer : RqlArgument
 {
-    public abstract class RqlPointer : RqlArgument
+    private readonly RqlExpression? _inner;
+
+    private protected RqlPointer(RqlExpression? inner = null)
     {
-        private readonly RqlExpression? _inner;
-
-        private protected RqlPointer(RqlExpression? inner = null)
-        {
-            _inner = inner;
-        }
-
-        public RqlExpression? Inner => _inner;
+        _inner = inner;
     }
+
+    public RqlExpression? Inner => _inner;
 }

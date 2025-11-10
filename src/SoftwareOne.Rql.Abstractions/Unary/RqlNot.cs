@@ -1,9 +1,8 @@
-﻿namespace SoftwareOne.Rql.Abstractions.Unary
+namespace SoftwareOne.Rql.Abstractions.Unary;
+
+public class RqlNot : RqlUnary
 {
-    public class RqlNot : RqlUnary
+    internal RqlNot(RqlExpression expression) : base(expression)
     {
-        internal RqlNot(RqlExpression expression) : base(expression)
-        {
-        }
     }
 }

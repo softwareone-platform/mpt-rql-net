@@ -1,8 +1,7 @@
-﻿namespace Rql.Sample.Api
+﻿namespace Rql.Sample.Api;
+
+public static class QueryConstants
 {
-    public static class QueryConstants
-    {
-        public const string Limit = "limit";
-        public const string Offset = "offset";
-    }
+    public const string Limit = "limit";
+    public const string Offset = "offset";
 }

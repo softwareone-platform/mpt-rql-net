@@ -1,7 +1,6 @@
-﻿namespace SoftwareOne.Rql.Abstractions.Group
+namespace SoftwareOne.Rql.Abstractions.Group;
+
+public class RqlAnd : RqlGroup
 {
-    public class RqlAnd : RqlGroup
-    {
-        internal RqlAnd(IEnumerable<RqlExpression> expressions) : base(expressions) { }
-    }
+    internal RqlAnd(IEnumerable<RqlExpression> expressions) : base(expressions) { }
 }

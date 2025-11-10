@@ -1,9 +1,8 @@
-﻿namespace SoftwareOne.Rql.Abstractions.Binary
+namespace SoftwareOne.Rql.Abstractions.Binary;
+
+public class RqlLessThanOrEqual : RqlBinary
 {
-    public class RqlLessThanOrEqual : RqlBinary
+    internal RqlLessThanOrEqual(RqlExpression left, RqlExpression right) : base(left, right)
     {
-        internal RqlLessThanOrEqual(RqlExpression left, RqlExpression right) : base(left, right)
-        {
-        }
     }
 }

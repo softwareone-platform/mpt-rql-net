@@ -1,9 +1,8 @@
-﻿using SoftwareOne.Rql.Abstractions.Group;
+using SoftwareOne.Rql.Abstractions.Group;
 
-namespace SoftwareOne.Rql.Abstractions
+namespace SoftwareOne.Rql.Abstractions;
+
+public interface IRqlParser
 {
-    public interface IRqlParser
-    {
-        RqlGroup Parse(string expression);
-    }
+    RqlGroup Parse(string expression);
 }

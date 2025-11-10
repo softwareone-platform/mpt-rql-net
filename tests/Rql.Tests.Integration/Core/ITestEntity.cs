@@ -1,7 +1,6 @@
-﻿namespace Rql.Tests.Integration.Core
+namespace Rql.Tests.Integration.Core;
+
+public interface ITestEntity
 {
-    public interface ITestEntity
-    {
-        int Id { get; set; }
-    }
+    int Id { get; set; }
 }

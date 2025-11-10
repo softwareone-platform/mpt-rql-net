@@ -1,13 +1,12 @@
-﻿using SoftwareOne.Rql;
+using SoftwareOne.Rql;
 using System.Reflection;
 
-namespace Rql.Tests.Integration.Tests.Extensibility.Utility
+namespace Rql.Tests.Integration.Tests.Extensibility.Utility;
+
+internal class CustomPropertyNameProvider : IPropertyNameProvider
 {
-    internal class CustomPropertyNameProvider : IPropertyNameProvider
+    public string GetName(PropertyInfo property)
     {
-        public string GetName(PropertyInfo property)
-        {
-            throw new NotImplementedException();
-        }
+        throw new NotImplementedException();
     }
 }

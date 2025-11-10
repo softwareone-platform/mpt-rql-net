@@ -1,35 +1,34 @@
 using Rql.Sample.Application;
 using Rql.Sample.Infrastructure;
 
-namespace Rql.Sample.Api
+namespace Rql.Sample.Api;
+
+public static class Program
 {
-    public static class Program
+    private const string CorsPolicyName = "__cors_policy";
+
+    public static void Main(string[] args)
     {
-        private const string CorsPolicyName = "__cors_policy";
+        var builder = WebApplication.CreateBuilder(args);
 
-        public static void Main(string[] args)
+        builder.Services
+            .AddPresentation()
+            .AddApplication()
+            .AddInfrastructure();
+
+        builder.Services.AddCors(options =>
         {
-            var builder = WebApplication.CreateBuilder(args);
-
-            builder.Services
-                .AddPresentation()
-                .AddApplication()
-                .AddInfrastructure();
-
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy(name: CorsPolicyName, b => b.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
-            });
+            options.AddPolicy(name: CorsPolicyName, b => b.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+        });
 
 
-            var app = builder.Build();
-            app.UseCors(CorsPolicyName);
-            app.UseSwagger();
-            app.UseSwaggerUI();
-            app.UseAuthorization();
-            app.MapControllers();
-            // app.UseExceptionHandler("/error");
-            app.Run();
-        }
+        var app = builder.Build();
+        app.UseCors(CorsPolicyName);
+        app.UseSwagger();
+        app.UseSwaggerUI();
+        app.UseAuthorization();
+        app.MapControllers();
+        // app.UseExceptionHandler("/error");
+        app.Run();
     }
 }

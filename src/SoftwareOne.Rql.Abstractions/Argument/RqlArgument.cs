@@ -1,6 +1,5 @@
-﻿namespace SoftwareOne.Rql.Abstractions.Argument
+namespace SoftwareOne.Rql.Abstractions.Argument;
+
+public abstract class RqlArgument : RqlExpression
 {
-    public abstract class RqlArgument : RqlExpression
-    {
-    }
 }

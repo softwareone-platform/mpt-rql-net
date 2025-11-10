@@ -1,8 +1,7 @@
-﻿namespace Rql.Tests.Integration.Tests.Extensibility.Utility
+namespace Rql.Tests.Integration.Tests.Extensibility.Utility;
+
+internal class ProductView
 {
-    internal class ProductView
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = null!;
-    }
+    public int Id { get; set; }
+    public string Name { get; set; } = null!;
 }
