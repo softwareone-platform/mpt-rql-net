@@ -22,7 +22,6 @@
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="Rql.Tests.Unit" />
-		<InternalsVisibleTo Include="Rql.Tests.Parsers.Linear" />
 	</ItemGroup>
 
 </Project>

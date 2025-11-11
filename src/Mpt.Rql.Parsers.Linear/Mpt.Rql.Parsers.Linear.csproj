@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -16,6 +16,11 @@
 	<ItemGroup>
 		<InternalsVisibleTo Include="Rql.Tests.Common" />
 		<InternalsVisibleTo Include="Rql.Tests.Parsers.Linear" />
+	</ItemGroup>
+
+	
+	<ItemGroup>
+	  <Folder Include="Domain\" />
 	</ItemGroup>
 
 </Project>
