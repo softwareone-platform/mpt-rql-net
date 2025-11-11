@@ -1,0 +1,59 @@
+using Mpt.Rql.Abstractions.Configuration;
+using Mpt.Rql.Services.Filtering.Operators;
+using Mpt.Rql.Services.Filtering.Operators.Comparison;
+using Mpt.Rql.Services.Filtering.Operators.List;
+using Mpt.Rql.Services.Filtering.Operators.Search;
+using Mpt.Rql.Settings;
+using System.Reflection;
+
+#pragma warning disable IDE0130
+namespace Mpt.Rql;
+public class RqlConfiguration
+{
+    public RqlConfiguration()
+    {
+        OperatorOverrides = [];
+        Settings = new GlobalRqlSettings();
+    }
+
+    internal Assembly? ViewMappersAssembly { get; private set; }
+
+    internal Type? PropertyMapperType { get; private set; }
+
+    internal Dictionary<Type, Type> OperatorOverrides { get; init; }
+
+    public IRqlGlobalSettings Settings { get; init; }
+
+    public RqlConfiguration SetComparisonHandler<TOperator, THandler>() where TOperator : IComparisonOperator, IActualOperator where THandler : TOperator
+        => SetOperatorInternal<TOperator, THandler>();
+
+    public RqlConfiguration SetSearchHandler<TOperator, THandler>() where TOperator : ISearchOperator, IActualOperator where THandler : TOperator
+        => SetOperatorInternal<TOperator, THandler>();
+
+    public RqlConfiguration SetListHandler<TOperator, THandler>() where TOperator : IListOperator, IActualOperator where THandler : TOperator
+        => SetOperatorInternal<TOperator, THandler>();
+
+    public RqlConfiguration SetPropertyNameProvider<T>() where T : IPropertyNameProvider
+    {
+        PropertyMapperType = typeof(T);
+        return this;
+    }
+
+    /// <summary>
+    /// Scan provided assembly for IRqlMapper implementations.
+    /// Only one assembly may be registered for scan.
+    /// </summary>
+    /// <param name="assembly">Assembly to be scanned</param>
+    /// <returns></returns>
+    public RqlConfiguration ScanForMappers(Assembly assembly)
+    {
+        ViewMappersAssembly = assembly;
+        return this;
+    }
+
+    private RqlConfiguration SetOperatorInternal<TExpression, TImplementation>()
+    {
+        OperatorOverrides[typeof(TExpression)] = typeof(TImplementation);
+        return this;
+    }
+}

@@ -1,15 +1,14 @@
-#pragma warning disable IDE0130
-using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Result;
 
+#pragma warning disable IDE0130
 namespace Mpt.Rql;
 
 public class RqlGraphResponse
 {
     public bool IsSuccess { get; set; }
-    
+
     public List<Error> Errors { get; set; } = null!;
-    
+
     public IRqlNode Graph { get; set; } = null!;
 }
 

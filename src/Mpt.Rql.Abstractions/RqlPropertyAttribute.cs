@@ -1,6 +1,6 @@
-#pragma warning disable IDE0130
 using Mpt.Rql.Abstractions.Exception;
 
+#pragma warning disable IDE0130
 namespace Mpt.Rql;
 
 [AttributeUsage(AttributeTargets.Property)]
