@@ -138,7 +138,7 @@ public class StringComparisonStrategyTests
     public void StringComparisonStrategy_ShouldHaveCorrectNames()
     {
         // Assert
-        Assert.Equal("Simple", Enum.GetName(typeof(StringComparisonStrategy), StringComparisonStrategy.Default));
+        Assert.Equal("Default", Enum.GetName(typeof(StringComparisonStrategy), StringComparisonStrategy.Default));
         Assert.Equal("Lexicographical", Enum.GetName(typeof(StringComparisonStrategy), StringComparisonStrategy.Lexicographical));
     }
 }
