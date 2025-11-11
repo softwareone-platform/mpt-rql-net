@@ -23,7 +23,7 @@ public class CaseSensitivityTests
         bool caseInsensitive = false)
     {
         var settings = new RqlSettings();
-        settings.Filter.Strings.CaseInsensitive = caseInsensitive;
+        settings.Filter.Strings.Comparison = caseInsensitive ? StringComparison.OrdinalIgnoreCase : null;
 
         var contextSubstitute = new QueryContext<TView>();
         var graphBuilder = new Mock<IFilteringGraphBuilder<TView>>();
@@ -74,7 +74,7 @@ public class CaseSensitivityTests
     {
         // Arrange
         var settings = new RqlSettings();
-        settings.Filter.Strings.CaseInsensitive = true;
+        settings.Filter.Strings.Comparison = StringComparison.OrdinalIgnoreCase;
         
         var (sut, context) = BuildSut<SampleEntityView>(
             RqlParserFactory.RqlEqual("name", "jewelry widget"), 
@@ -99,7 +99,7 @@ public class CaseSensitivityTests
     {
         // Arrange
         var settings = new RqlSettings();
-        settings.Filter.Strings.CaseInsensitive = true;
+        settings.Filter.Strings.Comparison = StringComparison.OrdinalIgnoreCase;
         
         var (sut, context) = BuildSut<SampleEntityView>(
             RqlParserFactory.RqlEqual("name", searchValue), 
@@ -142,7 +142,7 @@ public class CaseSensitivityTests
     {
         // Arrange
         var settings = new RqlSettings();
-        settings.Filter.Strings.CaseInsensitive = true;
+        settings.Filter.Strings.Comparison = StringComparison.OrdinalIgnoreCase;
         
         var (sut, context) = BuildSut<SampleEntityView>(
             RqlParserFactory.RqlNotEqual(), 
@@ -202,7 +202,7 @@ public class CaseSensitivityTests
     {
         // Arrange
         var settings = new RqlSettings();
-        settings.Filter.Strings.CaseInsensitive = true;
+        settings.Filter.Strings.Comparison = StringComparison.OrdinalIgnoreCase;
         
         var (sut, context) = BuildSut<SampleEntityView>(
             RqlParserFactory.RqlLike("*widget"), 
@@ -232,7 +232,7 @@ public class CaseSensitivityTests
     {
         // Arrange
         var settings = new RqlSettings();
-        settings.Filter.Strings.CaseInsensitive = true;
+        settings.Filter.Strings.Comparison = StringComparison.OrdinalIgnoreCase;
         
         var (sut, context) = BuildSut<SampleEntityView>(
             RqlParserFactory.RqlLike(pattern), 
@@ -257,7 +257,7 @@ public class CaseSensitivityTests
     {
         // Arrange
         var settings = new RqlSettings();
-        settings.Filter.Strings.CaseInsensitive = true;
+        settings.Filter.Strings.Comparison = StringComparison.OrdinalIgnoreCase;
         
         var (sut, context) = BuildSut<SampleEntityView>(
             RqlParserFactory.RqlLike(pattern.ToLower()), 
@@ -286,8 +286,8 @@ public class CaseSensitivityTests
         // Arrange
         var settings = new RqlSettings();
 
-        // Assert
-        Assert.False(settings.Filter.Strings.CaseInsensitive);
+        // Assert - Default should be null (which means use default string behavior)
+        Assert.Null(settings.Filter.Strings.Comparison);
     }
 
     [Fact]
@@ -297,21 +297,21 @@ public class CaseSensitivityTests
         var settings = new RqlSettings();
 
         // Act
-        settings.Filter.Strings.CaseInsensitive = true;
+        settings.Filter.Strings.Comparison = StringComparison.OrdinalIgnoreCase;
 
         // Assert
-        Assert.True(settings.Filter.Strings.CaseInsensitive);
+        Assert.Equal(StringComparison.OrdinalIgnoreCase, settings.Filter.Strings.Comparison);
     }
 
     [Theory]
-    [InlineData(StringComparisonType.Simple)]
-    [InlineData(StringComparisonType.Lexicographical)]
-    public void Configuration_CaseInsensitivityWorksWithBothComparisonTypes(StringComparisonType comparisonType)
+    [InlineData(StringComparisonStrategy.Simple)]
+    [InlineData(StringComparisonStrategy.Lexicographical)]
+    public void Configuration_CaseInsensitivityWorksWithBothComparisonTypes(StringComparisonStrategy strategy)
     {
         // Arrange
         var settings = new RqlSettings();
-        settings.Filter.Strings.ComparisonType = comparisonType;
-        settings.Filter.Strings.CaseInsensitive = true;
+        settings.Filter.Strings.Strategy = strategy;
+        settings.Filter.Strings.Comparison = StringComparison.OrdinalIgnoreCase;
         
         var (sut, context) = BuildSut<SampleEntityView>(
             RqlParserFactory.RqlEqual("name", "jewelry widget"), 

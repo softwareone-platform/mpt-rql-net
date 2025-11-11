@@ -16,8 +16,8 @@ internal class NotEqual(IRqlSettings settings) : ComparisonOperator(settings), I
 
     protected override Result<Expression> MakeBinaryExpression(Expression accessor, string? value)
     {
-        if (accessor.Type == typeof(string) && value != null && _settings.Filter.Strings.CaseInsensitive)
-            return StringExpressionHelper.NotEquals(accessor, value, true);
+        if (accessor.Type == typeof(string) && value != null)
+            return StringExpressionHelper.NotEquals(accessor, value, _settings.Filter.Strings.Comparison);
 
         return base.MakeBinaryExpression(accessor, value);
     }

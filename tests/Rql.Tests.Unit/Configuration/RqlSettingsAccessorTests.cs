@@ -20,7 +20,7 @@ public class RqlSettingsAccessorTests
         globalSettings.Select.Implicit = RqlSelectModes.All;
         globalSettings.Select.Explicit = RqlSelectModes.Core;
         globalSettings.Select.MaxDepth = 42;
-        globalSettings.Filter.Strings.ComparisonType = StringComparisonType.Lexicographical;
+        globalSettings.Filter.Strings.Strategy = StringComparisonStrategy.Lexicographical;
 
         var accessor = new RqlSettingsAccessor(globalSettings);
 

@@ -16,8 +16,8 @@ internal class Equal(IRqlSettings settings) : ComparisonOperator(settings), IEqu
 
     protected override Result<Expression> MakeBinaryExpression(Expression accessor, string? value)
     {
-        if (accessor.Type == typeof(string) && value != null && _settings.Filter.Strings.CaseInsensitive)
-            return StringExpressionHelper.Equals(accessor, value, true);
+        if (accessor.Type == typeof(string) && value != null)
+            return StringExpressionHelper.Equals(accessor, value, _settings.Filter.Strings.Comparison);
 
         return base.MakeBinaryExpression(accessor, value);
     }

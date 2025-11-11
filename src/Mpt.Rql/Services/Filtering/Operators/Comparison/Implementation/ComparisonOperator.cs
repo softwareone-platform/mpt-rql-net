@@ -25,7 +25,7 @@ internal abstract class ComparisonOperator(IRqlSettings settings) : IComparisonO
 
     protected virtual Result<Expression> MakeBinaryExpression(Expression accessor, string? value)
     {
-        if (accessor.Type == typeof(string) && settings.Filter.Strings.ComparisonType == StringComparisonType.Lexicographical && !AvoidLexicographicalComparison)
+        if (accessor.Type == typeof(string) && settings.Filter.Strings.Strategy == StringComparisonStrategy.Lexicographical && !AvoidLexicographicalComparison)
         {
             return Handler(Expression.Call(_stringOperator, accessor, ConstantBuilder.Build(value, typeof(string))), Expression.Constant(0, typeof(int)));
         }

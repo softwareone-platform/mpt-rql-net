@@ -14,51 +14,51 @@ internal static class StringExpressionHelper
     private static readonly MethodInfo EndsWithComparisonMethod = typeof(string).GetMethod(nameof(string.EndsWith), [typeof(string), typeof(StringComparison)])!;
     private static readonly MethodInfo ContainsComparisonMethod = typeof(string).GetMethod(nameof(string.Contains), [typeof(string), typeof(StringComparison)])!;
 
-    public static Expression StartsWith(Expression member, string value, bool caseInsensitive = false)
+    public static Expression StartsWith(Expression member, string value, StringComparison? comparison = null)
     {
-        if (caseInsensitive)
+        if (comparison.HasValue)
         {
-            var comparisonType = Expression.Constant(StringComparison.OrdinalIgnoreCase, typeof(StringComparison));
+            var comparisonType = Expression.Constant(comparison.Value, typeof(StringComparison));
             return Expression.Call(member, StartsWithComparisonMethod, ConstantBuilder.Build(value, typeof(string)), comparisonType);
         }
         return Expression.Call(member, StartsWithMethod, ConstantBuilder.Build(value, typeof(string)));
     }
 
-    public static Expression EndsWith(Expression member, string value, bool caseInsensitive = false)
+    public static Expression EndsWith(Expression member, string value, StringComparison? comparison = null)
     {
-        if (caseInsensitive)
+        if (comparison.HasValue)
         {
-            var comparisonType = Expression.Constant(StringComparison.OrdinalIgnoreCase, typeof(StringComparison));
+            var comparisonType = Expression.Constant(comparison.Value, typeof(StringComparison));
             return Expression.Call(member, EndsWithComparisonMethod, ConstantBuilder.Build(value, typeof(string)), comparisonType);
         }
         return Expression.Call(member, EndsWithMethod, ConstantBuilder.Build(value, typeof(string)));
     }
 
-    public static Expression Contains(Expression member, string value, bool caseInsensitive = false)
+    public static Expression Contains(Expression member, string value, StringComparison? comparison = null)
     {
-        if (caseInsensitive)
+        if (comparison.HasValue)
         {
-            var comparisonType = Expression.Constant(StringComparison.OrdinalIgnoreCase, typeof(StringComparison));
+            var comparisonType = Expression.Constant(comparison.Value, typeof(StringComparison));
             return Expression.Call(member, ContainsComparisonMethod, ConstantBuilder.Build(value, typeof(string)), comparisonType);
         }
         return Expression.Call(member, ContainsMethod, ConstantBuilder.Build(value, typeof(string)));
     }
 
-    public static Expression Equals(Expression member, string value, bool caseInsensitive = false)
+    public static Expression Equals(Expression member, string value, StringComparison? comparison = null)
     {
-        if (caseInsensitive)
+        if (comparison.HasValue)
         {
-            var comparisonType = Expression.Constant(StringComparison.OrdinalIgnoreCase, typeof(StringComparison));
+            var comparisonType = Expression.Constant(comparison.Value, typeof(StringComparison));
             return Expression.Call(member, EqualsWithComparisonMethod, ConstantBuilder.Build(value, typeof(string)), comparisonType);
         }
         return Expression.Call(member, EqualsMethod, ConstantBuilder.Build(value, typeof(string)));
     }
 
-    public static Expression NotEquals(Expression member, string value, bool caseInsensitive = false)
+    public static Expression NotEquals(Expression member, string value, StringComparison? comparison = null)
     {
-        if (caseInsensitive)
+        if (comparison.HasValue)
         {
-            var comparisonType = Expression.Constant(StringComparison.OrdinalIgnoreCase, typeof(StringComparison));
+            var comparisonType = Expression.Constant(comparison.Value, typeof(StringComparison));
             return Expression.Not(Expression.Call(member, EqualsWithComparisonMethod, ConstantBuilder.Build(value, typeof(string)), comparisonType));
         }
         return Expression.Not(Expression.Call(member, EqualsMethod, ConstantBuilder.Build(value, typeof(string))));

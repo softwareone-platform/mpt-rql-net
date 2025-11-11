@@ -19,7 +19,7 @@ public class CaseInsensitiveProductTestExecutor : TestExecutor<Product>
         settings.Select.MaxDepth = 10;
         
         // Enable case insensitive string comparisons
-        settings.Filter.Strings.CaseInsensitive = true;
-        settings.Filter.Strings.ComparisonType = StringComparisonType.Simple;
+        settings.Filter.Strings.Comparison = StringComparison.OrdinalIgnoreCase;
+        settings.Filter.Strings.Strategy = StringComparisonStrategy.Simple;
     }
 }

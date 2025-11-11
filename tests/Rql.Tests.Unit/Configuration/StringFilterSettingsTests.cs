@@ -13,53 +13,53 @@ public class StringFilterSettingsTests
         var settings = new RqlStringFilterSettings();
 
         // Assert
-        Assert.Equal(StringComparisonType.Simple, settings.ComparisonType);
-        Assert.False(settings.CaseInsensitive);
+        Assert.Equal(StringComparisonStrategy.Simple, settings.Strategy);
+        Assert.Null(settings.Comparison);
     }
 
     [Fact]
-    public void RqlStringFilterSettings_CanSetComparisonType()
+    public void RqlStringFilterSettings_CanSetStrategy()
     {
         // Arrange
         var settings = new RqlStringFilterSettings();
 
         // Act
-        settings.ComparisonType = StringComparisonType.Lexicographical;
+        settings.Strategy = StringComparisonStrategy.Lexicographical;
 
         // Assert
-        Assert.Equal(StringComparisonType.Lexicographical, settings.ComparisonType);
+        Assert.Equal(StringComparisonStrategy.Lexicographical, settings.Strategy);
     }
 
     [Fact]
-    public void RqlStringFilterSettings_CanSetCaseInsensitive()
+    public void RqlStringFilterSettings_CanSetComparison()
     {
         // Arrange
         var settings = new RqlStringFilterSettings();
 
         // Act
-        settings.CaseInsensitive = true;
+        settings.Comparison = StringComparison.OrdinalIgnoreCase;
 
         // Assert
-        Assert.True(settings.CaseInsensitive);
+        Assert.Equal(StringComparison.OrdinalIgnoreCase, settings.Comparison);
     }
 
     [Theory]
-    [InlineData(StringComparisonType.Simple, true)]
-    [InlineData(StringComparisonType.Simple, false)]
-    [InlineData(StringComparisonType.Lexicographical, true)]
-    [InlineData(StringComparisonType.Lexicographical, false)]
-    public void RqlStringFilterSettings_CanSetAllCombinations(StringComparisonType comparisonType, bool caseInsensitive)
+    [InlineData(StringComparisonStrategy.Simple, null)]
+    [InlineData(StringComparisonStrategy.Simple, StringComparison.OrdinalIgnoreCase)]
+    [InlineData(StringComparisonStrategy.Lexicographical, null)]
+    [InlineData(StringComparisonStrategy.Lexicographical, StringComparison.CurrentCultureIgnoreCase)]
+    public void RqlStringFilterSettings_CanSetAllCombinations(StringComparisonStrategy strategy, StringComparison? comparison)
     {
         // Arrange
         var settings = new RqlStringFilterSettings();
 
         // Act
-        settings.ComparisonType = comparisonType;
-        settings.CaseInsensitive = caseInsensitive;
+        settings.Strategy = strategy;
+        settings.Comparison = comparison;
 
         // Assert
-        Assert.Equal(comparisonType, settings.ComparisonType);
-        Assert.Equal(caseInsensitive, settings.CaseInsensitive);
+        Assert.Equal(strategy, settings.Strategy);
+        Assert.Equal(comparison, settings.Comparison);
     }
 
     [Fact]
@@ -69,8 +69,8 @@ public class StringFilterSettingsTests
         var globalSettings = new GlobalRqlSettings();
 
         // Assert
-        Assert.Equal(StringComparisonType.Simple, globalSettings.Filter.Strings.ComparisonType);
-        Assert.False(globalSettings.Filter.Strings.CaseInsensitive);
+        Assert.Equal(StringComparisonStrategy.Simple, globalSettings.Filter.Strings.Strategy);
+        Assert.Null(globalSettings.Filter.Strings.Comparison);
     }
 
     [Fact]
@@ -80,12 +80,12 @@ public class StringFilterSettingsTests
         var globalSettings = new GlobalRqlSettings();
 
         // Act
-        globalSettings.Filter.Strings.ComparisonType = StringComparisonType.Lexicographical;
-        globalSettings.Filter.Strings.CaseInsensitive = true;
+        globalSettings.Filter.Strings.Strategy = StringComparisonStrategy.Lexicographical;
+        globalSettings.Filter.Strings.Comparison = StringComparison.OrdinalIgnoreCase;
 
         // Assert
-        Assert.Equal(StringComparisonType.Lexicographical, globalSettings.Filter.Strings.ComparisonType);
-        Assert.True(globalSettings.Filter.Strings.CaseInsensitive);
+        Assert.Equal(StringComparisonStrategy.Lexicographical, globalSettings.Filter.Strings.Strategy);
+        Assert.Equal(StringComparison.OrdinalIgnoreCase, globalSettings.Filter.Strings.Comparison);
     }
 
     [Fact]
@@ -95,8 +95,8 @@ public class StringFilterSettingsTests
         var settings = new RqlSettings();
 
         // Assert
-        Assert.Equal(StringComparisonType.Simple, settings.Filter.Strings.ComparisonType);
-        Assert.False(settings.Filter.Strings.CaseInsensitive);
+        Assert.Equal(StringComparisonStrategy.Simple, settings.Filter.Strings.Strategy);
+        Assert.Null(settings.Filter.Strings.Comparison);
     }
 
     [Fact]
@@ -106,39 +106,39 @@ public class StringFilterSettingsTests
         var settings = new RqlSettings();
 
         // Act
-        settings.Filter.Strings.ComparisonType = StringComparisonType.Lexicographical;
-        settings.Filter.Strings.CaseInsensitive = true;
+        settings.Filter.Strings.Strategy = StringComparisonStrategy.Lexicographical;
+        settings.Filter.Strings.Comparison = StringComparison.OrdinalIgnoreCase;
 
         // Assert
-        Assert.Equal(StringComparisonType.Lexicographical, settings.Filter.Strings.ComparisonType);
-        Assert.True(settings.Filter.Strings.CaseInsensitive);
+        Assert.Equal(StringComparisonStrategy.Lexicographical, settings.Filter.Strings.Strategy);
+        Assert.Equal(StringComparison.OrdinalIgnoreCase, settings.Filter.Strings.Comparison);
     }
 }
 
-public class StringComparisonTypeTests
+public class StringComparisonStrategyTests
 {
     [Fact]
-    public void StringComparisonType_ShouldHaveCorrectValues()
+    public void StringComparisonStrategy_ShouldHaveCorrectValues()
     {
         // Assert
-        Assert.Equal(0, (int)StringComparisonType.Simple);
-        Assert.Equal(1, (int)StringComparisonType.Lexicographical);
+        Assert.Equal(0, (int)StringComparisonStrategy.Simple);
+        Assert.Equal(1, (int)StringComparisonStrategy.Lexicographical);
     }
 
     [Theory]
-    [InlineData(StringComparisonType.Simple)]
-    [InlineData(StringComparisonType.Lexicographical)]
-    public void StringComparisonType_AllValues_ShouldBeValidEnumValues(StringComparisonType value)
+    [InlineData(StringComparisonStrategy.Simple)]
+    [InlineData(StringComparisonStrategy.Lexicographical)]
+    public void StringComparisonStrategy_AllValues_ShouldBeValidEnumValues(StringComparisonStrategy value)
     {
         // Act & Assert
-        Assert.True(Enum.IsDefined(typeof(StringComparisonType), value));
+        Assert.True(Enum.IsDefined(typeof(StringComparisonStrategy), value));
     }
 
     [Fact]
-    public void StringComparisonType_ShouldHaveCorrectNames()
+    public void StringComparisonStrategy_ShouldHaveCorrectNames()
     {
         // Assert
-        Assert.Equal("Simple", Enum.GetName(typeof(StringComparisonType), StringComparisonType.Simple));
-        Assert.Equal("Lexicographical", Enum.GetName(typeof(StringComparisonType), StringComparisonType.Lexicographical));
+        Assert.Equal("Simple", Enum.GetName(typeof(StringComparisonStrategy), StringComparisonStrategy.Simple));
+        Assert.Equal("Lexicographical", Enum.GetName(typeof(StringComparisonStrategy), StringComparisonStrategy.Lexicographical));
     }
 }

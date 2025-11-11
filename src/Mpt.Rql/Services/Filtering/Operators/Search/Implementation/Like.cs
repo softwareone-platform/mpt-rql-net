@@ -20,14 +20,14 @@ internal class Like(IRqlSettings settings) : ILike
         if (validationResult.IsError) return validationResult.Errors;
 
         var cleanedString = CleanToLiteralSearchString(pattern, startsWithWildCard, startsWithEscapedWildCard, endsWithEscapedWildCard, endsWithWildCard);
-        var caseInsensitive = settings.Filter.Strings.CaseInsensitive;
+        var comparison = settings.Filter.Strings.Comparison;
 
         return rqlOperator switch
         {
-            RqlOperators.Contains => StringExpressionHelper.Contains(member, cleanedString, caseInsensitive),
-            RqlOperators.EndsWith => StringExpressionHelper.EndsWith(member, cleanedString, caseInsensitive),
-            RqlOperators.StartsWith => StringExpressionHelper.StartsWith(member, cleanedString, caseInsensitive),
-            RqlOperators.Eq => StringExpressionHelper.Equals(member, cleanedString, caseInsensitive),
+            RqlOperators.Contains => StringExpressionHelper.Contains(member, cleanedString, comparison),
+            RqlOperators.EndsWith => StringExpressionHelper.EndsWith(member, cleanedString, comparison),
+            RqlOperators.StartsWith => StringExpressionHelper.StartsWith(member, cleanedString, comparison),
+            RqlOperators.Eq => StringExpressionHelper.Equals(member, cleanedString, comparison),
             _ => throw new InvalidOperationException($"Unsupported operator: {rqlOperator}")
         };
     }

@@ -6,17 +6,18 @@ namespace Mpt.Rql.Abstractions.Configuration.Filter;
 public interface IRqlStringFilterSettings
 {
     /// <summary>
-    /// Type of string comparison to be used in filtering operations 
+    /// Strategy for string comparison operations in filtering
     /// </summary>
-    StringComparisonType ComparisonType { get; set; }
+    StringComparisonStrategy Strategy { get; set; }
 
     /// <summary>
-    /// If true, all string comparisons will be case insensitive. Otherwise, case sensitivity will depend on the underlying data source.
+    /// String comparison mode for case sensitivity. When null, uses default provider behavior.
+    /// When specified, overrides the default comparison with the given StringComparison.
     /// </summary>
-    bool CaseInsensitive { get; set; }
+    StringComparison? Comparison { get; set; }
 }
 
-public enum StringComparisonType
+public enum StringComparisonStrategy
 {
     /// <summary>
     /// Simple comparison using standard operators 

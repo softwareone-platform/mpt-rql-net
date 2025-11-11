@@ -1,3 +1,4 @@
+using Mpt.Rql.Abstractions.Configuration.Filter;
 using Mpt.Rql.Core.Expressions;
 using Mpt.Rql.Services.Filtering.Operators;
 using System.Linq.Expressions;
@@ -16,14 +17,14 @@ public class StringExpressionHelperTests
     }
 
     [Theory]
-    [InlineData("test", false)]
-    [InlineData("Test", true)]
-    [InlineData("TEST", true)]
-    [InlineData("", false)]
-    public void StartsWith_ShouldGenerateCorrectExpression(string searchValue, bool caseInsensitive)
+    [InlineData("test", null)]
+    [InlineData("Test", StringComparison.OrdinalIgnoreCase)]
+    [InlineData("TEST", StringComparison.OrdinalIgnoreCase)]
+    [InlineData("", null)]
+    public void StartsWith_ShouldGenerateCorrectExpression(string searchValue, StringComparison? comparison)
     {
         // Act
-        var expression = StringExpressionHelper.StartsWith(_memberExpression, searchValue, caseInsensitive);
+        var expression = StringExpressionHelper.StartsWith(_memberExpression, searchValue, comparison);
 
         // Assert
         Assert.IsAssignableFrom<MethodCallExpression>(expression);
@@ -32,27 +33,27 @@ public class StringExpressionHelperTests
         Assert.Equal("StartsWith", methodCall.Method.Name);
         Assert.Equal(_memberExpression, methodCall.Object);
         
-        if (caseInsensitive)
+        if (comparison.HasValue)
         {
             // Should include StringComparison parameter for case insensitive
             Assert.True(methodCall.Arguments.Count >= 2);
             var lastArg = methodCall.Arguments[methodCall.Arguments.Count - 1];
-            if (lastArg is ConstantExpression constantExpr && constantExpr.Value is StringComparison comparison)
+            if (lastArg is ConstantExpression constantExpr && constantExpr.Value is StringComparison actualComparison)
             {
-                Assert.Equal(StringComparison.OrdinalIgnoreCase, comparison);
+                Assert.Equal(comparison.Value, actualComparison);
             }
         }
     }
 
     [Theory]
-    [InlineData("test", false)]
-    [InlineData("Test", true)]
-    [InlineData("TEST", true)]
-    [InlineData("", false)]
-    public void EndsWith_ShouldGenerateCorrectExpression(string searchValue, bool caseInsensitive)
+    [InlineData("test", null)]
+    [InlineData("Test", StringComparison.OrdinalIgnoreCase)]
+    [InlineData("TEST", StringComparison.OrdinalIgnoreCase)]
+    [InlineData("", null)]
+    public void EndsWith_ShouldGenerateCorrectExpression(string searchValue, StringComparison? comparison)
     {
         // Act
-        var expression = StringExpressionHelper.EndsWith(_memberExpression, searchValue, caseInsensitive);
+        var expression = StringExpressionHelper.EndsWith(_memberExpression, searchValue, comparison);
 
         // Assert
         Assert.IsAssignableFrom<MethodCallExpression>(expression);
@@ -61,27 +62,27 @@ public class StringExpressionHelperTests
         Assert.Equal("EndsWith", methodCall.Method.Name);
         Assert.Equal(_memberExpression, methodCall.Object);
         
-        if (caseInsensitive)
+        if (comparison.HasValue)
         {
             // Should include StringComparison parameter for case insensitive
             Assert.True(methodCall.Arguments.Count >= 2);
             var lastArg = methodCall.Arguments[methodCall.Arguments.Count - 1];
-            if (lastArg is ConstantExpression constantExpr && constantExpr.Value is StringComparison comparison)
+            if (lastArg is ConstantExpression constantExpr && constantExpr.Value is StringComparison actualComparison)
             {
-                Assert.Equal(StringComparison.OrdinalIgnoreCase, comparison);
+                Assert.Equal(comparison.Value, actualComparison);
             }
         }
     }
 
     [Theory]
-    [InlineData("test", false)]
-    [InlineData("Test", true)]
-    [InlineData("TEST", true)]
-    [InlineData("", false)]
-    public void Contains_ShouldGenerateCorrectExpression(string searchValue, bool caseInsensitive)
+    [InlineData("test", null)]
+    [InlineData("Test", StringComparison.OrdinalIgnoreCase)]
+    [InlineData("TEST", StringComparison.OrdinalIgnoreCase)]
+    [InlineData("", null)]
+    public void Contains_ShouldGenerateCorrectExpression(string searchValue, StringComparison? comparison)
     {
         // Act
-        var expression = StringExpressionHelper.Contains(_memberExpression, searchValue, caseInsensitive);
+        var expression = StringExpressionHelper.Contains(_memberExpression, searchValue, comparison);
 
         // Assert
         Assert.IsAssignableFrom<MethodCallExpression>(expression);
@@ -90,27 +91,27 @@ public class StringExpressionHelperTests
         Assert.Equal("Contains", methodCall.Method.Name);
         Assert.Equal(_memberExpression, methodCall.Object);
         
-        if (caseInsensitive)
+        if (comparison.HasValue)
         {
             // Should include StringComparison parameter for case insensitive
             Assert.True(methodCall.Arguments.Count >= 2);
             var lastArg = methodCall.Arguments[methodCall.Arguments.Count - 1];
-            if (lastArg is ConstantExpression constantExpr && constantExpr.Value is StringComparison comparison)
+            if (lastArg is ConstantExpression constantExpr && constantExpr.Value is StringComparison actualComparison)
             {
-                Assert.Equal(StringComparison.OrdinalIgnoreCase, comparison);
+                Assert.Equal(comparison.Value, actualComparison);
             }
         }
     }
 
     [Theory]
-    [InlineData("test", false)]
-    [InlineData("Test", true)]
-    [InlineData("TEST", true)]
-    [InlineData("", false)]
-    public void Equals_ShouldGenerateCorrectExpression(string searchValue, bool caseInsensitive)
+    [InlineData("test", null)]
+    [InlineData("Test", StringComparison.OrdinalIgnoreCase)]
+    [InlineData("TEST", StringComparison.OrdinalIgnoreCase)]
+    [InlineData("", null)]
+    public void Equals_ShouldGenerateCorrectExpression(string searchValue, StringComparison? comparison)
     {
         // Act
-        var expression = StringExpressionHelper.Equals(_memberExpression, searchValue, caseInsensitive);
+        var expression = StringExpressionHelper.Equals(_memberExpression, searchValue, comparison);
 
         // Assert
         Assert.IsAssignableFrom<MethodCallExpression>(expression);
@@ -119,27 +120,27 @@ public class StringExpressionHelperTests
         Assert.Equal("Equals", methodCall.Method.Name);
         Assert.Equal(_memberExpression, methodCall.Object);
         
-        if (caseInsensitive)
+        if (comparison.HasValue)
         {
             // Should include StringComparison parameter for case insensitive
             Assert.True(methodCall.Arguments.Count >= 2);
             var lastArg = methodCall.Arguments[methodCall.Arguments.Count - 1];
-            if (lastArg is ConstantExpression constantExpr && constantExpr.Value is StringComparison comparison)
+            if (lastArg is ConstantExpression constantExpr && constantExpr.Value is StringComparison actualComparison)
             {
-                Assert.Equal(StringComparison.OrdinalIgnoreCase, comparison);
+                Assert.Equal(comparison.Value, actualComparison);
             }
         }
     }
 
     [Theory]
-    [InlineData("test", false)]
-    [InlineData("Test", true)]
-    [InlineData("TEST", true)]
-    [InlineData("", false)]
-    public void NotEquals_ShouldGenerateCorrectExpression(string searchValue, bool caseInsensitive)
+    [InlineData("test", null)]
+    [InlineData("Test", StringComparison.OrdinalIgnoreCase)]
+    [InlineData("TEST", StringComparison.OrdinalIgnoreCase)]
+    [InlineData("", null)]
+    public void NotEquals_ShouldGenerateCorrectExpression(string searchValue, StringComparison? comparison)
     {
         // Act
-        var expression = StringExpressionHelper.NotEquals(_memberExpression, searchValue, caseInsensitive);
+        var expression = StringExpressionHelper.NotEquals(_memberExpression, searchValue, comparison);
 
         // Assert
         Assert.IsType<UnaryExpression>(expression);
@@ -150,14 +151,14 @@ public class StringExpressionHelperTests
         Assert.Equal("Equals", methodCall.Method.Name);
         Assert.Equal(_memberExpression, methodCall.Object);
         
-        if (caseInsensitive)
+        if (comparison.HasValue)
         {
             // Should include StringComparison parameter for case insensitive
             Assert.True(methodCall.Arguments.Count >= 2);
             var lastArg = methodCall.Arguments[methodCall.Arguments.Count - 1];
-            if (lastArg is ConstantExpression constantExpr && constantExpr.Value is StringComparison comparison)
+            if (lastArg is ConstantExpression constantExpr && constantExpr.Value is StringComparison actualComparison)
             {
-                Assert.Equal(StringComparison.OrdinalIgnoreCase, comparison);
+                Assert.Equal(comparison.Value, actualComparison);
             }
         }
     }
@@ -168,29 +169,29 @@ public class StringExpressionHelperTests
         // Arrange
         var testData = new[] { new TestObject { Name = "Test Value" } }.AsQueryable();
 
-        // Test case-sensitive operations
+        // Test case-sensitive operations (null = default behavior)
         var startsWithExpr = Expression.Lambda<Func<TestObject, bool>>(
-            StringExpressionHelper.StartsWith(_memberExpression, "Test", false), _parameter);
+            StringExpressionHelper.StartsWith(_memberExpression, "Test", null), _parameter);
         var endsWithExpr = Expression.Lambda<Func<TestObject, bool>>(
-            StringExpressionHelper.EndsWith(_memberExpression, "Value", false), _parameter);
+            StringExpressionHelper.EndsWith(_memberExpression, "Value", null), _parameter);
         var containsExpr = Expression.Lambda<Func<TestObject, bool>>(
-            StringExpressionHelper.Contains(_memberExpression, "st Val", false), _parameter);
+            StringExpressionHelper.Contains(_memberExpression, "st Val", null), _parameter);
         var equalsExpr = Expression.Lambda<Func<TestObject, bool>>(
-            StringExpressionHelper.Equals(_memberExpression, "Test Value", false), _parameter);
+            StringExpressionHelper.Equals(_memberExpression, "Test Value", null), _parameter);
         var notEqualsExpr = Expression.Lambda<Func<TestObject, bool>>(
-            StringExpressionHelper.NotEquals(_memberExpression, "Wrong Value", false), _parameter);
+            StringExpressionHelper.NotEquals(_memberExpression, "Wrong Value", null), _parameter);
 
         // Test case-insensitive operations
         var startsWithCIExpr = Expression.Lambda<Func<TestObject, bool>>(
-            StringExpressionHelper.StartsWith(_memberExpression, "test", true), _parameter);
+            StringExpressionHelper.StartsWith(_memberExpression, "test", StringComparison.OrdinalIgnoreCase), _parameter);
         var endsWithCIExpr = Expression.Lambda<Func<TestObject, bool>>(
-            StringExpressionHelper.EndsWith(_memberExpression, "VALUE", true), _parameter);
+            StringExpressionHelper.EndsWith(_memberExpression, "VALUE", StringComparison.OrdinalIgnoreCase), _parameter);
         var containsCIExpr = Expression.Lambda<Func<TestObject, bool>>(
-            StringExpressionHelper.Contains(_memberExpression, "ST VAL", true), _parameter);
+            StringExpressionHelper.Contains(_memberExpression, "ST VAL", StringComparison.OrdinalIgnoreCase), _parameter);
         var equalsCIExpr = Expression.Lambda<Func<TestObject, bool>>(
-            StringExpressionHelper.Equals(_memberExpression, "TEST VALUE", true), _parameter);
+            StringExpressionHelper.Equals(_memberExpression, "TEST VALUE", StringComparison.OrdinalIgnoreCase), _parameter);
         var notEqualsCIExpr = Expression.Lambda<Func<TestObject, bool>>(
-            StringExpressionHelper.NotEquals(_memberExpression, "WRONG VALUE", true), _parameter);
+            StringExpressionHelper.NotEquals(_memberExpression, "WRONG VALUE", StringComparison.OrdinalIgnoreCase), _parameter);
 
         // Act & Assert - All should return true (match the test data)
         Assert.Single(testData.Where(startsWithExpr.Compile()));
