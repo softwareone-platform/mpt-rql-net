@@ -1,5 +1,4 @@
 #pragma warning disable IDE0130
-#pragma warning disable IDE0130
 namespace Mpt.Rql;
 
 public record RqlRequest
