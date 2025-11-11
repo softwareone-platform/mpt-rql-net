@@ -13,7 +13,7 @@ public class StringFilterSettingsTests
         var settings = new RqlStringFilterSettings();
 
         // Assert
-        Assert.Equal(StringComparisonStrategy.Simple, settings.Strategy);
+        Assert.Equal(StringComparisonStrategy.Default, settings.Strategy);
         Assert.Null(settings.Comparison);
     }
 
@@ -44,8 +44,8 @@ public class StringFilterSettingsTests
     }
 
     [Theory]
-    [InlineData(StringComparisonStrategy.Simple, null)]
-    [InlineData(StringComparisonStrategy.Simple, StringComparison.OrdinalIgnoreCase)]
+    [InlineData(StringComparisonStrategy.Default, null)]
+    [InlineData(StringComparisonStrategy.Default, StringComparison.OrdinalIgnoreCase)]
     [InlineData(StringComparisonStrategy.Lexicographical, null)]
     [InlineData(StringComparisonStrategy.Lexicographical, StringComparison.CurrentCultureIgnoreCase)]
     public void RqlStringFilterSettings_CanSetAllCombinations(StringComparisonStrategy strategy, StringComparison? comparison)
@@ -69,7 +69,7 @@ public class StringFilterSettingsTests
         var globalSettings = new GlobalRqlSettings();
 
         // Assert
-        Assert.Equal(StringComparisonStrategy.Simple, globalSettings.Filter.Strings.Strategy);
+        Assert.Equal(StringComparisonStrategy.Default, globalSettings.Filter.Strings.Strategy);
         Assert.Null(globalSettings.Filter.Strings.Comparison);
     }
 
@@ -95,7 +95,7 @@ public class StringFilterSettingsTests
         var settings = new RqlSettings();
 
         // Assert
-        Assert.Equal(StringComparisonStrategy.Simple, settings.Filter.Strings.Strategy);
+        Assert.Equal(StringComparisonStrategy.Default, settings.Filter.Strings.Strategy);
         Assert.Null(settings.Filter.Strings.Comparison);
     }
 
@@ -121,12 +121,12 @@ public class StringComparisonStrategyTests
     public void StringComparisonStrategy_ShouldHaveCorrectValues()
     {
         // Assert
-        Assert.Equal(0, (int)StringComparisonStrategy.Simple);
+        Assert.Equal(0, (int)StringComparisonStrategy.Default);
         Assert.Equal(1, (int)StringComparisonStrategy.Lexicographical);
     }
 
     [Theory]
-    [InlineData(StringComparisonStrategy.Simple)]
+    [InlineData(StringComparisonStrategy.Default)]
     [InlineData(StringComparisonStrategy.Lexicographical)]
     public void StringComparisonStrategy_AllValues_ShouldBeValidEnumValues(StringComparisonStrategy value)
     {
@@ -138,7 +138,7 @@ public class StringComparisonStrategyTests
     public void StringComparisonStrategy_ShouldHaveCorrectNames()
     {
         // Assert
-        Assert.Equal("Simple", Enum.GetName(typeof(StringComparisonStrategy), StringComparisonStrategy.Simple));
+        Assert.Equal("Simple", Enum.GetName(typeof(StringComparisonStrategy), StringComparisonStrategy.Default));
         Assert.Equal("Lexicographical", Enum.GetName(typeof(StringComparisonStrategy), StringComparisonStrategy.Lexicographical));
     }
 }

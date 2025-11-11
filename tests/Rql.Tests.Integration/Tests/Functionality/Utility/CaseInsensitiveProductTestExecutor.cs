@@ -20,6 +20,6 @@ public class CaseInsensitiveProductTestExecutor : TestExecutor<Product>
         
         // Enable case insensitive string comparisons
         settings.Filter.Strings.Comparison = StringComparison.OrdinalIgnoreCase;
-        settings.Filter.Strings.Strategy = StringComparisonStrategy.Simple;
+        settings.Filter.Strings.Strategy = StringComparisonStrategy.Default;
     }
 }

@@ -20,9 +20,9 @@ public interface IRqlStringFilterSettings
 public enum StringComparisonStrategy
 {
     /// <summary>
-    /// Simple comparison using standard operators 
+    /// Default comparison using standard operators
     /// </summary>
-    Simple,
+    Default,
     /// <summary>
     /// Lexicographical comparison using string.Compare 
     /// </summary>

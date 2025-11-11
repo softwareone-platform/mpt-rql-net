@@ -304,7 +304,7 @@ public class CaseSensitivityTests
     }
 
     [Theory]
-    [InlineData(StringComparisonStrategy.Simple)]
+    [InlineData(StringComparisonStrategy.Default)]
     [InlineData(StringComparisonStrategy.Lexicographical)]
     public void Configuration_CaseInsensitivityWorksWithBothComparisonTypes(StringComparisonStrategy strategy)
     {
