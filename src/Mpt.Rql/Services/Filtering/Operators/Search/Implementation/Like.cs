@@ -1,36 +1,36 @@
 using Mpt.Rql.Abstractions;
+using Mpt.Rql.Abstractions.Configuration;
 using Mpt.Rql.Core;
-using Mpt.Rql.Core.Expressions;
-using Mpt.Rql.Services.Filtering.Operators;
-using Mpt.Rql.Services.Filtering.Operators.Search;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace Mpt.Rql.Services.Filtering.Operators.Search.Implementation;
 
-internal class Like : ILike
+internal class Like(IRqlSettings settings) : ILike
 {
-    private static readonly MethodInfo _methodStartsWith = typeof(string).GetMethod(nameof(string.StartsWith), [typeof(string)])!;
-    private static readonly MethodInfo _methodEndsWith = typeof(string).GetMethod(nameof(string.EndsWith), [typeof(string)])!;
-    private static readonly MethodInfo _methodContains = typeof(string).GetMethod(nameof(string.Contains), [typeof(string)])!;
-    private static readonly MethodInfo _methodEquals = typeof(string).GetMethod(nameof(string.Equals), [typeof(string)])!;
-    private static readonly char _escapeCharacter = '\\'; 
+    private static readonly char _escapeCharacter = '\\';
     private static readonly char _wildcard = '*';
     private static readonly string _escapedWildcard = $"{_escapeCharacter}{_wildcard}";
 
     public Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, string pattern)
     {
         var (startsWithWildCard, startsWithEscapedWildCard, endsWithEscapedWildCard, endsWithWildCard) = ResolveWildCardFacts(pattern);
-        var (methodInfo, rqlOperator) = ResolveMethodInfoAndRqlOperator(pattern, startsWithWildCard, endsWithWildCard);
+        var rqlOperator = ResolveRqlOperator(pattern, startsWithWildCard, endsWithWildCard);
 
         var validationResult = ValidationHelper.ValidateOperatorApplicability(propertyInfo, rqlOperator);
         if (validationResult.IsError) return validationResult.Errors;
 
         var cleanedString = CleanToLiteralSearchString(pattern, startsWithWildCard, startsWithEscapedWildCard, endsWithEscapedWildCard, endsWithWildCard);
-        return Expression.Call(member, methodInfo, ConstantBuilder.Build(cleanedString, typeof(string)));
-    }
+        var caseInsensitive = settings.Filter.Strings.CaseInsensitive;
 
-    protected virtual bool IsInsensitive => false;
+        return rqlOperator switch
+        {
+            RqlOperators.Contains => StringExpressionHelper.Contains(member, cleanedString, caseInsensitive),
+            RqlOperators.EndsWith => StringExpressionHelper.EndsWith(member, cleanedString, caseInsensitive),
+            RqlOperators.StartsWith => StringExpressionHelper.StartsWith(member, cleanedString, caseInsensitive),
+            RqlOperators.Eq => StringExpressionHelper.Equals(member, cleanedString, caseInsensitive),
+            _ => throw new InvalidOperationException($"Unsupported operator: {rqlOperator}")
+        };
+    }
 
     private static (bool, bool, bool, bool) ResolveWildCardFacts(string pattern)
     {
@@ -42,14 +42,14 @@ internal class Like : ILike
         return (startsWithWildCard, startsWithEscapedWildCard, endsWithEscapedWildCard, endsWithWildCard);
     }
 
-    private static (MethodInfo, RqlOperators) ResolveMethodInfoAndRqlOperator(string pattern, bool startsWithWildCard, bool endsWithWildCard)
+    private static RqlOperators ResolveRqlOperator(string pattern, bool startsWithWildCard, bool endsWithWildCard)
     {
         return pattern switch
         {
-            var _ when startsWithWildCard && endsWithWildCard => (_methodContains, RqlOperators.Contains),
-            var _ when startsWithWildCard => (_methodEndsWith, RqlOperators.EndsWith),
-            var _ when endsWithWildCard => (_methodStartsWith, RqlOperators.StartsWith),
-            _ => (_methodEquals, RqlOperators.Eq)
+            var _ when startsWithWildCard && endsWithWildCard => RqlOperators.Contains,
+            var _ when startsWithWildCard => RqlOperators.EndsWith,
+            var _ when endsWithWildCard => RqlOperators.StartsWith,
+            _ => RqlOperators.Eq
         };
     }
 

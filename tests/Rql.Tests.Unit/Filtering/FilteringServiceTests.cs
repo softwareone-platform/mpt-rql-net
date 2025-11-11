@@ -203,7 +203,7 @@ public class FilteringServiceTests
     public void Apply_WithRqlLikeMatch_ReturnsExpectedResult(string query, string searchString, int expectedCount)
     {
         // Arrange
-        var (sut, context) = BuildSut<SampleEntityView>(RqlParserFactory.RqlLike(searchString), new Like());
+        var (sut, context) = BuildSut<SampleEntityView>(RqlParserFactory.RqlLike(searchString), new Like(_settings));
 
         // Act
         sut.Process(query);
@@ -222,7 +222,7 @@ public class FilteringServiceTests
         // is case sensitive. Kept this test in at a unit level for clarity however
 
         // Arrange
-        var (sut, context) = BuildSut<SampleEntityView>(RqlParserFactory.RqlLike(searchString), new Like());
+        var (sut, context) = BuildSut<SampleEntityView>(RqlParserFactory.RqlLike(searchString), new Like(_settings));
 
         // Act
         sut.Process(query);
@@ -276,8 +276,8 @@ public class FilteringServiceTests
         // Arrange
         var parserMock = RqlParserFactory.RqlLike("id", "13*", insensitive);
         var (sut, context) = insensitive
-            ? BuildSut<SampleEntityView>(parserMock, new LikeInsensitive())
-            : BuildSut<SampleEntityView>(parserMock, new Like());
+            ? BuildSut<SampleEntityView>(parserMock, new LikeInsensitive(_settings))
+            : BuildSut<SampleEntityView>(parserMock, new Like(_settings));
         var keyword = insensitive ? "ilike" : "like";
 
         // Act
