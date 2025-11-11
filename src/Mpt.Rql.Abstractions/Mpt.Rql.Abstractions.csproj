@@ -11,7 +11,7 @@
 	<ItemGroup>
 		<InternalsVisibleTo Include="Mpt.UnitTests.Common" />
 		<InternalsVisibleTo Include="Mpt.Rql.Parsers.Linear.UnitTests" />
-		<InternalsVisibleTo Include="Mpt.Rql.Linq.UnitTests" />
+		<InternalsVisibleTo Include="Mpt.Rql.UnitTests" />
 	</ItemGroup>
 
 </Project>

@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D9D73D98-431
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mpt.Rql.Abstractions", "src\Mpt.Rql.Abstractions\Mpt.Rql.Abstractions.csproj", "{CA8E83C5-07D6-427F-8DCC-3900645BFC20}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mpt.Rql.Linq", "src\Mpt.Rql.Linq\Mpt.Rql.Linq.csproj", "{D16DBA99-341B-4871-9E5D-9D9692E267FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mpt.Rql", "src\Mpt.Rql\Mpt.Rql.csproj", "{D16DBA99-341B-4871-9E5D-9D9692E267FE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mpt.Rql.Parsers.Linear", "src\Mpt.Rql.Parsers.Linear\Mpt.Rql.Parsers.Linear.csproj", "{C7A59410-10AA-4751-BD60-2FCF003BF430}"
 EndProject
@@ -39,7 +39,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mpt.Rql.Parsers.Linear.Unit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mpt.UnitTests.Common", "tests\Mpt.UnitTests.Common\Mpt.UnitTests.Common.csproj", "{7CD68018-2867-4169-AD97-514DBBEFB52A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mpt.Rql.Linq.UnitTests", "tests\Mpt.Rql.Linq.UnitTests\Mpt.Rql.Linq.UnitTests.csproj", "{E66632A3-4C40-4489-80F6-6BCF1F5B19B8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mpt.Rql.UnitTests", "tests\Mpt.Rql.UnitTests\Mpt.Rql.UnitTests.csproj", "{E66632A3-4C40-4489-80F6-6BCF1F5B19B8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject

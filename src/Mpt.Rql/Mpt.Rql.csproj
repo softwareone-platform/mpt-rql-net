@@ -16,7 +16,7 @@
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="Mpt.UnitTests.Common" />
-		<InternalsVisibleTo Include="Mpt.Rql.Linq.UnitTests" />
+		<InternalsVisibleTo Include="Mpt.Rql.UnitTests" />
 		<InternalsVisibleTo Include="Rql.Tests.Integration" />
 		<InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
 	</ItemGroup>

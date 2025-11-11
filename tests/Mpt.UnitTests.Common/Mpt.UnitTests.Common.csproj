@@ -17,11 +17,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Mpt.Rql.Abstractions\Mpt.Rql.Abstractions.csproj" />
-    <ProjectReference Include="..\..\src\Mpt.Rql.Linq\Mpt.Rql.Linq.csproj" />
+    <ProjectReference Include="..\..\src\Mpt.Rql\Mpt.Rql.csproj" />
   </ItemGroup>
 
 	<ItemGroup>
-		<InternalsVisibleTo Include="Mpt.Rql.Linq.UnitTests" />
+		<InternalsVisibleTo Include="Mpt.Rql.UnitTests" />
 		<InternalsVisibleTo Include="Mpt.Rql.Parsers.Linear.UnitTests" />
 	</ItemGroup>
 
