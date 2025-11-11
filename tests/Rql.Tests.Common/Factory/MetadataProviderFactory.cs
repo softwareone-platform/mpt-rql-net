@@ -1,21 +1,21 @@
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Linq.Core.Metadata;
+using Mpt.Rql.Core.Metadata;
 
-namespace Mpt.UnitTests.Common.Factory;
+namespace Rql.Tests.Common.Factory;
 
 internal static class MetadataProviderFactory
 {
     internal static IMetadataProvider Internal()
     {
         return new MetadataProvider(
-            new PropertyNameProvider(), 
+            new PropertyNameProvider(),
             new MetadataFactory(RqlSettingsFactory.Default()));
     }
 
     internal static IRqlMetadataProvider Public()
     {
         return new MetadataProvider(
-            new PropertyNameProvider(), 
+            new PropertyNameProvider(),
             new MetadataFactory(RqlSettingsFactory.Default()));
     }
 }

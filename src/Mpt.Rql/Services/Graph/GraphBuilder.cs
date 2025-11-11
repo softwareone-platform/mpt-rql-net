@@ -5,11 +5,11 @@ using Mpt.Rql.Abstractions.Binary;
 using Mpt.Rql.Abstractions.Collection;
 using Mpt.Rql.Abstractions.Group;
 using Mpt.Rql.Abstractions.Unary;
-using Mpt.Rql.Linq.Core;
-using Mpt.Rql.Linq.Core.Metadata;
-using Mpt.Rql.Linq.Services.Context;
+using Mpt.Rql.Core;
+using Mpt.Rql.Core.Metadata;
+using Mpt.Rql.Services.Context;
 
-namespace Mpt.Rql.Linq.Services.Graph;
+namespace Mpt.Rql.Services.Graph;
 
 internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
 {

@@ -1,4 +1,4 @@
-namespace Mpt.Rql.Linq.Services.Filtering;
+namespace Mpt.Rql.Services.Filtering;
 
 internal interface IFilteringService<TView>
 {

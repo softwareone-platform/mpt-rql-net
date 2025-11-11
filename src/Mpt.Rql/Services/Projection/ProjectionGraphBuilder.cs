@@ -1,12 +1,12 @@
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Configuration;
 using Mpt.Rql.Abstractions.Result;
-using Mpt.Rql.Linq.Core;
-using Mpt.Rql.Linq.Core.Metadata;
-using Mpt.Rql.Linq.Services.Context;
-using Mpt.Rql.Linq.Services.Graph;
+using Mpt.Rql.Core;
+using Mpt.Rql.Core.Metadata;
+using Mpt.Rql.Services.Context;
+using Mpt.Rql.Services.Graph;
 
-namespace Mpt.Rql.Linq.Services.Projection;
+namespace Mpt.Rql.Services.Projection;
 
 internal interface IProjectionGraphBuilder<TView> : IGraphBuilder<TView>
 {
@@ -135,7 +135,7 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
         {
             var child = parentNode.IncludeChild(rqlProperty, IncludeReasons.Select);
             // extend configured select mode with explicit config
-            var selectMode = rqlProperty.SelectModeOverride.HasValue ? (rqlProperty.SelectModeOverride.Value | _settings.Select.Explicit) : _settings.Select.Explicit;
+            var selectMode = rqlProperty.SelectModeOverride.HasValue ? rqlProperty.SelectModeOverride.Value | _settings.Select.Explicit : _settings.Select.Explicit;
             BuildDefaultsForProperty(child, child.Property, selectMode);
             return child;
         }

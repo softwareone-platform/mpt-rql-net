@@ -1,4 +1,4 @@
-namespace Mpt.Rql.Linq.Core;
+namespace Mpt.Rql.Core;
 
 internal static class StringHelper
 {

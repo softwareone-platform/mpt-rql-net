@@ -1,9 +1,9 @@
 using FluentAssertions;
-using Mpt.Rql.Linq.UnitTests.Client.Samples;
-using Mpt.UnitTests.Common.Factory;
+using Rql.Tests.Common.Factory;
+using Rql.Tests.Unit.Client.Samples;
 using Xunit;
 
-namespace Mpt.Rql.Linq.UnitTests.Client.RqlGenerator;
+namespace Rql.Tests.Unit.Client.RqlGenerator;
 
 public class QueryGeneratorTests
 {

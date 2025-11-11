@@ -1,8 +1,9 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Mpt.Rql;
 using Xunit;
 
-namespace Mpt.Rql.Linq.UnitTests.Services.Mapping;
+namespace Rql.Tests.Unit.Services.Mapping;
 public class InlineMappingTests
 {
     [Fact]

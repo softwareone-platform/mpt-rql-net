@@ -4,10 +4,11 @@ using Mpt.Rql.Abstractions.Binary;
 using Mpt.Rql.Abstractions.Collection;
 using Mpt.Rql.Abstractions.Group;
 using Mpt.Rql.Abstractions.Unary;
-using Mpt.Rql.Linq.Core;
+using Mpt.Rql.Core;
+using Mpt.Rql.Services.Filtering;
 using System.Linq.Expressions;
 
-namespace Mpt.Rql.Linq.Services.Filtering.Builders;
+namespace Mpt.Rql.Services.Filtering.Builders;
 
 internal class ExpressionBuilder : IExpressionBuilder
 {

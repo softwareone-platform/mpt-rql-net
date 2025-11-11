@@ -1,6 +1,6 @@
-using Mpt.Rql.Parsers.Linear.Domain.Core.Enumerations;
+using Mpt.Rql.Parsers.Linear.Core.Enumerations;
 
-namespace Mpt.Rql.Parsers.Linear.Domain.Core.ValueTypes;
+namespace Mpt.Rql.Parsers.Linear.Core.ValueTypes;
 
 internal struct Word
 {

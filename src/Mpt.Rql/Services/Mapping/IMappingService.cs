@@ -1,4 +1,4 @@
-namespace Mpt.Rql.Linq.Services.Mapping;
+namespace Mpt.Rql.Services.Mapping;
 
 internal interface IMappingService<in TStorage, TView>
 {

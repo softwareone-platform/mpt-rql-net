@@ -1,10 +1,10 @@
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Linq.Core.Metadata;
-using Mpt.Rql.Linq.Services.Context;
+using Mpt.Rql.Core.Metadata;
+using Mpt.Rql.Services.Context;
 using System.Collections;
 using System.Linq.Expressions;
 
-namespace Mpt.Rql.Linq.Services.Mapping;
+namespace Mpt.Rql.Services.Mapping;
 
 internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView>
 {

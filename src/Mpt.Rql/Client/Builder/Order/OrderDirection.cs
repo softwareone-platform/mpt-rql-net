@@ -1,4 +1,4 @@
-namespace Mpt.Rql.Linq.Client.Builder.Order;
+namespace Mpt.Rql.Client.Builder.Order;
 
 internal enum OrderDirection
 {

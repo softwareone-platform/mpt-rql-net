@@ -1,6 +1,6 @@
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Linq.Core;
-using Mpt.Rql.Linq.Services.Filtering.Operators.List;
+using Mpt.Rql.Core;
+using Mpt.Rql.Services.Filtering.Operators.List;
 using System.Linq.Expressions;
 
 namespace Rql.Tests.Integration.Tests.Extensibility.Utility;

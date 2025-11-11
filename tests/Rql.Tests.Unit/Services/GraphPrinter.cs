@@ -1,6 +1,7 @@
+using Mpt.Rql;
 using Mpt.Rql.Abstractions;
 
-namespace Mpt.Rql.Linq.UnitTests.Services;
+namespace Rql.Tests.Unit.Services;
 
 internal class GraphPrinter
 {

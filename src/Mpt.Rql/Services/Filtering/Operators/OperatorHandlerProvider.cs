@@ -1,4 +1,4 @@
-namespace Mpt.Rql.Linq.Services.Filtering.Operators;
+namespace Mpt.Rql.Services.Filtering.Operators;
 
 internal class OperatorHandlerProvider : IOperatorHandlerProvider
 {

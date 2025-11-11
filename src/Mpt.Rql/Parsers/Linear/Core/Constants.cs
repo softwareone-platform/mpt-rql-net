@@ -1,4 +1,4 @@
-namespace Mpt.Rql.Parsers.Linear.Domain.Core;
+namespace Mpt.Rql.Parsers.Linear.Core;
 
 internal static class Constants
 {

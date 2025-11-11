@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Mpt.Rql.Linq.Services.Ordering;
+namespace Mpt.Rql.Services.Ordering;
 
 internal interface IOrderingFunctions
 {

@@ -1,11 +1,10 @@
-using Mpt.Rql.Client;
-using Mpt.Rql.Linq.Client.Builder.Filter;
-using Mpt.Rql.Linq.Client.Builder.Order;
-using Mpt.Rql.Linq.Client.Builder.Select;
-using Mpt.Rql.Linq.Client.Generator;
+using Mpt.Rql.Client.Builder.Filter;
+using Mpt.Rql.Client.Builder.Order;
+using Mpt.Rql.Client.Builder.Select;
+using Mpt.Rql.Client.Generator;
 using System.Linq.Expressions;
 
-namespace Mpt.Rql.Linq.Client.Builder.Request;
+namespace Mpt.Rql.Client.Builder.Request;
 
 internal class RqlRequestBuilderContext<T> : IRqlRequestBuilderContext<T> where T : class
 {

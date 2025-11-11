@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Mpt.Rql.Client;
 
-namespace Mpt.Rql.Linq.Client.Builder.Request;
+namespace Mpt.Rql.Client.Builder.Request;
 
 internal class RqlRequestBuilder<T> : IRqlRequestBuilder<T> where T : class
 {
@@ -11,7 +11,7 @@ internal class RqlRequestBuilder<T> : IRqlRequestBuilder<T> where T : class
         _serviceProvider = serviceProvider;
     }
 
-    public Rql.RqlRequest Build() => new();
+    public RqlRequest Build() => new();
 
     public IFilteredRqlRequestBuilder<T> Where(Func<IFilterContext<T>, IOperator> filter)
         => MakeContext().Where(filter);

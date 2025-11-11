@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Mpt.Rql.Client;
 
-namespace Mpt.Rql.Linq.Client.Builder.Request;
+namespace Mpt.Rql.Client.Builder.Request;
 
 internal class RqlRequestBuilderProvider : IRqlRequestBuilderProvider
 {

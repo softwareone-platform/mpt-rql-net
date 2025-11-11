@@ -1,7 +1,7 @@
 using Mpt.Rql.Abstractions;
 using System.Linq.Expressions;
 
-namespace Mpt.Rql.Linq.Core;
+namespace Mpt.Rql.Core;
 
 internal interface IPathInfoBuilder
 {

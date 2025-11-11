@@ -1,8 +1,9 @@
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Linq.Core;
+using Mpt.Rql.Core;
+using Mpt.Rql.Services.Filtering.Operators.List;
 using System.Linq.Expressions;
 
-namespace Mpt.Rql.Linq.Services.Filtering.Operators.List.Implementation;
+namespace Mpt.Rql.Services.Filtering.Operators.List.Implementation;
 
 internal class ListOut : ListIn, IListOut
 {

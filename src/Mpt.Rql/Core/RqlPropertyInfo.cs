@@ -1,7 +1,7 @@
 using Mpt.Rql.Abstractions;
 using System.Reflection;
 
-namespace Mpt.Rql.Linq.Core;
+namespace Mpt.Rql.Core;
 
 internal class RqlPropertyInfo : IRqlPropertyInfo
 {

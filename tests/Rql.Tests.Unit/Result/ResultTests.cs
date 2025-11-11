@@ -1,8 +1,8 @@
 using Mpt.Rql.Abstractions.Result;
-using Mpt.Rql.Linq.Core;
+using Mpt.Rql.Core;
 using Xunit;
 
-namespace Mpt.Rql.Linq.UnitTests.Result;
+namespace Rql.Tests.Unit.Result;
 
 public class ResultTests
 {

@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Mpt.Rql.Linq.Core.Metadata;
+namespace Mpt.Rql.Core.Metadata;
 
 internal class PropertyNameProvider : IPropertyNameProvider
 {

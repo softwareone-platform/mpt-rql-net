@@ -1,4 +1,4 @@
-namespace Mpt.Rql.Linq.Client.Builder.Request;
+namespace Mpt.Rql.Client.Builder.Request;
 
 public interface IRqlRequestBuilder
 {

@@ -2,12 +2,12 @@ using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Configuration;
 using Mpt.Rql.Abstractions.Configuration.Filter;
 using Mpt.Rql.Abstractions.Result;
-using Mpt.Rql.Linq.Core;
-using Mpt.Rql.Linq.Core.Expressions;
+using Mpt.Rql.Core;
+using Mpt.Rql.Core.Expressions;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Mpt.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation;
+namespace Mpt.Rql.Services.Filtering.Operators.Comparison.Implementation;
 
 internal abstract class ComparisonOperator(IRqlSettings settings) : IComparisonOperator
 {

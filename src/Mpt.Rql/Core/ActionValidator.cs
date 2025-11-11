@@ -1,6 +1,6 @@
 using Mpt.Rql.Abstractions.Exception;
 
-namespace Mpt.Rql.Linq.Core;
+namespace Mpt.Rql.Core;
 
 internal class ActionValidator(IExternalServiceAccessor externalServices) : IActionValidator
 {

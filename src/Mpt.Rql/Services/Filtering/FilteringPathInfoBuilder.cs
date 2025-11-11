@@ -1,9 +1,9 @@
 using Mpt.Rql.Abstractions.Result;
-using Mpt.Rql.Linq.Core;
-using Mpt.Rql.Linq.Core.Metadata;
-using Mpt.Rql.Linq.Services.Context;
+using Mpt.Rql.Core;
+using Mpt.Rql.Core.Metadata;
+using Mpt.Rql.Services.Context;
 
-namespace Mpt.Rql.Linq.Services.Filtering;
+namespace Mpt.Rql.Services.Filtering;
 
 internal interface IFilteringPathInfoBuilder : IPathInfoBuilder { }
 

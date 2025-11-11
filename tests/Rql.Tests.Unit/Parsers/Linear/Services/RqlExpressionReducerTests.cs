@@ -1,10 +1,10 @@
 using Mpt.Rql.Abstractions.Binary;
 using Mpt.Rql.Abstractions.Group;
-using Mpt.Rql.Parsers.Linear.Domain.Services;
-using Mpt.UnitTests.Common.Factory;
+using Mpt.Rql.Parsers.Linear.Services;
+using Rql.Tests.Common.Factory;
 using Xunit;
 
-namespace Mpt.Rql.Parsers.Linear.UnitTests.Domain.Services;
+namespace Rql.Tests.Unit.Parsers.Linear.Services;
 
 public class RqlExpressionReducerTests
 {

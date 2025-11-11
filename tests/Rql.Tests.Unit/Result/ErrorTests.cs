@@ -1,7 +1,7 @@
 using Mpt.Rql.Abstractions.Result;
 using Xunit;
 
-namespace Mpt.Rql.Linq.UnitTests.Result;
+namespace Rql.Tests.Unit.Result;
 
 public class ErrorTests
 {

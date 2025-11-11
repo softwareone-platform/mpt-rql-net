@@ -1,9 +1,9 @@
 using Mpt.Rql.Abstractions.Argument;
-using Mpt.Rql.Parsers.Linear.Domain.Core.ValueTypes;
-using Mpt.Rql.Parsers.Linear.Domain.Services;
+using Mpt.Rql.Parsers.Linear.Core.ValueTypes;
+using Mpt.Rql.Parsers.Linear.Services;
 using Xunit;
 
-namespace Mpt.Rql.Parsers.Linear.UnitTests.Domain.Services;
+namespace Rql.Tests.Unit.Parsers.Linear.Services;
 
 public class RqlExpressionMapperTests
 {

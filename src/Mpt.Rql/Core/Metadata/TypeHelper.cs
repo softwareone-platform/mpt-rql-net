@@ -1,4 +1,4 @@
-namespace Mpt.Rql.Linq.Core.Metadata;
+namespace Mpt.Rql.Core.Metadata;
 
 internal static class TypeHelper
 {

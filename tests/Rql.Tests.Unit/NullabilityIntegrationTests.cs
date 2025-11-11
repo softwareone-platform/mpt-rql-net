@@ -1,7 +1,8 @@
-using Mpt.UnitTests.Common.Factory;
+using Mpt.Rql;
+using Rql.Tests.Common.Factory;
 using Xunit;
 
-namespace Mpt.Rql.Linq.UnitTests;
+namespace Rql.Tests.Unit;
 
 public class NullabilityIntegrationTests
 {

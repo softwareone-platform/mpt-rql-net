@@ -1,10 +1,10 @@
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Collection;
 using Mpt.Rql.Abstractions.Exception;
-using Mpt.Rql.Parsers.Linear.Domain.Core;
-using Mpt.Rql.Parsers.Linear.Domain.Core.ValueTypes;
+using Mpt.Rql.Parsers.Linear.Core;
+using Mpt.Rql.Parsers.Linear.Core.ValueTypes;
 
-namespace Mpt.Rql.Parsers.Linear.Domain.Services;
+namespace Mpt.Rql.Parsers.Linear.Services;
 
 internal static class RqlCollectionParser
 {

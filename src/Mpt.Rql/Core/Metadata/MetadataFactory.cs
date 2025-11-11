@@ -1,9 +1,10 @@
 using Mpt.Rql.Abstractions.Configuration;
 using Mpt.Rql.Abstractions.Exception;
+using Mpt.Rql.Core;
 using System.Collections;
 using System.Reflection;
 
-namespace Mpt.Rql.Linq.Core.Metadata;
+namespace Mpt.Rql.Core.Metadata;
 
 internal class MetadataFactory : IMetadataFactory
 {

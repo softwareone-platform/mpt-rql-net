@@ -1,4 +1,4 @@
-using Mpt.Rql.Linq.Services.Mapping;
+using Mpt.Rql.Services.Mapping;
 
 #pragma warning disable IDE0130
 namespace Mpt.Rql;

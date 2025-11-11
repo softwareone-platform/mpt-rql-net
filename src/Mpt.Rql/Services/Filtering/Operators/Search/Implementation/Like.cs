@@ -1,10 +1,12 @@
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Linq.Core;
-using Mpt.Rql.Linq.Core.Expressions;
+using Mpt.Rql.Core;
+using Mpt.Rql.Core.Expressions;
+using Mpt.Rql.Services.Filtering.Operators;
+using Mpt.Rql.Services.Filtering.Operators.Search;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Mpt.Rql.Linq.Services.Filtering.Operators.Search.Implementation;
+namespace Mpt.Rql.Services.Filtering.Operators.Search.Implementation;
 
 internal class Like : ILike
 {

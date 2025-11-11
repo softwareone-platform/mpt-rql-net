@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace Mpt.Rql.Linq.Client.Core;
+namespace Mpt.Rql.Client.Core;
 
 internal static class ValueConverter
 {

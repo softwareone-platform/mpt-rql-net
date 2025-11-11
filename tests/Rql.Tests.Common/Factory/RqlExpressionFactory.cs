@@ -1,11 +1,11 @@
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Abstractions.Binary;
 using Mpt.Rql.Abstractions.Argument;
+using Mpt.Rql.Abstractions.Binary;
 using Mpt.Rql.Abstractions.Group;
-using Mpt.Rql.Parsers.Linear.Domain.Core.Enumerations;
-using Mpt.Rql.Parsers.Linear.Domain.Core.ValueTypes;
+using Mpt.Rql.Parsers.Linear.Core.Enumerations;
+using Mpt.Rql.Parsers.Linear.Core.ValueTypes;
 
-namespace Mpt.UnitTests.Common.Factory;
+namespace Rql.Tests.Common.Factory;
 
 internal static class RqlExpressionFactory
 {

@@ -1,6 +1,6 @@
 using Mpt.Rql.Abstractions.Configuration.Filter;
 
-namespace Mpt.Rql.Linq.Settings;
+namespace Mpt.Rql.Settings;
 
 internal record RqlStringFilterSettings : IRqlStringFilterSettings
 {

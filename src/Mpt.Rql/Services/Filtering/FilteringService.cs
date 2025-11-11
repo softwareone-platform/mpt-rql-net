@@ -1,10 +1,11 @@
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Group;
-using Mpt.Rql.Linq.Services.Context;
-using Mpt.Rql.Linq.Services.Filtering.Builders;
+using Mpt.Rql.Services;
+using Mpt.Rql.Services.Context;
+using Mpt.Rql.Services.Filtering.Builders;
 using System.Linq.Expressions;
 
-namespace Mpt.Rql.Linq.Services.Filtering;
+namespace Mpt.Rql.Services.Filtering;
 
 internal delegate BinaryExpression LogicalExpression(Expression left, Expression right);
 

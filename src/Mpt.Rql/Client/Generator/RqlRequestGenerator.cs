@@ -1,8 +1,8 @@
 using Mpt.Rql.Client;
-using Mpt.Rql.Linq.Client.Builder.Order;
-using Mpt.Rql.Linq.Client.Builder.Select;
+using Mpt.Rql.Client.Builder.Order;
+using Mpt.Rql.Client.Builder.Select;
 
-namespace Mpt.Rql.Linq.Client.Generator;
+namespace Mpt.Rql.Client.Generator;
 
 internal class RqlRequestGenerator : IRqlRequestGenerator
 {

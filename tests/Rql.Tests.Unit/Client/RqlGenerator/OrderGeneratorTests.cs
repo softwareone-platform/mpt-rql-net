@@ -1,12 +1,12 @@
 using FluentAssertions;
-using Mpt.Rql.Linq.Client.Builder.Order;
-using Mpt.Rql.Linq.Client.Core;
-using Mpt.Rql.Linq.Client.Generator;
-using Mpt.Rql.Linq.Core.Metadata;
-using Mpt.Rql.Linq.UnitTests.Client.Samples;
+using Mpt.Rql.Client.Builder.Order;
+using Mpt.Rql.Client.Core;
+using Mpt.Rql.Client.Generator;
+using Mpt.Rql.Core.Metadata;
+using Rql.Tests.Unit.Client.Samples;
 using Xunit;
 
-namespace Mpt.Rql.Linq.UnitTests.Client.RqlGenerator;
+namespace Rql.Tests.Unit.Client.RqlGenerator;
 
 public class OrderGeneratorTests
 {

@@ -1,10 +1,10 @@
 using Mpt.Rql.Abstractions.Unary;
-using Mpt.Rql.Linq.Core;
-using Mpt.Rql.Linq.Services.Filtering.Operators;
-using Mpt.Rql.Linq.Services.Filtering.Operators.Unary;
+using Mpt.Rql.Core;
+using Mpt.Rql.Services.Filtering.Operators;
+using Mpt.Rql.Services.Filtering.Operators.Unary;
 using System.Linq.Expressions;
 
-namespace Mpt.Rql.Linq.Services.Filtering.Builders;
+namespace Mpt.Rql.Services.Filtering.Builders;
 
 internal class UnaryExpressionBuilder : IConcreteExpressionBuilder<RqlUnary>
 {

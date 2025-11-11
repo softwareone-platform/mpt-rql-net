@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Mpt.Rql.Linq.Services.Mapping;
+namespace Mpt.Rql.Services.Mapping;
 
 internal interface IProjectionFunctions
 {

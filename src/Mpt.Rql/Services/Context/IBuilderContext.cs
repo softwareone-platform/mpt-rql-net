@@ -1,6 +1,6 @@
 using Mpt.Rql.Abstractions;
 
-namespace Mpt.Rql.Linq.Services.Context;
+namespace Mpt.Rql.Services.Context;
 
 internal interface IBuilderContext
 {

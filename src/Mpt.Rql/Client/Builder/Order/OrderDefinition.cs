@@ -1,7 +1,6 @@
-using Mpt.Rql.Client;
 using System.Linq.Expressions;
 
-namespace Mpt.Rql.Linq.Client.Builder.Order;
+namespace Mpt.Rql.Client.Builder.Order;
 
 internal record OrderDefinition<T, TValue>(Expression<Func<T, TValue>> Body, OrderDirection OrderDirection) : IOrderDefinition
 {

@@ -1,8 +1,8 @@
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Linq.Core;
+using Mpt.Rql.Core;
 using System.Linq.Expressions;
 
-namespace Mpt.Rql.Linq.Services.Filtering.Operators.Collection;
+namespace Mpt.Rql.Services.Filtering.Operators.Collection;
 
 public interface ICollectionOperator : IOperator
 {

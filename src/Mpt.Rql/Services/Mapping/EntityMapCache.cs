@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace Mpt.Rql.Linq.Services.Mapping;
+namespace Mpt.Rql.Services.Mapping;
 
 internal interface IEntityMapCache
 {

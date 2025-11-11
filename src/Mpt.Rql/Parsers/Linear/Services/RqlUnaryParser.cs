@@ -1,9 +1,9 @@
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Exception;
 using Mpt.Rql.Abstractions.Unary;
-using Mpt.Rql.Parsers.Linear.Domain.Core.ValueTypes;
+using Mpt.Rql.Parsers.Linear.Core.ValueTypes;
 
-namespace Mpt.Rql.Parsers.Linear.Domain.Services;
+namespace Mpt.Rql.Parsers.Linear.Services;
 
 internal static class RqlUnaryParser
 {

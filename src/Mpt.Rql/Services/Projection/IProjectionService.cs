@@ -1,4 +1,4 @@
-namespace Mpt.Rql.Linq.Services.Projection;
+namespace Mpt.Rql.Services.Projection;
 
 internal interface IProjectionService<TView>
 {

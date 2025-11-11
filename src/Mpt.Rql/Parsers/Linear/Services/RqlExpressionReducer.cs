@@ -1,8 +1,8 @@
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Parsers.Linear.Domain.Core.Enumerations;
-using Mpt.Rql.Parsers.Linear.Domain.Core.ValueTypes;
+using Mpt.Rql.Parsers.Linear.Core.Enumerations;
+using Mpt.Rql.Parsers.Linear.Core.ValueTypes;
 
-namespace Mpt.Rql.Parsers.Linear.Domain.Services;
+namespace Mpt.Rql.Parsers.Linear.Services;
 
 /// <summary>
 /// This class is responsible for reducing multiple RqlAnd and RqlOr RqlExpressions down to a single RqlExpressions

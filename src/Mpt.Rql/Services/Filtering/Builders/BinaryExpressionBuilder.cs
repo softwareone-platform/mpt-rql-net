@@ -4,15 +4,16 @@ using Mpt.Rql.Abstractions.Argument.Pointer;
 using Mpt.Rql.Abstractions.Binary;
 using Mpt.Rql.Abstractions.Group;
 using Mpt.Rql.Abstractions.Result;
-using Mpt.Rql.Linq.Core;
-using Mpt.Rql.Linq.Services.Filtering.Operators;
-using Mpt.Rql.Linq.Services.Filtering.Operators.Comparison;
-using Mpt.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation;
-using Mpt.Rql.Linq.Services.Filtering.Operators.List;
-using Mpt.Rql.Linq.Services.Filtering.Operators.Search;
+using Mpt.Rql.Core;
+using Mpt.Rql.Services.Filtering;
+using Mpt.Rql.Services.Filtering.Operators;
+using Mpt.Rql.Services.Filtering.Operators.Comparison;
+using Mpt.Rql.Services.Filtering.Operators.Comparison.Implementation;
+using Mpt.Rql.Services.Filtering.Operators.List;
+using Mpt.Rql.Services.Filtering.Operators.Search;
 using System.Linq.Expressions;
 
-namespace Mpt.Rql.Linq.Services.Filtering.Builders;
+namespace Mpt.Rql.Services.Filtering.Builders;
 
 internal class BinaryExpressionBuilder : IConcreteExpressionBuilder<RqlBinary>
 {

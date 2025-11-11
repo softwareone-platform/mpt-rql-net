@@ -1,4 +1,6 @@
-namespace Mpt.Rql.Linq.Services.Filtering.Operators.Search.Implementation;
+using Mpt.Rql.Services.Filtering.Operators.Search;
+
+namespace Mpt.Rql.Services.Filtering.Operators.Search.Implementation;
 
 internal class LikeInsensitive : Like, ILikeCaseInsensitive
 {

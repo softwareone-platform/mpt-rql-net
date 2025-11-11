@@ -1,4 +1,4 @@
-namespace Mpt.Rql.Parsers.Linear.Domain.Core.Enumerations;
+namespace Mpt.Rql.Parsers.Linear.Core.Enumerations;
 
 internal enum GroupType
 {

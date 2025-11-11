@@ -1,6 +1,6 @@
 using Mpt.Rql.Client;
 
-namespace Mpt.Rql.Linq.Client.Generator;
+namespace Mpt.Rql.Client.Generator;
 
 internal interface IFilterGenerator
 {

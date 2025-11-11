@@ -1,8 +1,8 @@
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Result;
-using Mpt.Rql.Linq.Core;
+using Mpt.Rql.Core;
 
-namespace Mpt.Rql.Linq.Services.Filtering.Operators;
+namespace Mpt.Rql.Services.Filtering.Operators;
 internal static class ValidationHelper
 {
     public static Result<bool> ValidateOperatorApplicability(IRqlPropertyInfo propertyInfo, RqlOperators rqlOperator)

@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace Mpt.Rql.Linq.Client;
+namespace Mpt.Rql.Client;
 
 public interface IPropertyVisitor
 {

@@ -6,10 +6,10 @@ using Mpt.Rql.Abstractions.Collection;
 using Mpt.Rql.Abstractions.Exception;
 using Mpt.Rql.Abstractions.Group;
 using Mpt.Rql.Abstractions.Unary;
-using Mpt.Rql.Parsers.Linear.Domain.Services;
+using Mpt.Rql.Parsers.Linear.Services;
 using Xunit;
 
-namespace Mpt.Rql.Parsers.Linear.UnitTests.Domain.Services;
+namespace Rql.Tests.Unit.Parsers.Linear.Services;
 
 public class RqlParserTests
 {

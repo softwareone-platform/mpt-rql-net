@@ -2,17 +2,17 @@ using Moq;
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Argument;
 using Mpt.Rql.Abstractions.Collection;
-using Mpt.Rql.Linq.Core;
-using Mpt.Rql.Linq.Services.Filtering;
-using Mpt.Rql.Linq.Services.Filtering.Builders;
-using Mpt.Rql.Linq.Services.Filtering.Operators;
-using Mpt.Rql.Linq.Services.Filtering.Operators.Collection;
-using System.Linq.Expressions;
-using Mpt.Rql.Linq.Services.Context;
-using Xunit;
 using Mpt.Rql.Abstractions.Result;
+using Mpt.Rql.Core;
+using Mpt.Rql.Services.Context;
+using Mpt.Rql.Services.Filtering;
+using Mpt.Rql.Services.Filtering.Builders;
+using Mpt.Rql.Services.Filtering.Operators;
+using Mpt.Rql.Services.Filtering.Operators.Collection;
+using System.Linq.Expressions;
+using Xunit;
 
-namespace Mpt.Rql.Linq.UnitTests.Filtering.Builders;
+namespace Rql.Tests.Unit.Filtering.Builders;
 
 public class CollectionExpressionBuilderTests
 {

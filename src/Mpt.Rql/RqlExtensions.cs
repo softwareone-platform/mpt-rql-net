@@ -6,22 +6,20 @@ using Mpt.Rql.Abstractions.Configuration;
 using Mpt.Rql.Abstractions.Group;
 using Mpt.Rql.Abstractions.Unary;
 using Mpt.Rql.Client;
-using Mpt.Rql.Linq;
-using Mpt.Rql.Linq.Client;
-using Mpt.Rql.Linq.Client.Builder.Request;
-using Mpt.Rql.Linq.Client.Core;
-using Mpt.Rql.Linq.Client.Generator;
-using Mpt.Rql.Linq.Core;
-using Mpt.Rql.Linq.Core.Metadata;
-using Mpt.Rql.Linq.Services.Context;
-using Mpt.Rql.Linq.Services.Filtering;
-using Mpt.Rql.Linq.Services.Filtering.Builders;
-using Mpt.Rql.Linq.Services.Filtering.Operators;
-using Mpt.Rql.Linq.Services.Mapping;
-using Mpt.Rql.Linq.Services.Ordering;
-using Mpt.Rql.Linq.Services.Projection;
-using Mpt.Rql.Linq.Settings;
-using Mpt.Rql.Parsers.Linear.Domain.Services;
+using Mpt.Rql.Client.Builder.Request;
+using Mpt.Rql.Client.Core;
+using Mpt.Rql.Client.Generator;
+using Mpt.Rql.Core;
+using Mpt.Rql.Core.Metadata;
+using Mpt.Rql.Parsers.Linear.Services;
+using Mpt.Rql.Services.Context;
+using Mpt.Rql.Services.Filtering;
+using Mpt.Rql.Services.Filtering.Builders;
+using Mpt.Rql.Services.Filtering.Operators;
+using Mpt.Rql.Services.Mapping;
+using Mpt.Rql.Services.Ordering;
+using Mpt.Rql.Services.Projection;
+using Mpt.Rql.Settings;
 using System.Reflection;
 
 #pragma warning disable IDE0130
@@ -109,7 +107,7 @@ public static class RqlExtensions
     private static void RegisterOperatorExpressions(IServiceCollection services, RqlConfiguration options)
     {
         var expMapping = new OperatorHandlerMapper();
-        var producerType = typeof(Mpt.Rql.Linq.Services.Filtering.Operators.IOperator);
+        var producerType = typeof(Mpt.Rql.Services.Filtering.Operators.IOperator);
         var types =
             producerType.Assembly.GetTypes().Where(t => t.IsInterface && producerType.IsAssignableFrom(t) && t != producerType).ToList();
 

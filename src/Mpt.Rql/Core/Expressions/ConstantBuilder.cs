@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Mpt.Rql.Linq.Core.Expressions;
+namespace Mpt.Rql.Core.Expressions;
 
 internal static class ConstantBuilder
 {

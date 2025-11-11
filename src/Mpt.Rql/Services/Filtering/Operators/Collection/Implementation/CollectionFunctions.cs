@@ -1,5 +1,5 @@
 using System.Reflection;
-namespace Mpt.Rql.Linq.Services.Filtering.Operators.Collection.Implementation;
+namespace Mpt.Rql.Services.Filtering.Operators.Collection.Implementation;
 
 internal interface ICollectionFunctions
 {

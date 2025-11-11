@@ -1,12 +1,13 @@
 using Mpt.Rql.Abstractions.Collection;
 using Mpt.Rql.Abstractions.Result;
-using Mpt.Rql.Linq.Core;
-using Mpt.Rql.Linq.Services.Context;
-using Mpt.Rql.Linq.Services.Filtering.Operators;
-using Mpt.Rql.Linq.Services.Filtering.Operators.Collection;
+using Mpt.Rql.Core;
+using Mpt.Rql.Services.Context;
+using Mpt.Rql.Services.Filtering;
+using Mpt.Rql.Services.Filtering.Operators;
+using Mpt.Rql.Services.Filtering.Operators.Collection;
 using System.Linq.Expressions;
 
-namespace Mpt.Rql.Linq.Services.Filtering.Builders;
+namespace Mpt.Rql.Services.Filtering.Builders;
 
 internal class CollectionExpressionBuilder : IConcreteExpressionBuilder<RqlCollection>
 {

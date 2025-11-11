@@ -1,10 +1,10 @@
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Linq.Core;
-using Mpt.Rql.Linq.Core.Metadata;
-using Mpt.Rql.Linq.Services.Context;
-using Mpt.Rql.Linq.Services.Graph;
+using Mpt.Rql.Core;
+using Mpt.Rql.Core.Metadata;
+using Mpt.Rql.Services.Context;
+using Mpt.Rql.Services.Graph;
 
-namespace Mpt.Rql.Linq.Services.Ordering;
+namespace Mpt.Rql.Services.Ordering;
 
 internal interface IOrderingGraphBuilder<TView> : IGraphBuilder<TView> { }
 

@@ -1,9 +1,9 @@
 using FluentAssertions;
-using Mpt.Rql.Linq.Client.Core;
-using Mpt.Rql.Linq.UnitTests.Client.Samples;
+using Mpt.Rql.Client.Core;
+using Rql.Tests.Unit.Client.Samples;
 using Xunit;
 
-namespace Mpt.Rql.Linq.UnitTests.Client;
+namespace Rql.Tests.Unit.Client;
 
 public class ValueConverterTests
 {

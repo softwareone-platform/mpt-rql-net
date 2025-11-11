@@ -1,7 +1,7 @@
 using Mpt.Rql.Client;
 using System.Linq.Expressions;
 
-namespace Mpt.Rql.Linq.Client.Builder.Select;
+namespace Mpt.Rql.Client.Builder.Select;
 
 internal record SelectDefinition<T, U>(Expression<Func<T, U>> Expression) : ISelectDefinition
 {

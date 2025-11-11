@@ -1,7 +1,7 @@
-using Mpt.Rql.Linq.Core;
+using Mpt.Rql.Core;
 using System.Linq.Expressions;
 
-namespace Mpt.Rql.Linq.Services;
+namespace Mpt.Rql.Services;
 
 internal abstract class RqlService
 {

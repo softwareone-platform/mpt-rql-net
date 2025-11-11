@@ -1,6 +1,6 @@
 using Mpt.Rql.Abstractions;
 
-namespace Mpt.Rql.Linq.Services.Graph;
+namespace Mpt.Rql.Services.Graph;
 
 internal interface IGraphBuilder<TView>
 {

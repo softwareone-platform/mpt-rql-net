@@ -1,4 +1,4 @@
-namespace Mpt.Rql.Linq.Services.Filtering.Operators;
+namespace Mpt.Rql.Services.Filtering.Operators;
 
 [AttributeUsage(AttributeTargets.Interface)]
 internal class ExpressionAttribute : Attribute

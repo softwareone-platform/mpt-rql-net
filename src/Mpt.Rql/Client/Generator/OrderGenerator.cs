@@ -1,6 +1,6 @@
-using Mpt.Rql.Linq.Client.Builder.Order;
+using Mpt.Rql.Client.Builder.Order;
 
-namespace Mpt.Rql.Linq.Client.Generator;
+namespace Mpt.Rql.Client.Generator;
 
 internal class OrderGenerator : IOrderGenerator
 {

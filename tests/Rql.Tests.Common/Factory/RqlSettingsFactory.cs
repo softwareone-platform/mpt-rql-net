@@ -1,7 +1,7 @@
 using Mpt.Rql;
-using Mpt.Rql.Linq.Settings;
+using Mpt.Rql.Settings;
 
-namespace Mpt.UnitTests.Common.Factory;
+namespace Rql.Tests.Common.Factory;
 
 internal static class RqlSettingsFactory
 {

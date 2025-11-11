@@ -1,5 +1,5 @@
 using Mpt.Rql.Client;
 
-namespace Mpt.Rql.Linq.Client.Builder.Select;
+namespace Mpt.Rql.Client.Builder.Select;
 
 internal record SelectFields(IList<ISelectDefinition>? Included, IList<ISelectDefinition>? Excluded);

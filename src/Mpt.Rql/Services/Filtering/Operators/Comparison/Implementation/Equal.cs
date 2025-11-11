@@ -1,7 +1,7 @@
 using Mpt.Rql.Abstractions.Configuration;
 using System.Linq.Expressions;
 
-namespace Mpt.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation;
+namespace Mpt.Rql.Services.Filtering.Operators.Comparison.Implementation;
 
 internal class Equal(IRqlSettings settings) : ComparisonOperator(settings), IEqual
 {

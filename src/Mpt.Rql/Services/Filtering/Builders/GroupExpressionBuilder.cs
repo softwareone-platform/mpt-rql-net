@@ -1,9 +1,9 @@
 using Mpt.Rql.Abstractions.Group;
 using System.Linq.Expressions;
 using Mpt.Rql.Abstractions.Result;
-using Mpt.Rql.Linq.Core;
+using Mpt.Rql.Core;
 
-namespace Mpt.Rql.Linq.Services.Filtering.Builders;
+namespace Mpt.Rql.Services.Filtering.Builders;
 
 internal class GroupExpressionBuilder : IConcreteExpressionBuilder<RqlGroup>
 {

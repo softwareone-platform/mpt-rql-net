@@ -2,11 +2,11 @@ using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Argument;
 using Mpt.Rql.Abstractions.Argument.Pointer;
 using Mpt.Rql.Abstractions.Result;
-using Mpt.Rql.Linq.Core.Metadata;
-using Mpt.Rql.Linq.Services.Context;
+using Mpt.Rql.Core.Metadata;
+using Mpt.Rql.Services.Context;
 using System.Linq.Expressions;
 
-namespace Mpt.Rql.Linq.Core;
+namespace Mpt.Rql.Core;
 
 internal abstract class PathInfoBuilder : IPathInfoBuilder
 {

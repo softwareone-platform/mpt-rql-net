@@ -1,4 +1,6 @@
-namespace Mpt.Rql.Linq.UnitTests.Services.Models;
+using Mpt.Rql;
+
+namespace Rql.Tests.Unit.Services.Models;
 
 internal class Item
 {

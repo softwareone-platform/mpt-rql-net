@@ -1,13 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Mpt.Rql;
 using Mpt.Rql.Client;
-using Mpt.Rql.Linq.Client;
-using Mpt.Rql.Linq.Client.Builder.Request;
-using Mpt.Rql.Linq.Client.Core;
-using Mpt.Rql.Linq.Client.Generator;
-using Mpt.Rql.Linq.Core.Metadata;
+using Mpt.Rql.Client.Builder.Request;
+using Mpt.Rql.Client.Core;
+using Mpt.Rql.Client.Generator;
+using Mpt.Rql.Core.Metadata;
 
-namespace Mpt.UnitTests.Common.Factory;
+namespace Rql.Tests.Common.Factory;
 
 internal class TestRqlRequestBuilderProvider : IRqlRequestBuilderProvider
 {

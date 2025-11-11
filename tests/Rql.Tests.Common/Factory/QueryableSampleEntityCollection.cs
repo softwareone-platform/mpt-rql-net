@@ -1,6 +1,6 @@
-using Mpt.UnitTests.Common.Utility;
+using Rql.Tests.Common.Utility;
 
-namespace Mpt.UnitTests.Common.Factory;
+namespace Rql.Tests.Common.Factory;
 
 internal static class QueryableSampleEntityCollection
 {

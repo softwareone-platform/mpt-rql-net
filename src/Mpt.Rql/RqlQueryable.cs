@@ -1,14 +1,14 @@
 using Microsoft.Extensions.DependencyInjection;
 using Mpt.Rql.Abstractions.Configuration;
-using Mpt.Rql.Linq.Core;
-using Mpt.Rql.Linq.Services.Context;
-using Mpt.Rql.Linq.Services.Filtering;
-using Mpt.Rql.Linq.Services.Mapping;
-using Mpt.Rql.Linq.Services.Ordering;
-using Mpt.Rql.Linq.Services.Projection;
-using Mpt.Rql.Linq.Settings;
+using Mpt.Rql.Core;
+using Mpt.Rql.Services.Context;
+using Mpt.Rql.Services.Filtering;
+using Mpt.Rql.Services.Mapping;
+using Mpt.Rql.Services.Ordering;
+using Mpt.Rql.Services.Projection;
+using Mpt.Rql.Settings;
 
-namespace Mpt.Rql.Linq;
+namespace Mpt.Rql;
 
 internal class RqlQueryable<TStorage> : RqlQueryableLinq<TStorage, TStorage>, IRqlQueryable<TStorage>
 {

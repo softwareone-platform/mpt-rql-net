@@ -1,7 +1,6 @@
-using Mpt.Rql.Client;
 using System.Linq.Expressions;
 
-namespace Mpt.Rql.Linq.Client.Builder.Select;
+namespace Mpt.Rql.Client.Builder.Select;
 
 internal class SelectContext<T> : ISelectDefinitionProvider, ISelectContext<T> where T : class
 {

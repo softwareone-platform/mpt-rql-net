@@ -1,9 +1,10 @@
+using Mpt.Rql;
 using Mpt.Rql.Abstractions.Configuration.Filter;
-using Mpt.Rql.Linq.Settings;
+using Mpt.Rql.Settings;
 using System.Text.Json;
 using Xunit;
 
-namespace Mpt.Rql.Linq.UnitTests.Configuration;
+namespace Rql.Tests.Unit.Configuration;
 
 public class RqlSettingsAccessorTests
 {

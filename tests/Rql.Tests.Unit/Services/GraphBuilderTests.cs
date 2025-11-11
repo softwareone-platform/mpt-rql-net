@@ -1,17 +1,18 @@
 using FluentAssertions;
 using Moq;
-using Mpt.Rql.Linq.Core;
-using Mpt.Rql.Linq.Core.Metadata;
-using Mpt.Rql.Linq.Services.Context;
-using Mpt.Rql.Linq.Services.Filtering;
-using Mpt.Rql.Linq.Services.Ordering;
-using Mpt.Rql.Linq.Services.Projection;
-using Mpt.Rql.Linq.Settings;
-using Mpt.Rql.Linq.UnitTests.Services.Models;
-using Mpt.Rql.Parsers.Linear.Domain.Services;
+using Mpt.Rql;
+using Mpt.Rql.Core;
+using Mpt.Rql.Core.Metadata;
+using Mpt.Rql.Parsers.Linear.Services;
+using Mpt.Rql.Services.Context;
+using Mpt.Rql.Services.Filtering;
+using Mpt.Rql.Services.Ordering;
+using Mpt.Rql.Services.Projection;
+using Mpt.Rql.Settings;
+using Rql.Tests.Unit.Services.Models;
 using Xunit;
 
-namespace Mpt.Rql.Linq.UnitTests.Services;
+namespace Rql.Tests.Unit.Services;
 
 public class GraphBuilderTests
 {

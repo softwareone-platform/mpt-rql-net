@@ -1,9 +1,10 @@
+using Mpt.Rql;
 using Mpt.Rql.Abstractions;
-using Mpt.UnitTests.Common.Factory;
-using Mpt.UnitTests.Common.Utility;
+using Rql.Tests.Common.Factory;
+using Rql.Tests.Common.Utility;
 using Xunit;
 
-namespace Mpt.Rql.Linq.UnitTests;
+namespace Rql.Tests.Unit;
 
 public class NullabilityValidationTests
 {

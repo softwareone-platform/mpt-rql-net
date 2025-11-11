@@ -1,12 +1,12 @@
 using Mpt.Rql.Abstractions.Argument;
 using Mpt.Rql.Abstractions.Argument.Pointer;
 using Mpt.Rql.Abstractions.Exception;
-using Mpt.Rql.Parsers.Linear.Domain.Core;
-using Mpt.Rql.Parsers.Linear.Domain.Services;
-using Mpt.UnitTests.Common.Factory;
+using Mpt.Rql.Parsers.Linear.Core;
+using Mpt.Rql.Parsers.Linear.Services;
+using Rql.Tests.Common.Factory;
 using Xunit;
 
-namespace Mpt.Rql.Parsers.Linear.UnitTests.Domain.Services;
+namespace Rql.Tests.Unit.Parsers.Linear.Services;
 
 public class RqlPointerParserTests
 {

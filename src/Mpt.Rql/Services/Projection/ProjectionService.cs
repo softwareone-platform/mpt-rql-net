@@ -1,7 +1,8 @@
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Linq.Services.Context;
+using Mpt.Rql.Services;
+using Mpt.Rql.Services.Context;
 
-namespace Mpt.Rql.Linq.Services.Projection;
+namespace Mpt.Rql.Services.Projection;
 
 internal sealed class ProjectionService<TView> : RqlService, IProjectionService<TView>
 {

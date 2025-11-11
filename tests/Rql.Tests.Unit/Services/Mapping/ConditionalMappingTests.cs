@@ -1,9 +1,10 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Mpt.Rql.Linq.Services.Mapping;
+using Mpt.Rql;
+using Mpt.Rql.Services.Mapping;
 using Xunit;
 
-namespace Mpt.Rql.Linq.UnitTests.Services.Mapping;
+namespace Rql.Tests.Unit.Services.Mapping;
 public class ConditionalMappingTests
 {
     [Fact]

@@ -1,6 +1,6 @@
 using Mpt.Rql.Abstractions.Result;
 
-namespace Mpt.Rql.Linq.Services.Context;
+namespace Mpt.Rql.Services.Context;
 
 internal class QueryContext<TView> : IQueryContext<TView>
 {

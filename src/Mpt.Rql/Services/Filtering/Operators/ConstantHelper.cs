@@ -1,9 +1,9 @@
 using Mpt.Rql.Abstractions.Result;
-using Mpt.Rql.Linq.Core;
+using Mpt.Rql.Core;
 using System.ComponentModel;
 using System.Globalization;
 
-namespace Mpt.Rql.Linq.Services.Filtering.Operators;
+namespace Mpt.Rql.Services.Filtering.Operators;
 internal static class ConstantHelper
 {
     public static Result<object> ChangeType(string value, Type type)

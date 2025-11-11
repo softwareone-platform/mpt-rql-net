@@ -1,6 +1,6 @@
 using Mpt.Rql.Client;
 
-namespace Mpt.Rql.Linq.Client.Builder.Order;
+namespace Mpt.Rql.Client.Builder.Order;
 
 internal interface IOrderDefinitionProvider
 {

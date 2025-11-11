@@ -1,8 +1,9 @@
 using Mpt.Rql.Abstractions.Result;
-using Mpt.Rql.Linq.Core;
+using Mpt.Rql.Core;
+using Mpt.Rql.Services.Filtering.Operators.Collection;
 using System.Reflection;
 
-namespace Mpt.Rql.Linq.Services.Filtering.Operators.Collection.Implementation;
+namespace Mpt.Rql.Services.Filtering.Operators.Collection.Implementation;
 
 internal class All : CollectionOperator, IAll
 {

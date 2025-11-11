@@ -1,8 +1,7 @@
-using Mpt.Rql.Client;
-using Mpt.Rql.Linq.Client.Builder.Operators;
+using Mpt.Rql.Client.Builder.Operators;
 using System.Linq.Expressions;
 
-namespace Mpt.Rql.Linq.Client.Builder.Filter;
+namespace Mpt.Rql.Client.Builder.Filter;
 
 internal class FilterContext<T> : IFilterContext<T> where T : class
 {
@@ -29,7 +28,7 @@ internal class FilterContext<T> : IFilterContext<T> where T : class
 
     public IOperator In<TValue>(Expression<Func<T, TValue>> exp, IEnumerable<TValue> values)
         => new In<T, TValue>(exp, values);
-    
+
     public IOperator Not(IOperator inner)
         => new NotOperator(inner);
 

@@ -3,17 +3,17 @@ using Mpt.Rql.Abstractions.Argument;
 using Mpt.Rql.Abstractions.Binary;
 using Mpt.Rql.Abstractions.Group;
 using Mpt.Rql.Abstractions.Result;
-using Mpt.Rql.Linq.Core;
-using Mpt.Rql.Linq.Services.Filtering;
-using Mpt.Rql.Linq.Services.Filtering.Builders;
-using Mpt.Rql.Linq.Services.Filtering.Operators;
-using Mpt.Rql.Linq.Services.Filtering.Operators.Comparison;
-using Mpt.Rql.Linq.Services.Filtering.Operators.List;
-using Mpt.Rql.Linq.Services.Filtering.Operators.Search;
+using Mpt.Rql.Core;
+using Mpt.Rql.Services.Filtering;
+using Mpt.Rql.Services.Filtering.Builders;
+using Mpt.Rql.Services.Filtering.Operators;
+using Mpt.Rql.Services.Filtering.Operators.Comparison;
+using Mpt.Rql.Services.Filtering.Operators.List;
+using Mpt.Rql.Services.Filtering.Operators.Search;
 using System.Linq.Expressions;
 using Xunit;
 
-namespace Mpt.Rql.Linq.UnitTests.Filtering.Builders;
+namespace Rql.Tests.Unit.Filtering.Builders;
 
 public class BinaryExpressionBuilderTests
 {

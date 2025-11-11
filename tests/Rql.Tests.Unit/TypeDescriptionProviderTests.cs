@@ -1,12 +1,13 @@
+using Mpt.Rql;
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Linq.Core.Metadata;
-using Mpt.Rql.Linq.Settings;
-using Mpt.UnitTests.Common.Factory;
-using Mpt.UnitTests.Common.Utility;
+using Mpt.Rql.Core.Metadata;
+using Mpt.Rql.Settings;
+using Rql.Tests.Common.Factory;
+using Rql.Tests.Common.Utility;
 using System.Text.Json;
 using Xunit;
 
-namespace Mpt.Rql.Linq.UnitTests;
+namespace Rql.Tests.Unit;
 
 public class TypeDescriptionProviderTests
 {

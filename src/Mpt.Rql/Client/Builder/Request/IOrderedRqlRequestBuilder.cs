@@ -1,5 +1,5 @@
 #pragma warning disable IDE0130
-using Mpt.Rql.Linq.Client.Builder.Request;
+using Mpt.Rql.Client.Builder.Request;
 using System.Linq.Expressions;
 
 namespace Mpt.Rql.Client;

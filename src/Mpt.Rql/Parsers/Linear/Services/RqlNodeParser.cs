@@ -1,9 +1,9 @@
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Parsers.Linear.Domain.Core;
-using Mpt.Rql.Parsers.Linear.Domain.Core.ValueTypes;
+using Mpt.Rql.Parsers.Linear.Core;
+using Mpt.Rql.Parsers.Linear.Core.ValueTypes;
 using System.Globalization;
 
-namespace Mpt.Rql.Parsers.Linear.Domain.Services;
+namespace Mpt.Rql.Parsers.Linear.Services;
 
 internal static class RqlNodeParser
 {

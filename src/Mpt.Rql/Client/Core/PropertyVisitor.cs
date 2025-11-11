@@ -1,8 +1,7 @@
-using Mpt.Rql.Client;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Mpt.Rql.Linq.Client.Core;
+namespace Mpt.Rql.Client.Core;
 
 internal class PropertyVisitor : ExpressionVisitor, IPropertyVisitor
 {

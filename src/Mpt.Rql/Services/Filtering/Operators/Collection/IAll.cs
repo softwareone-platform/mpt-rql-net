@@ -1,7 +1,7 @@
 using Mpt.Rql.Abstractions.Collection;
-using Mpt.Rql.Linq.Services.Filtering.Operators.Collection.Implementation;
+using Mpt.Rql.Services.Filtering.Operators.Collection.Implementation;
 
-namespace Mpt.Rql.Linq.Services.Filtering.Operators.Collection;
+namespace Mpt.Rql.Services.Filtering.Operators.Collection;
 
 [Expression(typeof(RqlAll), typeof(All))]
 public interface IAll : ICollectionOperator, IActualOperator { }

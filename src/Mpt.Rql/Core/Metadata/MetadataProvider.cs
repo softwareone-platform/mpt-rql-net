@@ -1,8 +1,9 @@
 using Mpt.Rql.Abstractions;
+using Mpt.Rql.Core;
 using System.Collections.Concurrent;
 using System.Reflection;
 
-namespace Mpt.Rql.Linq.Core.Metadata;
+namespace Mpt.Rql.Core.Metadata;
 
 internal class MetadataProvider : IMetadataProvider, IRqlMetadataProvider
 {

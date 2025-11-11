@@ -1,18 +1,19 @@
 using Moq;
+using Mpt.Rql;
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Configuration;
-using Mpt.Rql.Linq.Services.Context;
-using Mpt.Rql.Linq.Services.Filtering;
-using Mpt.Rql.Linq.Services.Filtering.Operators;
-using Mpt.Rql.Linq.Services.Filtering.Operators.Comparison.Implementation;
-using Mpt.Rql.Linq.Services.Filtering.Operators.List.Implementation;
-using Mpt.Rql.Linq.Services.Filtering.Operators.Search.Implementation;
-using Mpt.Rql.Linq.Settings;
-using Mpt.UnitTests.Common.Factory;
-using Mpt.UnitTests.Common.Utility;
+using Mpt.Rql.Services.Context;
+using Mpt.Rql.Services.Filtering;
+using Mpt.Rql.Services.Filtering.Operators;
+using Mpt.Rql.Services.Filtering.Operators.Comparison.Implementation;
+using Mpt.Rql.Services.Filtering.Operators.List.Implementation;
+using Mpt.Rql.Services.Filtering.Operators.Search.Implementation;
+using Mpt.Rql.Settings;
+using Rql.Tests.Common.Factory;
+using Rql.Tests.Common.Utility;
 using Xunit;
 
-namespace Mpt.Rql.Linq.UnitTests.Filtering;
+namespace Rql.Tests.Unit.Filtering;
 
 public class FilteringServiceTests
 {

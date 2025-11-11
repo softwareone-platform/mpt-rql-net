@@ -1,12 +1,12 @@
 using FluentAssertions;
 using Mpt.Rql.Client;
-using Mpt.Rql.Linq.Client.Core;
-using Mpt.Rql.Linq.Core.Metadata;
-using Mpt.Rql.Linq.UnitTests.Client.Samples;
+using Mpt.Rql.Client.Core;
+using Mpt.Rql.Core.Metadata;
+using Rql.Tests.Unit.Client.Samples;
 using System.Linq.Expressions;
 using Xunit;
 
-namespace Mpt.Rql.Linq.UnitTests.Client;
+namespace Rql.Tests.Unit.Client;
 
 public class PropertyVisitorTests
 {
@@ -36,7 +36,7 @@ public class PropertyVisitorTests
         Expression<Func<User, string>> xx = x => x.HomeAddress.Street;
 
         // Act
-        var result =_propertyVisitor.GetPath(xx);
+        var result = _propertyVisitor.GetPath(xx);
 
         // Assert
         result.Should().Be("homeAddress.street");

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Mpt.Rql.Linq.UnitTests.Client.Samples;
+namespace Rql.Tests.Unit.Client.Samples;
 
 public class ExampleAddressWithJson
 {

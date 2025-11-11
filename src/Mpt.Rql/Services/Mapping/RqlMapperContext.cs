@@ -1,7 +1,7 @@
 using Mpt.Rql.Abstractions;
 using System.Linq.Expressions;
 
-namespace Mpt.Rql.Linq.Services.Mapping;
+namespace Mpt.Rql.Services.Mapping;
 
 internal abstract class RqlMapperContext
 {

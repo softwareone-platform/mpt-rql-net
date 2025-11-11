@@ -1,11 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Linq.Services.Filtering;
-using Mpt.Rql.Linq.Services.Filtering.Builders;
-using Mpt.Rql.Linq.Services.Filtering.Operators;
+using Mpt.Rql.Services.Filtering;
+using Mpt.Rql.Services.Filtering.Builders;
+using Mpt.Rql.Services.Filtering.Operators;
 
-namespace Mpt.UnitTests.Common.Factory;
+namespace Rql.Tests.Common.Factory;
 
 internal static class ExpressionBuilderFactory
 {

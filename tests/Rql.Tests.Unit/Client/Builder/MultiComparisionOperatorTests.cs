@@ -1,11 +1,11 @@
 using FluentAssertions;
-using Mpt.Rql.Linq.Client.Builder.Operators;
-using Mpt.Rql.Linq.Client.Core;
-using Mpt.Rql.Linq.Core.Metadata;
-using Mpt.Rql.Linq.UnitTests.Client.Samples;
+using Mpt.Rql.Client.Builder.Operators;
+using Mpt.Rql.Client.Core;
+using Mpt.Rql.Core.Metadata;
+using Rql.Tests.Unit.Client.Samples;
 using Xunit;
 
-namespace Mpt.Rql.Linq.UnitTests.Client.Builder;
+namespace Rql.Tests.Unit.Client.Builder;
 
 public class MultiComparisionOperatorTests
 {

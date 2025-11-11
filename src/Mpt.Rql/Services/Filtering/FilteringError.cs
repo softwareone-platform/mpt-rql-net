@@ -1,6 +1,6 @@
 using Mpt.Rql.Abstractions.Result;
 
-namespace Mpt.Rql.Linq.Services.Filtering;
+namespace Mpt.Rql.Services.Filtering;
 
 internal static class FilteringError
 {
