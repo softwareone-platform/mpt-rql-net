@@ -10,9 +10,8 @@ using Mpt.Rql.Settings;
 
 namespace Mpt.Rql;
 
-internal class RqlQueryable<TStorage> : RqlQueryableLinq<TStorage, TStorage>, IRqlQueryable<TStorage>
+internal class RqlQueryable<TStorage>(IServiceProvider serviceProvider) : RqlQueryableLinq<TStorage, TStorage>(serviceProvider), IRqlQueryable<TStorage>
 {
-    public RqlQueryable(IServiceProvider serviceProvider) : base(serviceProvider) { }
 }
 
 internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView>
@@ -66,17 +65,10 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
             Graph = context.Graph,
             Query = query!,
             IsSuccess = !context.HasErrors,
-            Errors = context.GetErrors().ToList()
+            Errors = [.. context.GetErrors()]
         };
 
         T GetService<T>() where T : notnull => scope.ServiceProvider.GetRequiredService<T>();
-    }
-
-    private static RqlRequest MakeRequest(Action<RqlRequest> configure)
-    {
-        var request = new RqlRequest();
-        configure(request);
-        return request;
     }
 }
 

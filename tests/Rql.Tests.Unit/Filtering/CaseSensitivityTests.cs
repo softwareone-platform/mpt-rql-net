@@ -134,7 +134,7 @@ public class CaseSensitivityTests
 
         // Assert
         Assert.DoesNotContain(actualResult, x => x.Name == "Jewelry Widget");
-        Assert.True(actualResult.Count() > 0); // Should have other items
+        Assert.True(actualResult.Any()); // Should have other items
     }
 
     [Fact]
@@ -155,7 +155,7 @@ public class CaseSensitivityTests
 
         // Assert
         Assert.DoesNotContain(actualResult, x => x.Name == "Jewelry Widget");
-        Assert.True(actualResult.Count() > 0); // Should have other items
+        Assert.True(actualResult.Any()); // Should have other items
     }
 
     #endregion
@@ -269,7 +269,7 @@ public class CaseSensitivityTests
         var actualResult = context.ApplyTransformations(QueryableSampleEntityCollection.Default().AsQueryable());
 
         // Assert
-        Assert.True(actualResult.Count() > 0);
+        Assert.True(actualResult.Any());
         // All results should contain the pattern (case insensitive)
         var expectedPattern = pattern.Replace("*", "");
         Assert.All(actualResult, item => 
