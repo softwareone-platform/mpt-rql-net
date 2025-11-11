@@ -35,11 +35,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rql.Sample.Domain", "sample
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rql.Sample.Infrastructure", "samples\Rql.Sample.Infrastructure\Rql.Sample.Infrastructure.csproj", "{CFFB44E6-0321-480B-B258-9B9A22D3D0CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mpt.Rql.Parsers.Linear.UnitTests", "tests\Mpt.Rql.Parsers.Linear.UnitTests\Mpt.Rql.Parsers.Linear.UnitTests.csproj", "{56074B20-CCE8-448A-B116-ACC5BFBC54E5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rql.Tests.Parsers.Linear", "tests\Rql.Tests.Parsers.Linear\Rql.Tests.Parsers.Linear.csproj", "{56074B20-CCE8-448A-B116-ACC5BFBC54E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mpt.UnitTests.Common", "tests\Mpt.UnitTests.Common\Mpt.UnitTests.Common.csproj", "{7CD68018-2867-4169-AD97-514DBBEFB52A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rql.Tests.Common", "tests\Rql.Tests.Common\Rql.Tests.Common.csproj", "{7CD68018-2867-4169-AD97-514DBBEFB52A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mpt.Rql.UnitTests", "tests\Mpt.Rql.UnitTests\Mpt.Rql.UnitTests.csproj", "{E66632A3-4C40-4489-80F6-6BCF1F5B19B8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rql.Tests.Unit", "tests\Rql.Tests.Unit\Rql.Tests.Unit.csproj", "{E66632A3-4C40-4489-80F6-6BCF1F5B19B8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject

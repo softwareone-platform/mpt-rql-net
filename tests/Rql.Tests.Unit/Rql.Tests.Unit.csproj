@@ -11,7 +11,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="FluentAssertions" Version="6.12.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
+    <PackageReference Include="Moq" Version="4.20.70" />
     <PackageReference Include="xunit" Version="2.8.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.1">
       <PrivateAssets>all</PrivateAssets>
@@ -21,8 +23,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Mpt.Rql.Abstractions\Mpt.Rql.Abstractions.csproj" />
-    <ProjectReference Include="..\..\src\Mpt.Rql.Parsers.Linear\Mpt.Rql.Parsers.Linear.csproj" />
-    <ProjectReference Include="..\Mpt.UnitTests.Common\Mpt.UnitTests.Common.csproj" />
+    <ProjectReference Include="..\..\src\Mpt.Rql\Mpt.Rql.csproj" />
+    <ProjectReference Include="..\Rql.Tests.Common\Rql.Tests.Common.csproj" />
   </ItemGroup>
 
 </Project>
