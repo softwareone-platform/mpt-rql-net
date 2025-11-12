@@ -1,3 +1,4 @@
+using Mpt.Rql.Abstractions.Configuration;
 using Mpt.Rql.Abstractions.Result;
 using Mpt.Rql.Core;
 using Mpt.Rql.Core.Metadata;
@@ -7,16 +8,12 @@ namespace Mpt.Rql.Services.Filtering;
 
 internal interface IFilteringPathInfoBuilder : IPathInfoBuilder { }
 
-internal class FilteringPathInfoBuilder : PathInfoBuilder, IFilteringPathInfoBuilder
+internal class FilteringPathInfoBuilder(IActionValidator actionValidator, IMetadataProvider metadataProvider, IBuilderContext builderContext, IRqlSettings settings)
+    : PathInfoBuilder(metadataProvider, builderContext), IFilteringPathInfoBuilder
 {
-    private readonly IActionValidator _actionValidator;
-    private readonly IBuilderContext _builderContext;
-
-    public FilteringPathInfoBuilder(IActionValidator actionValidator, IMetadataProvider metadataProvider, IBuilderContext builderContext) : base(metadataProvider, builderContext)
-    {
-        _actionValidator = actionValidator;
-        _builderContext = builderContext;
-    }
+    private readonly IActionValidator _actionValidator = actionValidator;
+    private readonly IBuilderContext _builderContext = builderContext;
+    private readonly IRqlSettings _settings = settings;
 
     protected override Result<bool> ValidatePath(MemberPathInfo pathInfo)
     {
@@ -24,4 +21,6 @@ internal class FilteringPathInfoBuilder : PathInfoBuilder, IFilteringPathInfoBui
             return Error.Validation("Filtering is not permitted.", _builderContext.GetFullPath(pathInfo.Path.ToString()));
         return true;
     }
+
+    protected override bool UseSafeNavigation() => _settings.Filter.SafeNavigation == SafeNavigationMode.On;
 }

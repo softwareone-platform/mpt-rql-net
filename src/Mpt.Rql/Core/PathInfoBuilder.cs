@@ -46,6 +46,7 @@ internal abstract class PathInfoBuilder : IPathInfoBuilder
     public Result<MemberPathInfo> Build(Expression root, string path)
     {
         var nameSegments = path.Split('.');
+        var safeNavigation = UseSafeNavigation();
         var aggregatedInfo = nameSegments.Aggregate(
             new Result<MemberPathInfo>(new MemberPathInfo(path, path.AsMemory(0, 0), null!, root)),
             (current, segment) =>
@@ -59,7 +60,22 @@ internal abstract class PathInfoBuilder : IPathInfoBuilder
                 if (!_metadataProvider.TryGetPropertyByDisplayName(current.Value.Expression.Type, segment, out var propInfo) || propInfo!.IsIgnored)
                     return Error.Validation("Invalid property path.", _builderContext.GetFullPath(cumulativePath.ToString()));
 
-                var expression = (Expression)Expression.MakeMemberAccess(current.Value!.Expression, propInfo!.Property!);
+                Expression expression;
+                
+                if (safeNavigation)
+                {
+                    // Create null conditional expression: parent?.property
+                    var memberAccess = Expression.MakeMemberAccess(current.Value!.Expression, propInfo!.Property!);
+                    var nullConstant = Expression.Constant(null, memberAccess.Type);
+                    var nullCheck = Expression.Equal(current.Value.Expression, Expression.Constant(null));
+                    expression = Expression.Condition(nullCheck, nullConstant, memberAccess);
+                }
+                else
+                {
+                    // Create normal member access: parent.property
+                    expression = Expression.MakeMemberAccess(current.Value!.Expression, propInfo!.Property!);
+                }
+
                 var pathInfo = new MemberPathInfo(current.Value.FullPath, cumulativePath, propInfo, expression);
 
                 var validationResult = ValidatePath(pathInfo);
@@ -77,4 +93,9 @@ internal abstract class PathInfoBuilder : IPathInfoBuilder
     }
 
     protected abstract Result<bool> ValidatePath(MemberPathInfo pathInfo);
+
+    /// <summary>
+    /// Determines whether safe navigation operators (?.) should be used based on implementation type and settings
+    /// </summary>
+    protected abstract bool UseSafeNavigation();
 }

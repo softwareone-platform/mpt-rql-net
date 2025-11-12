@@ -1,4 +1,5 @@
 using Mpt.Rql.Abstractions.Configuration.Filter;
+using Mpt.Rql.Abstractions.Configuration.Ordering;
 
 namespace Mpt.Rql.Abstractions.Configuration;
 
@@ -9,4 +10,6 @@ public interface IRqlSettings
     IRqlSelectSettings Select { get; }
 
     IRqlFilterSettings Filter { get; }
+
+    IRqlOrderingSettings Ordering { get; }
 }
