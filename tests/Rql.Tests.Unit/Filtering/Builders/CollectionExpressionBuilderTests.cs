@@ -58,28 +58,11 @@ public class CollectionExpressionBuilderTests
     }
 
     [Fact]
-    public void Build_WhenAccessorIsNotMemberExpression_ShouldReturnError()
-    {
-        // Arrange
-        var propertyInfo = new RqlPropertyInfo();
-        var pathInfo = new MemberPathInfo(Path, Path.AsMemory(0, 0), propertyInfo, Expression.Constant(1));
-        _pathBuilderMock.Setup(pb => pb.Build(_pe, _node.Left)).Returns(pathInfo);
-
-        // Act
-        var result = _sut.Build(_pe, _node);
-
-        // Assert
-        Assert.True(result.IsError);
-        Assert.Single(result.Errors);
-        Assert.Equal("Collection operations work with properties only", result.Errors[0].Message);
-    }
-
-    [Fact]
     public void Build_WhenPropertyElementTypeIsNull_ShouldReturnError()
     {
         // Arrange
         var propertyInfo = new RqlPropertyInfo { ElementType = null };
-        var pathInfo = new MemberPathInfo(Path, Path.AsMemory(0, 0), propertyInfo, Expression.Property(_pe, "SomeProperty"));
+        var pathInfo = new MemberPathInfo(propertyInfo, Expression.Property(_pe, "SomeProperty"));
         _pathBuilderMock.Setup(pb => pb.Build(_pe, _node.Left)).Returns(pathInfo);
 
         // Act
@@ -96,7 +79,7 @@ public class CollectionExpressionBuilderTests
     {
         // Arrange
         var propertyInfo = new RqlPropertyInfo { ElementType = typeof(object) };
-        var pathInfo = new MemberPathInfo(Path, Path.AsMemory(0, 0), propertyInfo, Expression.Property(_pe, "SomeProperty"));
+        var pathInfo = new MemberPathInfo(propertyInfo, Expression.Property(_pe, "SomeProperty"));
         _pathBuilderMock.Setup(pb => pb.Build(_pe, _node.Left)).Returns(pathInfo);
 
         var error = Error.General("Inner expression error");
@@ -116,7 +99,7 @@ public class CollectionExpressionBuilderTests
     {
         // Arrange
         var propertyInfo = new RqlPropertyInfo { ElementType = typeof(object) };
-        var pathInfo = new MemberPathInfo(Path, Path.AsMemory(0, 0), propertyInfo, Expression.Property(_pe, "SomeProperty"));
+        var pathInfo = new MemberPathInfo(propertyInfo, Expression.Property(_pe, "SomeProperty"));
         _pathBuilderMock.Setup(pb => pb.Build(_pe, _node.Left)).Returns(pathInfo);
 
         var innerExpression = Expression.Constant(true);

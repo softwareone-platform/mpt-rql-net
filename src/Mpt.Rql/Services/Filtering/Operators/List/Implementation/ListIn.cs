@@ -15,20 +15,20 @@ internal class ListIn : IListIn
     private static readonly MethodInfo _containsMethod = typeof(Enumerable).GetMethods().Single(
         methodInfo => methodInfo.Name == nameof(Enumerable.Contains) && methodInfo.GetParameters().Length == 2);
 
-    public virtual Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, IEnumerable<string> list)
+    public virtual Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, Expression accessor, IEnumerable<string> list)
     {
         var validationResult = ValidationHelper.ValidateOperatorApplicability(propertyInfo, Operator);
         if (validationResult.IsError)
             return validationResult.Errors;
 
-        var listType = typeof(List<>).MakeGenericType(member.Type);
+        var listType = typeof(List<>).MakeGenericType(accessor.Type);
         var values = (IList)Activator.CreateInstance(listType)!;
 
         var errors = new List<Error>();
 
         foreach (var constant in list)
         {
-            var eoT = ConstantHelper.ChangeType(constant, member.Type);
+            var eoT = ConstantHelper.ChangeType(constant, accessor.Type);
             if (eoT.IsError)
                 errors.AddRange(eoT.Errors);
             else
@@ -38,8 +38,8 @@ internal class ListIn : IListIn
         if (errors.Any())
             return errors;
 
-        var contains = _containsMethod.MakeGenericMethod(member.Type);
-        return Expression.Call(contains, ConstantBuilder.Build(values, values.GetType()), member);
+        var contains = _containsMethod.MakeGenericMethod(accessor.Type);
+        return Expression.Call(contains, ConstantBuilder.Build(values, values.GetType()), accessor);
     }
 
     protected virtual RqlOperators Operator => RqlOperators.ListIn;

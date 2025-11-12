@@ -9,7 +9,7 @@ namespace Mpt.Rql.Services.Filtering.Operators.Collection.Implementation;
 
 internal abstract class CollectionOperator : ICollectionOperator
 {
-    public Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, LambdaExpression? inner)
+    public Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, Expression accessor, LambdaExpression? inner)
     {
         var validationResult = ValidationHelper.ValidateOperatorApplicability(propertyInfo, Operator);
         if (validationResult.IsError)
@@ -21,9 +21,9 @@ internal abstract class CollectionOperator : ICollectionOperator
         if (function.IsError) return function.Errors;
 
         if (inner != null)
-            return Expression.Call(null, function.Value!, member, inner);
+            return Expression.Call(null, function.Value!, accessor, inner);
 
-        return Expression.Call(null, function.Value!, member);
+        return Expression.Call(null, function.Value!, accessor);
     }
 
     protected abstract RqlOperators Operator { get; }

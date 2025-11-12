@@ -11,7 +11,7 @@ internal class Like(IRqlSettings settings) : ILike
     private static readonly char _wildcard = '*';
     private static readonly string _escapedWildcard = $"{_escapeCharacter}{_wildcard}";
 
-    public Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, string pattern)
+    public Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, Expression accessor, string pattern)
     {
         var (startsWithWildCard, startsWithEscapedWildCard, endsWithEscapedWildCard, endsWithWildCard) = ResolveWildCardFacts(pattern);
         var rqlOperator = ResolveRqlOperator(pattern, startsWithWildCard, endsWithWildCard);
@@ -20,14 +20,13 @@ internal class Like(IRqlSettings settings) : ILike
         if (validationResult.IsError) return validationResult.Errors;
 
         var cleanedString = CleanToLiteralSearchString(pattern, startsWithWildCard, startsWithEscapedWildCard, endsWithEscapedWildCard, endsWithWildCard);
-        var comparison = settings.Filter.Strings.Comparison;
 
         return rqlOperator switch
         {
-            RqlOperators.Contains => StringExpressionHelper.Contains(member, cleanedString, comparison),
-            RqlOperators.EndsWith => StringExpressionHelper.EndsWith(member, cleanedString, comparison),
-            RqlOperators.StartsWith => StringExpressionHelper.StartsWith(member, cleanedString, comparison),
-            RqlOperators.Eq => StringExpressionHelper.Equals(member, cleanedString, comparison),
+            RqlOperators.Contains => accessor.Contains(cleanedString, settings),
+            RqlOperators.EndsWith => accessor.EndsWith(cleanedString, settings),
+            RqlOperators.StartsWith => accessor.StartsWith(cleanedString, settings),
+            RqlOperators.Eq => accessor.Equals(cleanedString, settings),
             _ => throw new InvalidOperationException($"Unsupported operator: {rqlOperator}")
         };
     }

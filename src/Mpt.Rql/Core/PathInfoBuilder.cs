@@ -8,17 +8,8 @@ using System.Linq.Expressions;
 
 namespace Mpt.Rql.Core;
 
-internal abstract class PathInfoBuilder : IPathInfoBuilder
+internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBuilderContext builderContext) : IPathInfoBuilder
 {
-    private readonly IMetadataProvider _metadataProvider;
-    private readonly IBuilderContext _builderContext;
-
-    protected PathInfoBuilder(IMetadataProvider metadataProvider, IBuilderContext builderContext)
-    {
-        _metadataProvider = metadataProvider;
-        _builderContext = builderContext;
-    }
-
     public Result<MemberPathInfo> Build(Expression root, RqlExpression rqlExpression)
     {
         switch (rqlExpression)
@@ -28,8 +19,7 @@ internal abstract class PathInfoBuilder : IPathInfoBuilder
                     if (self.Inner != null)
                         return Build(root, self.Inner);
 
-                    var path = string.Empty;
-                    return new MemberPathInfo(path, path.AsMemory(0, 0), RqlPropertyInfo.Root, root);
+                    return new MemberPathInfo(RqlPropertyInfo.Root, root);
                 }
             case RqlConstant constant:
                 {
@@ -47,52 +37,67 @@ internal abstract class PathInfoBuilder : IPathInfoBuilder
     {
         var nameSegments = path.Split('.');
         var safeNavigation = UseSafeNavigation();
-        var aggregatedInfo = nameSegments.Aggregate(
-            new Result<MemberPathInfo>(new MemberPathInfo(path, path.AsMemory(0, 0), null!, root)),
-            (current, segment) =>
+
+        List<Expression>? memberAccess = null;
+        if (safeNavigation)
+            memberAccess = new List<Expression>(nameSegments.Length);
+
+        var currentType = root.Type;
+        RqlPropertyInfo? propInfo = null;
+        var pathExpression = root;
+        var currentPathLenght = 0;
+
+        foreach (var segment in nameSegments)
+        {
+            if (currentPathLenght > 0)
+                currentPathLenght++; // account for dot
+
+            currentPathLenght += segment.Length;
+            var propertyPath = path.AsMemory(0, currentPathLenght).ToString();
+
+            if (!metadataProvider.TryGetPropertyByDisplayName(currentType, segment, out propInfo) || propInfo!.IsIgnored)
             {
-                if (current.IsError)
-                    return current;
+                return Error.Validation("Invalid property path.", builderContext.GetFullPath(propertyPath));
+            }
 
-                var previousLength = current.Value!.Path.Length;
-                var cumulativePath = current.Value.FullPath.AsMemory(0, (previousLength > 0 ? previousLength + 1 : previousLength) + segment.Length);
+            var validationResult = ValidatePath(propInfo, propertyPath);
 
-                if (!_metadataProvider.TryGetPropertyByDisplayName(current.Value.Expression.Type, segment, out var propInfo) || propInfo!.IsIgnored)
-                    return Error.Validation("Invalid property path.", _builderContext.GetFullPath(cumulativePath.ToString()));
+            if (validationResult.IsError)
+                return validationResult.Errors;
 
-                Expression expression;
-                
-                if (safeNavigation)
-                {
-                    // Create null conditional expression: parent?.property
-                    var memberAccess = Expression.MakeMemberAccess(current.Value!.Expression, propInfo!.Property!);
-                    var nullConstant = Expression.Constant(null, memberAccess.Type);
-                    var nullCheck = Expression.Equal(current.Value.Expression, Expression.Constant(null));
-                    expression = Expression.Condition(nullCheck, nullConstant, memberAccess);
-                }
-                else
-                {
-                    // Create normal member access: parent.property
-                    expression = Expression.MakeMemberAccess(current.Value!.Expression, propInfo!.Property!);
-                }
+            currentType = propInfo.Property.PropertyType;
+            pathExpression = Expression.MakeMemberAccess(pathExpression, propInfo!.Property!);
 
-                var pathInfo = new MemberPathInfo(current.Value.FullPath, cumulativePath, propInfo, expression);
+            if (safeNavigation)
+            {
+                // register member access expressions for further processing
+                memberAccess!.Add(pathExpression);
+            }
+        }
 
-                var validationResult = ValidatePath(pathInfo);
+        if (safeNavigation)
+        {
+            pathExpression = BuildConditionalExpression(memberAccess!, 0);
+        }
 
-                if (validationResult.IsError)
-                    return validationResult.Errors;
-
-                return pathInfo;
-            });
-
-        if (aggregatedInfo.IsError)
-            return aggregatedInfo.Errors;
-
-        return aggregatedInfo.Value!;
+        return new MemberPathInfo(propInfo!, pathExpression);
     }
 
-    protected abstract Result<bool> ValidatePath(MemberPathInfo pathInfo);
+    private static Expression BuildConditionalExpression(List<Expression> memberAccess, int index)
+    {
+        if (index == memberAccess.Count - 1)
+        {
+            return memberAccess[index];
+        }
+        var currentAccess = memberAccess[index];
+        var nextAccess = BuildConditionalExpression(memberAccess, index + 1);
+        return Expression.Condition(
+            Expression.Equal(currentAccess, Expression.Constant(null, currentAccess.Type)),
+            Expression.Constant(null, nextAccess.Type),
+            nextAccess);
+    }
+
+    protected abstract Result<bool> ValidatePath(RqlPropertyInfo property, string path);
 
     /// <summary>
     /// Determines whether safe navigation operators (?.) should be used based on implementation type and settings

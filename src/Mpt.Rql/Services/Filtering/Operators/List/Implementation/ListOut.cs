@@ -7,9 +7,9 @@ namespace Mpt.Rql.Services.Filtering.Operators.List.Implementation;
 
 internal class ListOut : ListIn, IListOut
 {
-    public override Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, IEnumerable<string> list)
+    public override Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, Expression accessor, IEnumerable<string> list)
     {
-        var expression = base.MakeExpression(propertyInfo, member, list);
+        var expression = base.MakeExpression(propertyInfo, accessor, list);
         return expression.IsError ? expression : Expression.Not(expression.Value!);
     }
 

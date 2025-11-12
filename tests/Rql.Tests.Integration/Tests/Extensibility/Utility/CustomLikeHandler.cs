@@ -7,7 +7,7 @@ namespace Rql.Tests.Integration.Tests.Extensibility.Utility;
 
 internal class CustomLikeHandler : ILike
 {
-    public Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, string? value)
+    public Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, Expression accessor, string? value)
     {
         throw new NotImplementedException();
     }

@@ -55,7 +55,7 @@ public class BinaryExpressionBuilderTests
     {
         // Arrange
         var propertyInfo = new RqlPropertyInfo();
-        var pathInfo = new MemberPathInfo(Path, Path.AsMemory(0, 0), propertyInfo, Expression.Constant(1));
+        var pathInfo = new MemberPathInfo(propertyInfo, Expression.Constant(1));
         _pathBuilderMock.Setup(pb => pb.Build(_pe, _node.Left)).Returns(pathInfo);
 
         // Act
@@ -163,7 +163,7 @@ public class BinaryExpressionBuilderTests
     private RqlPropertyInfo SetupPropertyInfo(RqlBinary node)
     {
         var propertyInfo = new RqlPropertyInfo { ElementType = typeof(object) };
-        var pathInfo = new MemberPathInfo(Path, Path.AsMemory(0, 0), propertyInfo, Expression.Property(_pe, "SomeProperty"));
+        var pathInfo = new MemberPathInfo(propertyInfo, Expression.Property(_pe, "SomeProperty"));
         _pathBuilderMock.Setup(pb => pb.Build(_pe, node.Left)).Returns(pathInfo);
         return propertyInfo;
     }
