@@ -181,4 +181,75 @@ public class BasicFilterTests
     [Fact]
     public void Equals_IsIgnored_ThrowsException()
        => _testExecutor.MustFailWithError(filter: "ignored=true", errorMessage: "Invalid property path.");
+
+    #region Case Insensitive Tests
+
+    [Theory]
+    [InlineData("eq(name,jewelry widget)", "Jewelry Widget")]
+    [InlineData("eq(name,JEWELRY WIDGET)", "Jewelry Widget")]
+    [InlineData("eq(name,JeWeLrY wIdGeT)", "Jewelry Widget")]
+    [InlineData("name=jewelry widget", "Jewelry Widget")]
+    [InlineData("name=JEWELRY WIDGET", "Jewelry Widget")]
+    public void Eq_Name_Equal_CaseInsensitive(string query, string matchingProductName)
+    {
+        var caseInsensitiveExecutor = new CaseInsensitiveProductTestExecutor();
+        caseInsensitiveExecutor.ResultMatch(t => t.Name == matchingProductName, query, isHappyFlow: true);
+    }
+
+    [Theory]
+    [InlineData("ne(name,jewelry widget)")]
+    [InlineData("ne(name,JEWELRY WIDGET)")]
+    [InlineData("ne(name,JeWeLrY wIdGeT)")]
+    public void Ne_Name_NotEqual_CaseInsensitive(string query)
+    {
+        var caseInsensitiveExecutor = new CaseInsensitiveProductTestExecutor();
+        caseInsensitiveExecutor.ResultMatch(t => t.Name != "Jewelry Widget", query, isHappyFlow: true);
+    }
+
+    [Theory]
+    [InlineData("like(category,*clothing*)", 1)] // Should match "Jewelry Widget" with "Clothing" category
+    [InlineData("like(category,*CLOTHING*)", 1)] 
+    [InlineData("like(category,*ClOtHiNg*)", 1)]
+    [InlineData("like(category,*activity*)", 3)] // Should match 3 products with "Activity" category
+    [InlineData("like(category,*ACTIVITY*)", 3)]
+    public void Like_Category_CaseInsensitive(string query, int expectedCount)
+    {
+        var caseInsensitiveExecutor = new CaseInsensitiveProductTestExecutor();
+        var products = caseInsensitiveExecutor.Transform(filter: query).ToList();
+        Assert.Equal(expectedCount, products.Count);
+    }
+
+    [Theory]
+    [InlineData("like(name,*widget*)", "Jewelry Widget")]
+    [InlineData("like(name,*WIDGET*)", "Jewelry Widget")]
+    [InlineData("like(name,*WiDgEt*)", "Jewelry Widget")]
+    [InlineData("like(name,*whatchamacallit*)", 2)] // Should match both "Camping Whatchamacallit" and "Dog Whatchamacallit"
+    [InlineData("like(name,*WHATCHAMACALLIT*)", 2)]
+    public void Like_Name_CaseInsensitive(string query, object expected)
+    {
+        var caseInsensitiveExecutor = new CaseInsensitiveProductTestExecutor();
+        var products = caseInsensitiveExecutor.Transform(filter: query).ToList();
+        
+        if (expected is string expectedName)
+        {
+            Assert.Single(products);
+            Assert.Equal(expectedName, products[0].Name);
+        }
+        else if (expected is int expectedCount)
+        {
+            Assert.Equal(expectedCount, products.Count);
+        }
+    }
+
+    [Theory]
+    [InlineData("and(eq(name,jewelry widget),eq(category,clothing))", "Jewelry Widget")]
+    [InlineData("and(name=JEWELRY WIDGET,category=CLOTHING)", "Jewelry Widget")]
+    [InlineData("and(like(name,*jewelry*),like(category,*clothing*))", "Jewelry Widget")]
+    public void Complex_CaseInsensitive_Queries(string query, string matchingProductName)
+    {
+        var caseInsensitiveExecutor = new CaseInsensitiveProductTestExecutor();
+        caseInsensitiveExecutor.ResultMatch(t => t.Name == matchingProductName, query, isHappyFlow: true);
+    }
+
+    #endregion
 }

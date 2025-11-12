@@ -4,5 +4,7 @@ namespace Mpt.Rql.Settings;
 
 internal record RqlStringFilterSettings : IRqlStringFilterSettings
 {
-    public StringComparisonType Type { get; set; } = StringComparisonType.Simple;
+    public StringComparisonStrategy Strategy { get; set; } = StringComparisonStrategy.Default;
+
+    public StringComparison? Comparison { get; set; }
 }

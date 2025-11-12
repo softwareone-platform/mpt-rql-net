@@ -5,11 +5,26 @@ namespace Mpt.Rql.Abstractions.Configuration.Filter;
 /// </summary>
 public interface IRqlStringFilterSettings
 {
-    StringComparisonType Type { get; set; }
+    /// <summary>
+    /// Strategy for string comparison operations in filtering
+    /// </summary>
+    StringComparisonStrategy Strategy { get; set; }
+
+    /// <summary>
+    /// String comparison mode for case sensitivity. When null, uses default provider behavior.
+    /// When specified, overrides the default comparison with the given StringComparison.
+    /// </summary>
+    StringComparison? Comparison { get; set; }
 }
 
-public enum StringComparisonType
+public enum StringComparisonStrategy
 {
-    Simple,
+    /// <summary>
+    /// Default comparison using standard operators
+    /// </summary>
+    Default,
+    /// <summary>
+    /// Lexicographical comparison using string.Compare 
+    /// </summary>
     Lexicographical
 }

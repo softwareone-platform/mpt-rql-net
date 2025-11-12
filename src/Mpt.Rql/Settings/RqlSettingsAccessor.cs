@@ -25,7 +25,8 @@ internal class RqlSettingsAccessor(IRqlGlobalSettings globalSettings) : IRqlSett
         _instance.Select.MaxDepth = globalSettings.Select.MaxDepth;
 
         // Deep copy Filter settings
-        _instance.Filter.Strings.Type = globalSettings.Filter.Strings.Type;
+        _instance.Filter.Strings.Strategy = globalSettings.Filter.Strings.Strategy;
+        _instance.Filter.Strings.Comparison = globalSettings.Filter.Strings.Comparison;
 
         return _instance;
     }

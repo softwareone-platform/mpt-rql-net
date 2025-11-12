@@ -14,16 +14,18 @@ internal abstract class ComparisonOperator(IRqlSettings settings) : IComparisonO
     private static readonly MethodInfo _stringOperator = typeof(string).GetMethod(nameof(string.Compare), BindingFlags.Public | BindingFlags.Static, [typeof(string), typeof(string)])!;
 
     public Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, Expression accessor, string? value)
-    => MakeBinaryExpression(propertyInfo, accessor, value);
-
-    protected Result<Expression> MakeBinaryExpression(IRqlPropertyInfo propertyInfo, Expression accessor, string? value)
     {
         var validationResult = ValidationHelper.ValidateOperatorApplicability(propertyInfo, Operator);
 
         if (validationResult.IsError)
             return validationResult.Errors;
 
-        if (accessor.Type == typeof(string) && settings.Filter.Strings.Type == StringComparisonType.Lexicographical && !AvoidLexicographicalComparison)
+        return MakeBinaryExpression(accessor, value);
+    }
+
+    protected virtual Result<Expression> MakeBinaryExpression(Expression accessor, string? value)
+    {
+        if (accessor.Type == typeof(string) && settings.Filter.Strings.Strategy == StringComparisonStrategy.Lexicographical && !AvoidLexicographicalComparison)
         {
             return Handler(Expression.Call(_stringOperator, accessor, ConstantBuilder.Build(value, typeof(string))), Expression.Constant(0, typeof(int)));
         }
