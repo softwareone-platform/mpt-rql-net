@@ -89,11 +89,22 @@ internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBui
         {
             return memberAccess[index];
         }
+
+
         var currentAccess = memberAccess[index];
         var nextAccess = BuildConditionalExpression(memberAccess, index + 1);
+        var nextAccessType = nextAccess.Type;
+
+        if (nextAccessType.IsValueType && Nullable.GetUnderlyingType(nextAccessType) == null)
+        {
+            // This is a non-nullable value type, make it nullable for the comparison
+            nextAccessType = typeof(Nullable<>).MakeGenericType(nextAccessType);
+            nextAccess = Expression.Convert(nextAccess, nextAccessType);
+        }
+
         return Expression.Condition(
             Expression.Equal(currentAccess, Expression.Constant(null, currentAccess.Type)),
-            Expression.Constant(null, nextAccess.Type),
+            Expression.Constant(null, nextAccessType),
             nextAccess);
     }
 

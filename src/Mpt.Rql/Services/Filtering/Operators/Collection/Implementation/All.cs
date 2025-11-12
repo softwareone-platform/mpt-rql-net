@@ -1,11 +1,12 @@
 using Mpt.Rql.Abstractions.Result;
+using Mpt.Rql.Abstractions.Configuration;
 using Mpt.Rql.Core;
 using Mpt.Rql.Services.Filtering.Operators.Collection;
 using System.Reflection;
 
 namespace Mpt.Rql.Services.Filtering.Operators.Collection.Implementation;
 
-internal class All : CollectionOperator, IAll
+internal class All(IRqlSettings settings) : CollectionOperator(settings), IAll
 {
     protected override RqlOperators Operator => RqlOperators.Any;
 

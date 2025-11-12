@@ -89,7 +89,47 @@ public class SafeNavigationTests
         protected override IRqlQueryable<Product, Product> MakeRql()
             => RqlFactory.Make<Product>(services => { });
 
-        public override IQueryable<Product> GetQuery() => ProductRepository.Query();
+        public override IQueryable<Product> GetQuery() => CreateSafeNavigationTestData().AsQueryable();
+
+        private static IEnumerable<Product> CreateSafeNavigationTestData()
+        {
+            var products = new[]
+            {
+                new Product 
+                { 
+                    Id = 1, 
+                    Name = "Jewelry Widget", 
+                    Category = "Clothing", 
+                    Price = 192.95M, 
+                    SellPrice = 172.99M, 
+                    ListDate = DateTime.Now,
+                    Tags = new List<Tag> { new Tag { Value = "jewelry" } },
+                    Orders = new List<ProductOrder> { new ProductOrder { Id = 1, ClientName = "Michael" } },
+                    OrdersIds = new List<int> { 1 }
+                },
+                new Product 
+                { 
+                    Id = 2, 
+                    Name = "Test Product", 
+                    Category = "Test", 
+                    Price = 100m, 
+                    SellPrice = 90m, 
+                    ListDate = DateTime.Now,
+                    Tags = new List<Tag> { new Tag { Value = "test" } },
+                    Orders = new List<ProductOrder>(),
+                    OrdersIds = new List<int>()
+                }
+            };
+
+            // Set up self-references like ProductRepository does
+            foreach (var product in products)
+            {
+                product.Reference = product;
+                product.Collection = new List<Product> { product, product };
+            }
+
+            return products;
+        }
 
         protected override void Customize(IRqlSettings settings)
         {

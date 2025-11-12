@@ -29,6 +29,8 @@ public class Product : ITestEntity
 
     public List<int> OrdersIds { get; set; } = null!;
 
+    public List<Tag> Tags { get; set; } = null!;
+
     [RqlProperty(IsIgnored = true)]
     public bool Ignored { get; set; }
 }
@@ -37,4 +39,9 @@ public class ProductOrder
 {
     public int Id { get; set; }
     public string ClientName { get; set; } = null!;
+}
+
+public class Tag
+{
+    public string Value { get; set; } = null!;
 }

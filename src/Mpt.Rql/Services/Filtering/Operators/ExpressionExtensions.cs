@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Mpt.Rql.Services.Filtering.Operators;
 
-internal static class StringExpressionHelper
+internal static class ExpressionExtensions
 {
     private static readonly MethodInfo StartsWithMethod = typeof(string).GetMethod(nameof(string.StartsWith), [typeof(string)])!;
     private static readonly MethodInfo EndsWithMethod = typeof(string).GetMethod(nameof(string.EndsWith), [typeof(string)])!;
@@ -101,7 +101,16 @@ internal static class StringExpressionHelper
         if (settings.Filter.SafeNavigation != SafeNavigationMode.On)
             return expression;
 
-        var nullConstant = Expression.Constant(null, typeof(string));
+        var accessorType = accessor.Type;
+
+        if (accessorType.IsValueType && Nullable.GetUnderlyingType(accessorType) == null)
+        {
+            // This is a non-nullable value type, make it nullable for the comparison
+            accessorType = typeof(Nullable<>).MakeGenericType(accessorType);
+            accessor = Expression.Convert(accessor, accessorType);
+        }
+
+        var nullConstant = Expression.Constant(null, accessorType);
 
         return Expression.AndAlso(
             Expression.NotEqual(accessor, nullConstant),

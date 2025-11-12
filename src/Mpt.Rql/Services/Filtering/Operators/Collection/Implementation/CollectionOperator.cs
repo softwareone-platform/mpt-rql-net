@@ -1,4 +1,5 @@
 using Mpt.Rql.Abstractions;
+using Mpt.Rql.Abstractions.Configuration;
 using Mpt.Rql.Core;
 using Mpt.Rql.Services.Filtering.Operators;
 using Mpt.Rql.Services.Filtering.Operators.Collection;
@@ -7,7 +8,7 @@ using System.Reflection;
 
 namespace Mpt.Rql.Services.Filtering.Operators.Collection.Implementation;
 
-internal abstract class CollectionOperator : ICollectionOperator
+internal abstract class CollectionOperator(IRqlSettings settings) : ICollectionOperator
 {
     public Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, Expression accessor, LambdaExpression? inner)
     {
@@ -21,9 +22,13 @@ internal abstract class CollectionOperator : ICollectionOperator
         if (function.IsError) return function.Errors;
 
         if (inner != null)
-            return Expression.Call(null, function.Value!, accessor, inner);
+        {
+            var callExpression = Expression.Call(null, function.Value!, accessor, inner);
+            return callExpression.WithNullSafetyIfEnabled(accessor, settings);
+        }
 
-        return Expression.Call(null, function.Value!, accessor);
+        var callExpressionNoPredicate = Expression.Call(null, function.Value!, accessor);
+        return callExpressionNoPredicate.WithNullSafetyIfEnabled(accessor, settings);
     }
 
     protected abstract RqlOperators Operator { get; }
