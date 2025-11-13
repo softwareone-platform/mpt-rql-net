@@ -53,6 +53,10 @@ public static class ProductRepository
         {
             item.Reference = item;
             item.Collection = new List<Product> { item, item };
+            item.Tags = new List<Tag> 
+            {
+                new Tag { Value = $"Tag{item.Id}" }
+            };
         }
     }
 

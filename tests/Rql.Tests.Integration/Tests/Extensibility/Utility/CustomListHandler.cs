@@ -7,7 +7,7 @@ namespace Rql.Tests.Integration.Tests.Extensibility.Utility;
 
 internal class CustomListHandler : IListIn
 {
-    public Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, IEnumerable<string> list)
+    public Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, Expression accessor, IEnumerable<string> list)
     {
         throw new NotImplementedException();
     }

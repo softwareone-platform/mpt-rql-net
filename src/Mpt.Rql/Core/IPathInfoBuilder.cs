@@ -1,5 +1,6 @@
 using Mpt.Rql.Abstractions;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Mpt.Rql.Core;
 
@@ -10,4 +11,4 @@ internal interface IPathInfoBuilder
     Result<MemberPathInfo> Build(Expression root, string path);
 }
 
-internal record MemberPathInfo(string FullPath, ReadOnlyMemory<char> Path, RqlPropertyInfo PropertyInfo, Expression Expression);
+internal record MemberPathInfo(RqlPropertyInfo PropertyInfo, Expression Expression);

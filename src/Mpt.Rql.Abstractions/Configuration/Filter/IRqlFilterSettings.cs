@@ -1,3 +1,5 @@
+using Mpt.Rql.Abstractions.Configuration;
+
 namespace Mpt.Rql.Abstractions.Configuration.Filter;
 
 /// <summary>
@@ -6,4 +8,9 @@ namespace Mpt.Rql.Abstractions.Configuration.Filter;
 public interface IRqlFilterSettings
 {
     IRqlStringFilterSettings Strings { get; }
+    
+    /// <summary>
+    /// Controls the navigation strategy for filtering expressions
+    /// </summary>
+    NavigationStrategy Navigation { get; set; }
 }

@@ -36,9 +36,6 @@ internal class CollectionExpressionBuilder : IConcreteExpressionBuilder<RqlColle
         var property = memberInfo.Value!.PropertyInfo;
         var accessor = memberInfo.Value.Expression;
 
-        if (accessor is not MemberExpression member)
-            return Error.General("Collection operations work with properties only");
-
         if (property.ElementType == null)
             return Error.General("Collection property has incompatible type");
 
@@ -57,6 +54,6 @@ internal class CollectionExpressionBuilder : IConcreteExpressionBuilder<RqlColle
             _builderContext.GoToRoot();
         }
 
-        return handler.MakeExpression(property, member, innerLambda);
+        return handler.MakeExpression(property, accessor, innerLambda);
     }
 }

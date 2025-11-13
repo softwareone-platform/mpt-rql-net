@@ -6,5 +6,5 @@ namespace Mpt.Rql.Services.Filtering.Operators.List;
 
 public interface IListOperator : IOperator
 {
-    Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, MemberExpression member, IEnumerable<string> list);
+    Result<Expression> MakeExpression(IRqlPropertyInfo propertyInfo, Expression accessor, IEnumerable<string> list);
 }

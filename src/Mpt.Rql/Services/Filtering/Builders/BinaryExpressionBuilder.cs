@@ -71,21 +71,15 @@ internal class BinaryExpressionBuilder : IConcreteExpressionBuilder<RqlBinary>
 
     private static Result<Expression> MakeSearch(RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, ISearchOperator search)
     {
-        if (accessor is not MemberExpression member)
-            return Error.General("Search operations work with properties only");
-
         var arg = GetRightConstantArgument(node.Right, false);
         if (arg.IsError)
             return arg.Errors;
 
-        return search.MakeExpression(propertyInfo, member, arg.Value!);
+        return search.MakeExpression(propertyInfo, accessor, arg.Value!);
     }
 
     private static Result<Expression> MakeList(RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, IListOperator list)
     {
-        if (accessor is not MemberExpression member)
-            return Error.General("List operations work with properties only");
-
         if (node.Right is not RqlGroup grp || grp.Items == null || grp.Items.Count == 0)
             return Error.Validation("Value has to be a non empty array.");
 
@@ -94,7 +88,7 @@ internal class BinaryExpressionBuilder : IConcreteExpressionBuilder<RqlBinary>
         if (values.Exists(t => t.IsError))
             return values.SelectMany(s => s.Errors).ToList();
 
-        return list.MakeExpression(propertyInfo, member, values.Select(s => s.Value!));
+        return list.MakeExpression(propertyInfo, accessor, values.Select(s => s.Value!));
     }
 
     private static Result<string?> GetRightConstantArgument(RqlExpression right, bool allowNull)

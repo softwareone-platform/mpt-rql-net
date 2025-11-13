@@ -1,3 +1,4 @@
+using Mpt.Rql.Abstractions.Configuration;
 using Mpt.Rql.Abstractions.Result;
 using Mpt.Rql.Core;
 using Mpt.Rql.Core.Metadata;
@@ -7,21 +8,19 @@ namespace Mpt.Rql.Services.Ordering;
 
 internal interface IOrderingPathInfoBuilder : IPathInfoBuilder { }
 
-internal class OrderingPathInfoBuilder : PathInfoBuilder, IOrderingPathInfoBuilder
+internal class OrderingPathInfoBuilder(IActionValidator actionValidator, IMetadataProvider metadataProvider, IBuilderContext builderContext, IRqlSettings settings)
+    : PathInfoBuilder(metadataProvider, builderContext), IOrderingPathInfoBuilder
 {
-    private readonly IActionValidator _actionValidator;
-    private readonly IBuilderContext _builderContext;
+    private readonly IActionValidator _actionValidator = actionValidator;
+    private readonly IBuilderContext _builderContext = builderContext;
+    private readonly IRqlSettings _settings = settings;
 
-    public OrderingPathInfoBuilder(IActionValidator actionValidator, IMetadataProvider metadataProvider, IBuilderContext builderContext) : base(metadataProvider, builderContext)
+    protected override Result<bool> ValidatePath(RqlPropertyInfo property, string path)
     {
-        _actionValidator = actionValidator;
-        _builderContext = builderContext;
-    }
-
-    protected override Result<bool> ValidatePath(MemberPathInfo pathInfo)
-    {
-        if (!_actionValidator.Validate(pathInfo.PropertyInfo, RqlActions.Order))
-            return Error.Validation("Ordering is not permitted.", _builderContext.GetFullPath(pathInfo.Path.ToString()));
+        if (!_actionValidator.Validate(property, RqlActions.Order))
+            return Error.Validation("Ordering is not permitted.", _builderContext.GetFullPath(path));
         return true;
     }
+
+    protected override bool UseSafeNavigation() => _settings.Ordering.Navigation == NavigationStrategy.Safe;
 }

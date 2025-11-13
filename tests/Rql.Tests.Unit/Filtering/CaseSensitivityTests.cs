@@ -38,9 +38,10 @@ public class CaseSensitivityTests
     public void Equal_CaseSensitive_ShouldMatchExactCase()
     {
         // Arrange
+        var rqlSettings = new RqlSettings();
         var (sut, context) = BuildSut<SampleEntityView>(
             RqlParserFactory.RqlEqual("name", "Jewelry Widget"), 
-            new Equal(new RqlSettings()), // Default is case-sensitive
+            new Equal(rqlSettings), // Default is case-sensitive
             caseInsensitive: false);
 
         // Act
