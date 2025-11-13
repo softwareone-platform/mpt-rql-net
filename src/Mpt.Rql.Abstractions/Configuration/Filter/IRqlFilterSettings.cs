@@ -10,7 +10,7 @@ public interface IRqlFilterSettings
     IRqlStringFilterSettings Strings { get; }
     
     /// <summary>
-    /// Controls whether safe navigation operators (?.) are used in filtering expressions
+    /// Controls the navigation strategy for filtering expressions
     /// </summary>
-    SafeNavigationMode SafeNavigation { get; set; }
+    NavigationStrategy Navigation { get; set; }
 }

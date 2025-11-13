@@ -18,12 +18,12 @@ public class StringExpressionHelperTests
         _memberExpression = Expression.Property(_parameter, nameof(TestObject.Name));
     }
 
-    private static IRqlSettings CreateSettings(StringComparison? comparison = null, SafeNavigationMode safeNavigation = SafeNavigationMode.Off)
+    private static IRqlSettings CreateSettings(StringComparison? comparison = null, NavigationStrategy safeNavigation = NavigationStrategy.Default)
     {
         var settings = new RqlSettings();
         if (comparison.HasValue)
             settings.Filter.Strings.Comparison = comparison.Value;
-        settings.Filter.SafeNavigation = safeNavigation;
+        settings.Filter.Navigation = safeNavigation;
         
         return settings;
     }

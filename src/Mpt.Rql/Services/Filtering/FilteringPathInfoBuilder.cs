@@ -22,5 +22,5 @@ internal class FilteringPathInfoBuilder(IActionValidator actionValidator, IMetad
         return true;
     }
 
-    protected override bool UseSafeNavigation() => _settings.Filter.SafeNavigation == SafeNavigationMode.On;
+    protected override bool UseSafeNavigation() => _settings.Filter.Navigation == NavigationStrategy.Safe;
 }

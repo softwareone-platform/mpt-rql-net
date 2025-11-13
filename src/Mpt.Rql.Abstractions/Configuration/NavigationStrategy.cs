@@ -1,19 +1,18 @@
 namespace Mpt.Rql.Abstractions.Configuration;
 
 /// <summary>
-/// Controls whether safe navigation operators (?.) are used in property path expressions
+/// Defines strategies for navigating object properties. 
 /// </summary>
-public enum SafeNavigationMode
+public enum NavigationStrategy
 {
     /// <summary>
-    /// No null conditional operators - use direct property access. 
-    /// In most cases, underlying data source should handle null values appropriately.
+    /// Default behavior - underlying data provider decides whether to use safe navigation or not.
     /// </summary>
-    Off,
+    Default,
     /// <summary>
     /// Use null conditional operators (?.) for safe property access.
     /// Enabling this setting helps prevent null reference exceptions when accessing nested properties that may be null.
     /// However, it adds performance overhead due to the additional null checks.
     /// </summary>
-    On
+    Safe
 }

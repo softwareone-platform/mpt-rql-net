@@ -20,7 +20,7 @@ public class SafeNavigationTests
     public void SafeNavigation_StringEqual_HandlesNullsCorrectly(string filter, int expectedCount)
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(SafeNavigationMode.On);
+        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
 
         // Act
         var result = testExecutor.Transform(filter: filter);
@@ -33,7 +33,7 @@ public class SafeNavigationTests
     public void SafeNavigation_StringEquals_WithNullProperty_ReturnsNoResults()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(SafeNavigationMode.On);
+        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
 
         // Act
         var result = testExecutor.Transform(filter: "eq(reference.name,SomeValue)");
@@ -49,7 +49,7 @@ public class SafeNavigationTests
     public void SafeNavigation_StringLike_HandlesNullsCorrectly(string filter, int expectedCount)
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(SafeNavigationMode.On);
+        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
 
         // Act
         var result = testExecutor.Transform(filter: filter).ToList();
@@ -72,7 +72,7 @@ public class SafeNavigationTests
     public void SafeNavigation_NumericComparison_HandlesNullsCorrectly(string filter, int expectedCount)
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(SafeNavigationMode.On);
+        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
 
         // Act
         var result = testExecutor.Transform(filter: filter).ToList();
@@ -88,7 +88,7 @@ public class SafeNavigationTests
     public void SafeNavigation_NumericComparison_WithNullProperty_ReturnsNoResults()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(SafeNavigationMode.On);
+        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
 
         // Act
         var result = testExecutor.Transform(filter: "gt(reference.price,0)").ToList();
@@ -106,7 +106,7 @@ public class SafeNavigationTests
     public void SafeNavigation_CollectionAny_HandlesNullsCorrectly()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(SafeNavigationMode.On);
+        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
 
         // Act
         var result = testExecutor.Transform(filter: "any(tags,eq(value,Important))").ToList();
@@ -120,7 +120,7 @@ public class SafeNavigationTests
     public void SafeNavigation_CollectionAll_HandlesNullsCorrectly()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(SafeNavigationMode.On);
+        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
 
         // Act
         var result = testExecutor.Transform(filter: "all(tags,ne(value,Invalid))").ToList();
@@ -146,7 +146,7 @@ public class SafeNavigationTests
     public void SafeNavigation_ListIn_HandlesNullsCorrectly()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(SafeNavigationMode.On);
+        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
 
         // Act
         var result = testExecutor.Transform(filter: "in(reference.name,(ValidReference,DifferentReference))").ToList();
@@ -168,7 +168,7 @@ public class SafeNavigationTests
     public void SafeNavigation_ListOut_HandlesNullsCorrectly()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(SafeNavigationMode.On);
+        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
 
         // Act
         var result = testExecutor.Transform(filter: "out(reference.name,(ValidReference))").ToList();
@@ -190,7 +190,7 @@ public class SafeNavigationTests
     public void SafeNavigation_DeepNullReferences_FiltersCorrectly()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(SafeNavigationMode.On);
+        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
 
         // Act
         var result = testExecutor.Transform(
@@ -206,7 +206,7 @@ public class SafeNavigationTests
     public void SafeNavigation_CombinedOperators_HandlesNullsCorrectly()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(SafeNavigationMode.On);
+        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
 
         // Act
         var result = testExecutor.Transform(filter: "and(ne(reference.name,null()),like(reference.name,*Valid*))").ToList();
@@ -225,7 +225,7 @@ public class SafeNavigationTests
     public void SafeNavigation_Ordering_HandlesNullsCorrectly()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(SafeNavigationMode.On);
+        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
 
         // Act
         var result = testExecutor.Transform(order: "reference.name").ToList();
@@ -242,7 +242,7 @@ public class SafeNavigationTests
     public void SafeNavigationOff_FilteringNullReferences_ThrowsNullReferenceException()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(SafeNavigationMode.Off);
+        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Default);
 
         // Act & Assert
         var exception = Assert.Throws<NullReferenceException>(() =>
@@ -255,7 +255,7 @@ public class SafeNavigationTests
     public void SafeNavigationOff_NumericComparison_ThrowsNullReferenceException()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(SafeNavigationMode.Off);
+        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Default);
 
         // Act & Assert
         var exception = Assert.Throws<NullReferenceException>(() =>
@@ -268,7 +268,7 @@ public class SafeNavigationTests
     public void SafeNavigationOff_CollectionOperations_ThrowsNullReferenceException()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(SafeNavigationMode.Off);
+        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Default);
 
         // Act & Assert
         var exception = Assert.ThrowsAny<Exception>(() =>
@@ -282,7 +282,7 @@ public class SafeNavigationTests
     public void SafeNavigationOff_OrderingNullReferences_ThrowsNullReferenceException()
     {
         // Arrange  
-        var testExecutor = new SafeNavigationTestExecutor(SafeNavigationMode.Off);
+        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Default);
 
         // Act & Assert
         var exception = Assert.Throws<NullReferenceException>(() =>
@@ -300,10 +300,10 @@ public class SafeNavigationTests
     {
         // Arrange
         var filterOnOrderingOff = new SafeNavigationTestExecutor(
-            filterSafeNavigation: SafeNavigationMode.On,
-            orderingSafeNavigation: SafeNavigationMode.Off);
+            filterSafeNavigation: NavigationStrategy.Safe,
+            orderingSafeNavigation: NavigationStrategy.Default);
 
-        var bothOn = new SafeNavigationTestExecutor(SafeNavigationMode.On);
+        var bothOn = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
 
         // Act & Assert
         var result1 = filterOnOrderingOff.Transform(filter: "eq(name,HasValidReference)", order: "name").ToList();
@@ -320,8 +320,8 @@ public class SafeNavigationTests
     {
         // Arrange & Act
         var filterOn = new SafeNavigationTestExecutor(
-            filterSafeNavigation: SafeNavigationMode.On,
-            orderingSafeNavigation: SafeNavigationMode.Off);
+            filterSafeNavigation: NavigationStrategy.Safe,
+            orderingSafeNavigation: NavigationStrategy.Default);
 
         // Assert - Configuration should be created without errors
         Assert.NotNull(filterOn.Rql);
@@ -477,15 +477,15 @@ public class SafeNavigationTests
 
     private class SafeNavigationTestExecutor : TestExecutor<Product>
     {
-        private readonly SafeNavigationMode _filterSafeNavigation;
-        private readonly SafeNavigationMode _orderingSafeNavigation;
+        private readonly NavigationStrategy _filterSafeNavigation;
+        private readonly NavigationStrategy _orderingSafeNavigation;
 
-        public SafeNavigationTestExecutor(SafeNavigationMode mode)
+        public SafeNavigationTestExecutor(NavigationStrategy mode)
             : this(mode, mode)
         {
         }
 
-        public SafeNavigationTestExecutor(SafeNavigationMode filterSafeNavigation, SafeNavigationMode orderingSafeNavigation)
+        public SafeNavigationTestExecutor(NavigationStrategy filterSafeNavigation, NavigationStrategy orderingSafeNavigation)
         {
             _filterSafeNavigation = filterSafeNavigation;
             _orderingSafeNavigation = orderingSafeNavigation;
@@ -497,8 +497,8 @@ public class SafeNavigationTests
                 rqlConfig.Settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
                 rqlConfig.Settings.Select.Explicit = RqlSelectModes.All;
                 rqlConfig.Settings.Select.MaxDepth = 10;
-                rqlConfig.Settings.Filter.SafeNavigation = _filterSafeNavigation;
-                rqlConfig.Settings.Ordering.SafeNavigation = _orderingSafeNavigation;
+                rqlConfig.Settings.Filter.Navigation = _filterSafeNavigation;
+                rqlConfig.Settings.Ordering.Navigation = _orderingSafeNavigation;
                 rqlConfig.Settings.Mapping.Transparent = true;
             });
 

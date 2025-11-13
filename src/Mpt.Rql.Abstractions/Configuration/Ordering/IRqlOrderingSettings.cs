@@ -8,7 +8,7 @@ namespace Mpt.Rql.Abstractions.Configuration.Ordering;
 public interface IRqlOrderingSettings
 {
     /// <summary>
-    /// Controls whether safe navigation operators (?.) are used in ordering expressions
+    /// Controls the navigation strategy for ordering expressions
     /// </summary>
-    SafeNavigationMode SafeNavigation { get; set; }
+    NavigationStrategy Navigation { get; set; }
 }

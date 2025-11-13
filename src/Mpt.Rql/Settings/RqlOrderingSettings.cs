@@ -5,5 +5,5 @@ namespace Mpt.Rql.Settings;
 
 internal record RqlOrderingSettings : IRqlOrderingSettings
 {
-    public SafeNavigationMode SafeNavigation { get; set; } = SafeNavigationMode.Off;
+    public NavigationStrategy Navigation { get; set; } = NavigationStrategy.Default;
 }

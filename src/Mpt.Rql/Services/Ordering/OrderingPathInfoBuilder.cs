@@ -22,5 +22,5 @@ internal class OrderingPathInfoBuilder(IActionValidator actionValidator, IMetada
         return true;
     }
 
-    protected override bool UseSafeNavigation() => _settings.Ordering.SafeNavigation == SafeNavigationMode.On;
+    protected override bool UseSafeNavigation() => _settings.Ordering.Navigation == NavigationStrategy.Safe;
 }

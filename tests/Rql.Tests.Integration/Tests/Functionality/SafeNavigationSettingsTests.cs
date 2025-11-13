@@ -23,8 +23,8 @@ public class SafeNavigationSettingsTests
         var settings = new RqlSettings();
         
         // Assert
-        Assert.Equal(SafeNavigationMode.Off, settings.Filter.SafeNavigation);
-        Assert.Equal(SafeNavigationMode.Off, settings.Ordering.SafeNavigation);
+        Assert.Equal(NavigationStrategy.Default, settings.Filter.Navigation);
+        Assert.Equal(NavigationStrategy.Default, settings.Ordering.Navigation);
     }
 
     [Fact]
@@ -34,12 +34,12 @@ public class SafeNavigationSettingsTests
         var settings = new RqlSettings();
         
         // Act
-        settings.Filter.SafeNavigation = SafeNavigationMode.On;
-        settings.Ordering.SafeNavigation = SafeNavigationMode.Off;
+        settings.Filter.Navigation = NavigationStrategy.Safe;
+        settings.Ordering.Navigation = NavigationStrategy.Default;
         
         // Assert
-        Assert.Equal(SafeNavigationMode.On, settings.Filter.SafeNavigation);
-        Assert.Equal(SafeNavigationMode.Off, settings.Ordering.SafeNavigation);
+        Assert.Equal(NavigationStrategy.Safe, settings.Filter.Navigation);
+        Assert.Equal(NavigationStrategy.Default, settings.Ordering.Navigation);
     }
 
     [Fact]
@@ -47,8 +47,8 @@ public class SafeNavigationSettingsTests
     {
         // Arrange - Filter safe, ordering not safe
         var testExecutor = new SafeNavigationTestExecutor(
-            filterSafeNavigation: SafeNavigationMode.On,
-            orderingSafeNavigation: SafeNavigationMode.Off);
+            filterSafeNavigation: NavigationStrategy.Safe,
+            orderingSafeNavigation: NavigationStrategy.Default);
         var testData = CreateTestDataWithNulls();
 
         // Act & Assert - Filtering should work, but ordering should fail
@@ -70,8 +70,8 @@ public class SafeNavigationSettingsTests
     {
         // Arrange - Ordering safe, filtering not safe
         var testExecutor = new SafeNavigationTestExecutor(
-            filterSafeNavigation: SafeNavigationMode.Off,
-            orderingSafeNavigation: SafeNavigationMode.On);
+            filterSafeNavigation: NavigationStrategy.Default,
+            orderingSafeNavigation: NavigationStrategy.Safe);
         var testData = CreateTestDataWithNulls();
 
         // Act & Assert - Filtering should fail, ordering doesn't get reached
@@ -93,8 +93,8 @@ public class SafeNavigationSettingsTests
     {
         // Arrange - Both filter and ordering safe
         var testExecutor = new SafeNavigationTestExecutor(
-            filterSafeNavigation: SafeNavigationMode.On,
-            orderingSafeNavigation: SafeNavigationMode.On);
+            filterSafeNavigation: NavigationStrategy.Safe,
+            orderingSafeNavigation: NavigationStrategy.Safe);
         var testData = CreateTestDataWithNulls();
 
         // Act - Both filtering and ordering should work
@@ -119,8 +119,8 @@ public class SafeNavigationSettingsTests
     {
         // Arrange - Both filter and ordering unsafe
         var testExecutor = new SafeNavigationTestExecutor(
-            filterSafeNavigation: SafeNavigationMode.Off,
-            orderingSafeNavigation: SafeNavigationMode.Off);
+            filterSafeNavigation: NavigationStrategy.Default,
+            orderingSafeNavigation: NavigationStrategy.Default);
         var testData = CreateTestDataWithNulls();
 
         // Act & Assert - Should fail on filtering (first operation)
@@ -141,7 +141,7 @@ public class SafeNavigationSettingsTests
     public void SafeNavigationSettings_CanBeChangedAtRuntime()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(SafeNavigationMode.Off);
+        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Default);
         var testData = CreateTestDataWithNulls();
 
         // Act & Assert - First should fail
@@ -154,7 +154,7 @@ public class SafeNavigationSettingsTests
         Assert.NotNull(exception);
 
         // Now change settings to safe mode
-        var safeExecutor = new SafeNavigationTestExecutor(SafeNavigationMode.On);
+        var safeExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
         
         // Should work now
         var transformResult = safeExecutor.Rql.Transform(testData.AsQueryable(),
@@ -205,15 +205,15 @@ public class SafeNavigationSettingsTests
 
     private class SafeNavigationTestExecutor : TestExecutor<Product>
     {
-        private readonly SafeNavigationMode _filterSafeNavigation;
-        private readonly SafeNavigationMode _orderingSafeNavigation;
+        private readonly NavigationStrategy _filterSafeNavigation;
+        private readonly NavigationStrategy _orderingSafeNavigation;
 
-        public SafeNavigationTestExecutor(SafeNavigationMode mode)
+        public SafeNavigationTestExecutor(NavigationStrategy mode)
             : this(mode, mode)
         {
         }
 
-        public SafeNavigationTestExecutor(SafeNavigationMode filterSafeNavigation, SafeNavigationMode orderingSafeNavigation)
+        public SafeNavigationTestExecutor(NavigationStrategy filterSafeNavigation, NavigationStrategy orderingSafeNavigation)
         {
             _filterSafeNavigation = filterSafeNavigation;
             _orderingSafeNavigation = orderingSafeNavigation;
@@ -223,8 +223,8 @@ public class SafeNavigationSettingsTests
             => RqlFactory.Make<Product>(services => { }, rqlConfig =>
             {
                 // Configure SafeNavigation at service registration time
-                rqlConfig.Settings.Filter.SafeNavigation = _filterSafeNavigation;
-                rqlConfig.Settings.Ordering.SafeNavigation = _orderingSafeNavigation;
+                rqlConfig.Settings.Filter.Navigation = _filterSafeNavigation;
+                rqlConfig.Settings.Ordering.Navigation = _orderingSafeNavigation;
                 
                 rqlConfig.Settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
                 rqlConfig.Settings.Select.Explicit = RqlSelectModes.All;
@@ -270,8 +270,8 @@ public class SafeNavigationSettingsTests
             settings.Select.Explicit = RqlSelectModes.All;
             settings.Select.MaxDepth = 10;
             
-            settings.Filter.SafeNavigation = _filterSafeNavigation;
-            settings.Ordering.SafeNavigation = _orderingSafeNavigation;
+            settings.Filter.Navigation = _filterSafeNavigation;
+            settings.Ordering.Navigation = _orderingSafeNavigation;
         }
     }
 

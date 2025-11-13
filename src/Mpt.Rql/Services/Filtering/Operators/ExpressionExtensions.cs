@@ -98,7 +98,7 @@ internal static class ExpressionExtensions
 
     public static Expression WithNullSafetyIfEnabled(this Expression expression, Expression accessor, IRqlSettings settings)
     {
-        if (settings.Filter.SafeNavigation != SafeNavigationMode.On)
+        if (settings.Filter.Navigation != NavigationStrategy.Safe)
             return expression;
 
         var accessorType = accessor.Type;
