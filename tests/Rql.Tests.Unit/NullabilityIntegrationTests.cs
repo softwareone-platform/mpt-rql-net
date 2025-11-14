@@ -33,20 +33,20 @@ public class NullabilityIntegrationTests
     }
 
     [Fact]
-    public void AutomaticNullability_ShouldOverrideObsoleteAttribute()
+    public void IsNullableAttribute_ShouldOverrideAutomaticDetection()
     {
         // Arrange
         var provider = MetadataProviderFactory.Public();
 
         // Act
-        var properties = provider.GetPropertiesByDeclaringType(typeof(ObsoleteAttributeTestCases));
+        var properties = provider.GetPropertiesByDeclaringType(typeof(AttributeOverrideTestCases));
 
         // Assert
         var stringProp = properties.Single(p => p.Name == "testProperty");
 
-        // Even though the attribute says IsNullable = false, 
-        // the automatic detection should correctly identify it as nullable
-        Assert.True(stringProp.IsNullable);
+        // The attribute explicitly sets IsNullable = false, which should override 
+        // the automatic detection (which would normally detect string? as nullable)
+        Assert.False(stringProp.IsNullable);
     }
 }
 
@@ -58,10 +58,8 @@ public class NullabilityTestCases
     public string RegularString { get; set; } = null!;
 }
 
-public class ObsoleteAttributeTestCases
+public class AttributeOverrideTestCases
 {
-#pragma warning disable CS0618 // Type or member is obsolete
     [RqlProperty(IsNullable = false)]
     public string? TestProperty { get; set; }
-#pragma warning restore CS0618 // Type or member is obsolete
 }

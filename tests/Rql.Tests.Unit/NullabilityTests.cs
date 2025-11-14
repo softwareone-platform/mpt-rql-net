@@ -78,17 +78,36 @@ public class NullabilityTests
     }
 
     [Fact]
-    public void ObsoleteIsNullableAttribute_ShouldStillWork()
+    public void IsNullableAttribute_ShouldOverrideAutomaticDetection()
     {
         // Arrange
-        var property = typeof(NullabilityTestEntity).GetProperty(nameof(NullabilityTestEntity.ObsoleteNullableProperty))!;
+#pragma warning disable CS0618 // Type or member is obsolete
+        var property = typeof(NullabilityTestEntity).GetProperty(nameof(NullabilityTestEntity.NullableAttributeProperty))!;
 
         // Act
-        var propertyInfo = _metadataFactory.MakeRqlPropertyInfo(nameof(NullabilityTestEntity.ObsoleteNullableProperty), property);
+        var propertyInfo = _metadataFactory.MakeRqlPropertyInfo(nameof(NullabilityTestEntity.NullableAttributeProperty), property);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         // Assert  
-        // The IsNullable should be determined automatically, not from the obsolete attribute
+        // The IsNullable=true attribute should override automatic detection
         Assert.True(propertyInfo.IsNullable);
+    }
+
+    [Theory]
+    [InlineData(nameof(NullabilityTestEntity.NonNullableAttributeProperty), true)]
+    [InlineData(nameof(NullabilityTestEntity.NullableStringMadeNonNullable), false)]
+    [InlineData(nameof(NullabilityTestEntity.NonNullableIntMadeNullable), true)]
+    [InlineData(nameof(NullabilityTestEntity.NullableIntMadeNonNullable), false)]
+    public void IsNullableAttribute_ShouldOverrideAutomaticDetectionForAllTypes(string propertyName, bool expectedNullable)
+    {
+        // Arrange
+        var property = typeof(NullabilityTestEntity).GetProperty(propertyName)!;
+
+        // Act
+        var propertyInfo = _metadataFactory.MakeRqlPropertyInfo(propertyName, property);
+
+        // Assert
+        Assert.Equal(expectedNullable, propertyInfo.IsNullable);
     }
 
     [Fact]
@@ -141,12 +160,25 @@ public class NullabilityTestEntity
 
     // Complex types
     public NullabilityComplexType? NullableComplexObject { get; set; }
+
     public NullabilityComplexType NonNullableComplexObject { get; set; } = null!;
 
-    // Test obsolete attribute (should still work but be determined automatically)
+    // Test IsNullable attribute override functionality
     [RqlProperty(IsNullable = true)]
-    [Obsolete("Testing obsolete attribute")]
-    public string? ObsoleteNullableProperty { get; set; }
+    public string? NullableAttributeProperty { get; set; }
+
+    // Test override scenarios
+    [RqlProperty(IsNullable = true)]
+    public string NonNullableAttributeProperty { get; set; } = null!;
+
+    [RqlProperty(IsNullable = false)]
+    public string? NullableStringMadeNonNullable { get; set; }
+
+    [RqlProperty(IsNullable = true)]
+    public int NonNullableIntMadeNullable { get; set; }
+
+    [RqlProperty(IsNullable = false)]
+    public int? NullableIntMadeNonNullable { get; set; }
 }
 
 public class NullabilityComplexType
