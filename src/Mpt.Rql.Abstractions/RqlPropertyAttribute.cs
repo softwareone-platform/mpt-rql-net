@@ -10,6 +10,7 @@ public class RqlPropertyAttribute : Attribute
     private RqlOperators? _operatorFlags;
     private RqlSelectModes? _select;
     private RqlPropertyType? _treatAs;
+    private bool? _isNullable;
 
     public RqlPropertyAttribute()
     {
@@ -19,6 +20,10 @@ public class RqlPropertyAttribute : Attribute
     {
         Actions = actionFlags;
     }
+
+    public bool IsCore { get; set; }
+
+    public bool IsIgnored { get; set; }
 
     public RqlActions Actions
     {
@@ -60,6 +65,19 @@ public class RqlPropertyAttribute : Attribute
         }
     }
 
+    /// <summary>
+    /// Specifies that property can be null. Overrides default nullability detection.
+    /// </summary>
+    public bool IsNullable
+    {
+        get => _isNullable ?? false;
+        set
+        {
+            _isNullable = value;
+            IsNullableSet = true;
+        }
+    }
+
     public bool ActionsSet { get; private set; }
 
     public bool OperatorsSet { get; private set; }
@@ -68,15 +86,7 @@ public class RqlPropertyAttribute : Attribute
 
     public bool TreatAsSet { get; private set; }
 
-    public bool IsCore { get; set; }
-
-    public bool IsIgnored { get; set; }
-
-    /// <summary>
-    /// Specifies that property can be null
-    /// </summary>
-    [Obsolete("Nullability is now determined automatically")]
-    public bool IsNullable { get; set; }
+    public bool IsNullableSet { get; private set; }
 
     /// <summary>
     /// Type used to define property actions at runtime
