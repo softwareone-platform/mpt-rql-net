@@ -28,7 +28,8 @@ public enum IncludeReasons
     Select = 1 << 1,
     Hierarchy = 1 << 2,
     Filter = 1 << 3,
-    Order = 1 << 4
+    Order = 1 << 4,
+    Forced = 1 << 5
 }
 
 [Flags]

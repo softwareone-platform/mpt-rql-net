@@ -6,7 +6,7 @@ public interface IRqlPropertyInfo
 {
     string Name { get; }
     PropertyInfo Property { get; }
-    bool IsIgnored { get; }
+    RqlPropertyMode Mode { get; }
     bool IsCore { get; }
     bool IsNullable { get; }
     RqlSelectModes? SelectModeOverride { get; }

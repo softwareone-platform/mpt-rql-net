@@ -47,8 +47,26 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
         foreach (var rqlProperty in properties)
         {
             // invalid and ignored properties are skipped
-            if (rqlProperty.Property == null || rqlProperty.IsIgnored)
+            if (rqlProperty.Property == null)
                 continue;
+
+            bool shouldContinueToNextProperty = false;
+            switch (rqlProperty.Mode)
+            {
+                case RqlPropertyMode.Default:
+                    break;
+                case RqlPropertyMode.Ignored:
+                    shouldContinueToNextProperty = true;
+                    break;
+                case RqlPropertyMode.Forced:
+                    target.IncludeChild(rqlProperty, IncludeReasons.Forced);
+                    break;
+            }
+
+            if (shouldContinueToNextProperty)
+            {
+                continue;
+            }
 
             // properties which don't pass select validation excluded as invisible
             if (!_actionValidator.Validate(rqlProperty, RqlActions.Select))

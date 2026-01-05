@@ -1,3 +1,4 @@
+using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Exception;
 
 #pragma warning disable IDE0130
@@ -22,8 +23,14 @@ public class RqlPropertyAttribute : Attribute
     }
 
     public bool IsCore { get; set; }
+    public RqlPropertyMode Mode { get; set; }
 
-    public bool IsIgnored { get; set; }
+    [Obsolete("Use Mode instead.")]
+    public bool IsIgnored
+    {
+        get => Mode == RqlPropertyMode.Ignored;
+        set => Mode = value ? RqlPropertyMode.Ignored : RqlPropertyMode.Default;
+    }
 
     public RqlActions Actions
     {
