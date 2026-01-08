@@ -10,6 +10,7 @@ using Mpt.Rql.Services.Ordering;
 using Mpt.Rql.Services.Projection;
 using Mpt.Rql.Settings;
 using Rql.Tests.Unit.Services.Models;
+using System.Reflection;
 using Xunit;
 
 namespace Rql.Tests.Unit.Services;
@@ -84,6 +85,12 @@ public class GraphBuilderTests
             p.Property("ignoredCategory.name", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("ignoredCategory.products", IncludeReasons.None, ExcludeReasons.Default);
 
+            p.Property("ignoredCategoryByMode", IncludeReasons.None, ExcludeReasons.Unselected);
+            p.Property("ignoredCategoryByMode.description", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("ignoredCategoryByMode.id", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("ignoredCategoryByMode.name", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("ignoredCategoryByMode.products", IncludeReasons.None, ExcludeReasons.Default);
+
             HiddenCategoryHidden(p);
 
             p.Property("items", IncludeReasons.Default, ExcludeReasons.Unselected);
@@ -95,6 +102,12 @@ public class GraphBuilderTests
             p.Property("coreItems.description", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("coreItems.id", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("coreItems.name", IncludeReasons.None, ExcludeReasons.Default);
+
+            p.Property("forcedCategory", IncludeReasons.Default | IncludeReasons.Forced, ExcludeReasons.Unselected);
+            p.Property("forcedCategory.description", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("forcedCategory.id", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("forcedCategory.name", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("forcedCategory.products", IncludeReasons.None, ExcludeReasons.Default);
         });
 
     [Fact]
@@ -110,6 +123,7 @@ public class GraphBuilderTests
             p.Property("category.products", IncludeReasons.Default, ExcludeReasons.None);
 
             p.Property("category.products.category", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("category.products.forcedCategory", IncludeReasons.Forced, ExcludeReasons.Default);
             p.Property("category.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("category.products.coreCategory.description", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("category.products.coreCategory.id", IncludeReasons.Default, ExcludeReasons.None);
@@ -129,6 +143,7 @@ public class GraphBuilderTests
             p.Property("coreCategory.products", IncludeReasons.Default, ExcludeReasons.None);
 
             p.Property("coreCategory.products.category", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("coreCategory.products.forcedCategory", IncludeReasons.Forced, ExcludeReasons.Default);
             p.Property("coreCategory.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("coreCategory.products.coreCategory.description", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("coreCategory.products.coreCategory.id", IncludeReasons.Default, ExcludeReasons.None);
@@ -151,6 +166,7 @@ public class GraphBuilderTests
             p.Property("ignoredCategory.products", IncludeReasons.Default, ExcludeReasons.None);
 
             p.Property("ignoredCategory.products.category", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("ignoredCategory.products.forcedCategory", IncludeReasons.Forced, ExcludeReasons.Default);
             p.Property("ignoredCategory.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("ignoredCategory.products.coreCategory.description", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("ignoredCategory.products.coreCategory.id", IncludeReasons.Default, ExcludeReasons.None);
@@ -166,6 +182,29 @@ public class GraphBuilderTests
             p.Property("ignoredCategory.products.items", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("ignoredCategory.products.name", IncludeReasons.Default, ExcludeReasons.None);
 
+            p.Property("ignoredCategoryByMode", IncludeReasons.Select, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.description", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.id", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.name", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products", IncludeReasons.Default, ExcludeReasons.None);
+
+            p.Property("ignoredCategoryByMode.products.category", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("ignoredCategoryByMode.products.forcedCategory", IncludeReasons.Forced, ExcludeReasons.Default);
+            p.Property("ignoredCategoryByMode.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.coreCategory.description", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.coreCategory.id", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.coreCategory.name", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.coreCategory.products", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("ignoredCategoryByMode.products.coreItems", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.coreItems.description", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.coreItems.id", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.coreItems.name", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.description", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.hiddenCategory", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("ignoredCategoryByMode.products.id", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.items", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("ignoredCategoryByMode.products.name", IncludeReasons.Default, ExcludeReasons.None);
+
             p.Property("hiddenCategory", IncludeReasons.Select, ExcludeReasons.Default);
             p.Property("hiddenCategory.description", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("hiddenCategory.id", IncludeReasons.Default, ExcludeReasons.None);
@@ -173,6 +212,7 @@ public class GraphBuilderTests
             p.Property("hiddenCategory.products", IncludeReasons.Default, ExcludeReasons.None);
 
             p.Property("hiddenCategory.products.category", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("hiddenCategory.products.forcedCategory", IncludeReasons.Forced, ExcludeReasons.Default);
             p.Property("hiddenCategory.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("hiddenCategory.products.coreCategory.description", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("hiddenCategory.products.coreCategory.id", IncludeReasons.Default, ExcludeReasons.None);
@@ -187,6 +227,26 @@ public class GraphBuilderTests
             p.Property("hiddenCategory.products.id", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("hiddenCategory.products.items", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("hiddenCategory.products.name", IncludeReasons.Default, ExcludeReasons.None);
+
+            p.Property("forcedCategory", IncludeReasons.Default | IncludeReasons.Select | IncludeReasons.Forced, ExcludeReasons.None);
+            p.Property("forcedCategory.products", IncludeReasons.Default, ExcludeReasons.None);
+
+            p.Property("forcedCategory.products.category", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("forcedCategory.products.forcedCategory", IncludeReasons.Forced, ExcludeReasons.Default);
+            p.Property("forcedCategory.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.coreCategory.description", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.coreCategory.id", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.coreCategory.name", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.coreCategory.products", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("forcedCategory.products.coreItems", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.coreItems.description", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.coreItems.id", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.coreItems.name", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.description", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.hiddenCategory", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("forcedCategory.products.id", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.items", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("forcedCategory.products.name", IncludeReasons.Default, ExcludeReasons.None);
         });
 
     [Fact]
@@ -203,6 +263,7 @@ public class GraphBuilderTests
             p.Property("category.products", IncludeReasons.Default, ExcludeReasons.None);
 
             p.Property("category.products.category", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("category.products.forcedCategory", IncludeReasons.Forced, ExcludeReasons.Default);
             p.Property("category.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("category.products.coreCategory.description", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("category.products.coreCategory.id", IncludeReasons.Default, ExcludeReasons.None);
@@ -227,6 +288,7 @@ public class GraphBuilderTests
             p.Property("ignoredCategory.products", IncludeReasons.Default, ExcludeReasons.None);
 
             p.Property("ignoredCategory.products.category", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("ignoredCategory.products.forcedCategory", IncludeReasons.Forced, ExcludeReasons.Default);
             p.Property("ignoredCategory.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("ignoredCategory.products.coreCategory.description", IncludeReasons.Default, ExcludeReasons.None);
             p.Property("ignoredCategory.products.coreCategory.id", IncludeReasons.Default, ExcludeReasons.None);
@@ -242,7 +304,50 @@ public class GraphBuilderTests
             p.Property("ignoredCategory.products.items", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("ignoredCategory.products.name", IncludeReasons.Default, ExcludeReasons.None);
 
+            p.Property("ignoredCategoryByMode", IncludeReasons.Select, ExcludeReasons.Unselected);
+            p.Property("ignoredCategoryByMode.description", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.id", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.name", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products", IncludeReasons.Default, ExcludeReasons.None);
+
+            p.Property("ignoredCategoryByMode.products.category", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("ignoredCategoryByMode.products.forcedCategory", IncludeReasons.Forced, ExcludeReasons.Default);
+            p.Property("ignoredCategoryByMode.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.coreCategory.description", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.coreCategory.id", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.coreCategory.name", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.coreCategory.products", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("ignoredCategoryByMode.products.coreItems", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.coreItems.description", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.coreItems.id", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.coreItems.name", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.description", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.hiddenCategory", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("ignoredCategoryByMode.products.id", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("ignoredCategoryByMode.products.items", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("ignoredCategoryByMode.products.name", IncludeReasons.Default, ExcludeReasons.None);
+
             HiddenCategorySelectedAndHidden(p);
+
+            p.Property("forcedCategory", IncludeReasons.Default | IncludeReasons.Select | IncludeReasons.Forced, ExcludeReasons.Unselected);
+            p.Property("forcedCategory.products", IncludeReasons.Default, ExcludeReasons.None);
+
+            p.Property("forcedCategory.products.category", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("forcedCategory.products.forcedCategory", IncludeReasons.Forced, ExcludeReasons.Default);
+            p.Property("forcedCategory.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.coreCategory.description", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.coreCategory.id", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.coreCategory.name", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.coreCategory.products", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("forcedCategory.products.coreItems", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.coreItems.description", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.coreItems.id", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.coreItems.name", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.description", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.hiddenCategory", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("forcedCategory.products.id", IncludeReasons.Default, ExcludeReasons.None);
+            p.Property("forcedCategory.products.items", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("forcedCategory.products.name", IncludeReasons.Default, ExcludeReasons.None);
         });
 
     [Fact]
@@ -267,6 +372,12 @@ public class GraphBuilderTests
             p.Property("ignoredCategory.name", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("ignoredCategory.products", IncludeReasons.None, ExcludeReasons.Default);
 
+            p.Property("ignoredCategoryByMode", IncludeReasons.None, ExcludeReasons.Unselected);
+            p.Property("ignoredCategoryByMode.description", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("ignoredCategoryByMode.id", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("ignoredCategoryByMode.name", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("ignoredCategoryByMode.products", IncludeReasons.None, ExcludeReasons.Default);
+
             HiddenCategoryHidden(p);
 
             p.Property("items", IncludeReasons.Default, ExcludeReasons.Unselected);
@@ -279,7 +390,11 @@ public class GraphBuilderTests
             p.Property("coreItems.id", IncludeReasons.None, ExcludeReasons.Default);
             p.Property("coreItems.name", IncludeReasons.None, ExcludeReasons.Default);
 
-
+            p.Property("forcedCategory", IncludeReasons.Default | IncludeReasons.Forced, ExcludeReasons.Unselected);
+            p.Property("forcedCategory.description", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("forcedCategory.id", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("forcedCategory.name", IncludeReasons.None, ExcludeReasons.Default);
+            p.Property("forcedCategory.products", IncludeReasons.None, ExcludeReasons.Default);
         });
 
     [Fact]
@@ -349,6 +464,12 @@ public class GraphBuilderTests
         printer.Property("items.name", IncludeReasons.Default, ExcludeReasons.None);
 
         printer.Property("name", IncludeReasons.Default, ExcludeReasons.None);
+
+        printer.Property("forcedCategory", IncludeReasons.Default | IncludeReasons.Forced, ExcludeReasons.None);
+        printer.Property("forcedCategory.description", IncludeReasons.Default, ExcludeReasons.None);
+        printer.Property("forcedCategory.id", IncludeReasons.Default, ExcludeReasons.None);
+        printer.Property("forcedCategory.name", IncludeReasons.Default, ExcludeReasons.None);
+        printer.Property("forcedCategory.products", IncludeReasons.None, ExcludeReasons.Default);
     }
 
     private static void CoreCategoryHidden(GraphPrinter p)
@@ -365,6 +486,7 @@ public class GraphBuilderTests
 
         p.Property("coreCategory.products", IncludeReasons.Default, ExcludeReasons.None);
         p.Property("coreCategory.products.category", IncludeReasons.None, ExcludeReasons.Default);
+        p.Property("coreCategory.products.forcedCategory", IncludeReasons.Forced, ExcludeReasons.Default);
         p.Property("coreCategory.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
         p.Property("coreCategory.products.coreCategory.description", IncludeReasons.Default, ExcludeReasons.None);
         p.Property("coreCategory.products.coreCategory.id", IncludeReasons.Default, ExcludeReasons.None);
@@ -399,6 +521,7 @@ public class GraphBuilderTests
         p.Property("hiddenCategory.products", IncludeReasons.Default, ExcludeReasons.None);
 
         p.Property("hiddenCategory.products.category", IncludeReasons.None, ExcludeReasons.Default);
+        p.Property("hiddenCategory.products.forcedCategory", IncludeReasons.Forced, ExcludeReasons.Default);
         p.Property("hiddenCategory.products.coreCategory", IncludeReasons.Default, ExcludeReasons.None);
         p.Property("hiddenCategory.products.coreCategory.description", IncludeReasons.Default, ExcludeReasons.None);
         p.Property("hiddenCategory.products.coreCategory.id", IncludeReasons.Default, ExcludeReasons.None);

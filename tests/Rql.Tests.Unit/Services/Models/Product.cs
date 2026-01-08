@@ -1,4 +1,5 @@
 using Mpt.Rql;
+using Mpt.Rql.Abstractions;
 
 namespace Rql.Tests.Unit.Services.Models;
 
@@ -23,8 +24,14 @@ internal class Product
     [RqlProperty(IsIgnored = true)]
     public Category IgnoredCategory { get; set; } = null!;
 
+    [RqlProperty(Mode = RqlPropertyMode.Ignored)]
+    public Category IgnoredCategoryByMode { get; set; } = null!;
+
     public List<Item> Items { get; set; } = null!;
 
     [RqlProperty(IsCore = true)]
     public List<Item> CoreItems { get; set; } = null!;
+
+    [RqlProperty(Mode = RqlPropertyMode.Forced)]
+    public Category ForcedCategory { get; set; } = null!;
 }

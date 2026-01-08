@@ -38,7 +38,7 @@ internal class RqlNode : IRqlNode
         get
         {
             // actively selected or participating in filter/order properties are selected
-            if ((IncludeReason & (IncludeReasons.Select | IncludeReasons.Hierarchy | IncludeReasons.Filter | IncludeReasons.Order)) != 0)
+            if ((IncludeReason & (IncludeReasons.Forced | IncludeReasons.Select | IncludeReasons.Hierarchy | IncludeReasons.Filter | IncludeReasons.Order)) != 0)
                 return true;
 
             // default properties are added unless there is good (invisible or unselected) reason to exclude them

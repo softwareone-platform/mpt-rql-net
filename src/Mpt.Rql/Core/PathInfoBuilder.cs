@@ -45,17 +45,17 @@ internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBui
         var currentType = root.Type;
         RqlPropertyInfo? propInfo = null;
         var pathExpression = root;
-        var currentPathLenght = 0;
+        var currentPathLength = 0;
 
         foreach (var segment in nameSegments)
         {
-            if (currentPathLenght > 0)
-                currentPathLenght++; // account for dot
+            if (currentPathLength > 0)
+                currentPathLength++; // account for dot
 
-            currentPathLenght += segment.Length;
-            var propertyPath = path.AsMemory(0, currentPathLenght).ToString();
+            currentPathLength += segment.Length;
+            var propertyPath = path.AsMemory(0, currentPathLength).ToString();
 
-            if (!metadataProvider.TryGetPropertyByDisplayName(currentType, segment, out propInfo) || propInfo!.IsIgnored)
+            if (!metadataProvider.TryGetPropertyByDisplayName(currentType, segment, out propInfo) || propInfo!.Mode == RqlPropertyMode.Ignored)
             {
                 return Error.Validation("Invalid property path.", builderContext.GetFullPath(propertyPath));
             }

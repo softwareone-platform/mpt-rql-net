@@ -1,3 +1,4 @@
+using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Exception;
 
 #pragma warning disable IDE0130
@@ -22,8 +23,30 @@ public class RqlPropertyAttribute : Attribute
     }
 
     public bool IsCore { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the visibility and selection mode of the property in RQL queries.
+    /// <para>
+    /// - <see cref="RqlPropertyMode.Default"/>: Property follows standard selection rules (IsCore, select settings, depth limits).
+    /// </para>
+    /// <para>
+    /// - <see cref="RqlPropertyMode.Ignored"/>: Property is completely excluded from all RQL operations (select, filter, order).
+    /// </para>
+    /// <para>
+    /// - <see cref="RqlPropertyMode.Forced"/>: Property is always included, bypassing depth limits and exclusion attempts.
+    /// </para>
+    /// </summary>
+    /// <remarks>
+    /// Default value is <see cref="RqlPropertyMode.Default"/>.
+    /// </remarks>
+    public RqlPropertyMode Mode { get; set; }
 
-    public bool IsIgnored { get; set; }
+    [Obsolete("Use Mode instead.")]
+    public bool IsIgnored
+    {
+        get => Mode == RqlPropertyMode.Ignored;
+        set => Mode = value ? RqlPropertyMode.Ignored : RqlPropertyMode.Default;
+    }
 
     public RqlActions Actions
     {

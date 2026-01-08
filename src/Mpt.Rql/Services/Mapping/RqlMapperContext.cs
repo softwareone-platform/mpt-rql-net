@@ -81,7 +81,7 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
         {
             var targetName = targetProp.Property.Name;
 
-            if (targetProp.IsIgnored)
+            if (targetProp.Mode == RqlPropertyMode.Ignored)
                 continue;
 
             if (_mapping.ContainsKey(targetName))

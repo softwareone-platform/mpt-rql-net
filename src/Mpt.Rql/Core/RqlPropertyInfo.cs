@@ -6,7 +6,7 @@ namespace Mpt.Rql.Core;
 internal class RqlPropertyInfo : IRqlPropertyInfo
 {
     public string Name { get; internal set; } = null!;
-    public bool IsIgnored { get; internal set; }
+    public RqlPropertyMode Mode { get; internal set; }
     public PropertyInfo Property { get; init; } = null!;
     public RqlPropertyType Type { get; internal set; }
     public RqlPropertyType? TypeOverride { get; internal set; }
