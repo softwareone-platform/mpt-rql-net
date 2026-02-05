@@ -1,40 +1,86 @@
-﻿using Rql.Tests.Integration.Tests.Functionality.Utility;
+﻿using Rql.Tests.Integration.Core;
+using Mpt.Rql;
 using Xunit;
 
 namespace Rql.Tests.Integration.Tests.Functionality;
 
 public class BasicSelectTests
 {
+    private readonly IRqlQueryable<ShapedProduct, ShapedProduct> _rql;
+
     public BasicSelectTests()
     {
-        TestExecutor = new ProductShapeTestExecutor();
+        _rql = RqlFactory.Make<ShapedProduct>(services => { }, rql =>
+        {
+            rql.Settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
+            rql.Settings.Select.Explicit = RqlSelectModes.All;
+            rql.Settings.Select.MaxDepth = 10;
+        });
     }
 
-    protected ProductShapeTestExecutor TestExecutor { get; set; }
-
     [Fact]
-    public void Shape_NoChange() => TestExecutor.ShapeMatch(t =>
+    public void Shape_NoChange()
     {
-        t.HiddenCollection = null!;
-        t.Ignored = null!;
-    }, string.Empty);
+        // Arrange
+        var testData = ShapedProductRepository.Query();
+
+        // Act
+        var result = _rql.Transform(testData, new RqlRequest { Select = string.Empty });
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var shape = result.Query.First();
+        Assert.Null(shape.HiddenCollection);
+        Assert.Null(shape.Ignored);
+    }
 
     [Fact]
-    public void Shape_HiddenCollection_Included() => TestExecutor.ShapeMatch(t => { t.Ignored = null!; }, "HiddenCollection,-Ignored");
-
-    [Fact]
-    public void Shape_Collection_Excluded() => TestExecutor.ShapeMatch(t =>
+    public void Shape_HiddenCollection_Included()
     {
-        t.Collection = null!;
-        t.HiddenCollection = null!;
-        t.Ignored = null!;
-    }, "-Collection");
+        // Arrange
+        var testData = ShapedProductRepository.Query();
+
+        // Act
+        var result = _rql.Transform(testData, new RqlRequest { Select = "HiddenCollection,-Ignored" });
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var shape = result.Query.First();
+        Assert.Null(shape.Ignored);
+        Assert.NotNull(shape.HiddenCollection);
+    }
 
     [Fact]
-    public void Shape_Reference_Excluded() => TestExecutor.ShapeMatch(t =>
+    public void Shape_Collection_Excluded()
     {
-        t.Reference = null!;
-        t.HiddenCollection = null!;
-        t.Ignored = null!;
-    }, "-Reference");
+        // Arrange
+        var testData = ShapedProductRepository.Query();
+
+        // Act
+        var result = _rql.Transform(testData, new RqlRequest { Select = "-Collection" });
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var shape = result.Query.First();
+        Assert.Null(shape.Collection);
+        Assert.Null(shape.HiddenCollection);
+        Assert.Null(shape.Ignored);
+    }
+
+    [Fact]
+    public void Shape_Reference_Excluded()
+    {
+        // Arrange
+        var testData = ShapedProductRepository.Query();
+
+        // Act
+        var result = _rql.Transform(testData, new RqlRequest { Select = "-Reference" });
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var shape = result.Query.First();
+        Assert.Null(shape.Reference);
+        Assert.Null(shape.HiddenCollection);
+        Assert.Null(shape.Ignored);
+    }
 }

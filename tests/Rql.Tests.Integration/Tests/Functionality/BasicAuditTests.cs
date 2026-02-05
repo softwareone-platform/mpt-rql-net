@@ -1,5 +1,5 @@
 using FluentAssertions;
-using Rql.Tests.Integration.Tests.Functionality.Utility;
+using Rql.Tests.Integration.Core;
 using Mpt.Rql;
 using Mpt.Rql.Abstractions;
 using Xunit;
@@ -8,18 +8,26 @@ namespace Rql.Tests.Integration.Tests.Functionality;
 
 public class BasicAuditTests
 {
-    private readonly ProductShapeTestExecutor _testExecutor;
+    private readonly IRqlQueryable<Product, ShapedProduct> _rql;
 
     public BasicAuditTests()
     {
-        _testExecutor = new ProductShapeTestExecutor();
+        _rql = RqlFactory.Make<Product, ShapedProduct>(services => { }, rql =>
+        {
+            rql.Settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
+            rql.Settings.Select.Explicit = RqlSelectModes.All;
+            rql.Settings.Select.MaxDepth = 10;
+        });
     }
 
     [Fact]
     public void Audit_Omitted_Default()
     {
-        // Arrange and Act
-        var result = _testExecutor.Rql.Transform(_testExecutor.GetQuery(), new RqlRequest { });
+        // Arrange
+        var testData = ProductRepository.Query();
+
+        // Act
+        var result = _rql.Transform(testData, new RqlRequest { });
 
         // Assert
         result.Graph.TryGetChild("hiddenCollection", out var hidden);
@@ -30,9 +38,12 @@ public class BasicAuditTests
     [Fact]
     public void Audit_Omitted_Extra()
     {
-        // Arrange and Act
+        // Arrange
+        var testData = ProductRepository.Query();
         var extra = new List<string> { "category", "price", "name" };
-        var result = _testExecutor.Rql.Transform(_testExecutor.GetQuery(), new RqlRequest { Select = string.Join(',', extra.Select(s => $"-{s}")) });
+
+        // Act
+        var result = _rql.Transform(testData, new RqlRequest { Select = string.Join(',', extra.Select(s => $"-{s}")) });
 
         // Assert
         result.Graph.TryGetChild("hiddenCollection", out var hidden);

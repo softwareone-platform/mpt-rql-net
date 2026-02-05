@@ -20,10 +20,10 @@ public class SafeNavigationTests
     public void SafeNavigation_StringEqual_HandlesNullsCorrectly(string filter, int expectedCount)
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
+        var rql = CreateRql(NavigationStrategy.Safe);
 
         // Act
-        var result = testExecutor.Transform(filter: filter);
+        var result = Transform(rql, filter: filter);
 
         // Assert
         Assert.Equal(expectedCount, result.ToList().Count);
@@ -33,10 +33,10 @@ public class SafeNavigationTests
     public void SafeNavigation_StringEquals_WithNullProperty_ReturnsNoResults()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
+        var rql = CreateRql(NavigationStrategy.Safe);
 
         // Act
-        var result = testExecutor.Transform(filter: "eq(reference.name,SomeValue)");
+        var result = Transform(rql, filter: "eq(reference.name,SomeValue)");
 
         // Assert - Items with null reference.name won't match any specific value
         Assert.DoesNotContain(result.ToList(), p => p.Name == "HasNullReference");
@@ -49,10 +49,10 @@ public class SafeNavigationTests
     public void SafeNavigation_StringLike_HandlesNullsCorrectly(string filter, int expectedCount)
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
+        var rql = CreateRql(NavigationStrategy.Safe);
 
         // Act
-        var result = testExecutor.Transform(filter: filter).ToList();
+        var result = Transform(rql, filter: filter).ToList();
 
         // Assert - Should exclude items with null references
         Assert.Equal(expectedCount, result.Count);
@@ -72,10 +72,10 @@ public class SafeNavigationTests
     public void SafeNavigation_NumericComparison_HandlesNullsCorrectly(string filter, int expectedCount)
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
+        var rql = CreateRql(NavigationStrategy.Safe);
 
         // Act
-        var result = testExecutor.Transform(filter: filter).ToList();
+        var result = Transform(rql, filter: filter).ToList();
 
         // Assert
         Assert.Equal(expectedCount, result.Count);
@@ -88,10 +88,10 @@ public class SafeNavigationTests
     public void SafeNavigation_NumericComparison_WithNullProperty_ReturnsNoResults()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
+        var rql = CreateRql(NavigationStrategy.Safe);
 
         // Act
-        var result = testExecutor.Transform(filter: "gt(reference.price,0)").ToList();
+        var result = Transform(rql, filter: "gt(reference.price,0)").ToList();
 
         // Assert - Should not include items with null reference
         Assert.DoesNotContain(result, p => p.Name == "HasNullReference");
@@ -106,10 +106,10 @@ public class SafeNavigationTests
     public void SafeNavigation_CollectionAny_HandlesNullsCorrectly()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
+        var rql = CreateRql(NavigationStrategy.Safe);
 
         // Act
-        var result = testExecutor.Transform(filter: "any(tags,eq(value,Important))").ToList();
+        var result = Transform(rql, filter: "any(tags,eq(value,Important))").ToList();
 
         // Assert
         Assert.Single(result);
@@ -120,10 +120,10 @@ public class SafeNavigationTests
     public void SafeNavigation_CollectionAll_HandlesNullsCorrectly()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
+        var rql = CreateRql(NavigationStrategy.Safe);
 
         // Act
-        var result = testExecutor.Transform(filter: "all(tags,ne(value,Invalid))").ToList();
+        var result = Transform(rql, filter: "all(tags,ne(value,Invalid))").ToList();
 
         // Assert - Should include items with valid tags, exclude null collections  
         Assert.Equal(5, result.Count);
@@ -146,10 +146,10 @@ public class SafeNavigationTests
     public void SafeNavigation_ListIn_HandlesNullsCorrectly()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
+        var rql = CreateRql(NavigationStrategy.Safe);
 
         // Act
-        var result = testExecutor.Transform(filter: "in(reference.name,(ValidReference,DifferentReference))").ToList();
+        var result = Transform(rql, filter: "in(reference.name,(ValidReference,DifferentReference))").ToList();
 
         // Assert
         Assert.Equal(6, result.Count);
@@ -168,10 +168,10 @@ public class SafeNavigationTests
     public void SafeNavigation_ListOut_HandlesNullsCorrectly()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
+        var rql = CreateRql(NavigationStrategy.Safe);
 
         // Act
-        var result = testExecutor.Transform(filter: "out(reference.name,(ValidReference))").ToList();
+        var result = Transform(rql, filter: "out(reference.name,(ValidReference))").ToList();
 
         // Assert - Should exclude ValidReference, but include items where reference.name != "ValidReference"
         Assert.Equal(3, result.Count);
@@ -190,10 +190,10 @@ public class SafeNavigationTests
     public void SafeNavigation_DeepNullReferences_FiltersCorrectly()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
+        var rql = CreateRql(NavigationStrategy.Safe);
 
         // Act
-        var result = testExecutor.Transform(
+        var result = Transform(rql,
             data: CreateDeepTestDataWithNulls(),
             filter: "eq(reference.reference.name,DeepValid)").ToList();
 
@@ -206,10 +206,10 @@ public class SafeNavigationTests
     public void SafeNavigation_CombinedOperators_HandlesNullsCorrectly()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
+        var rql = CreateRql(NavigationStrategy.Safe);
 
         // Act
-        var result = testExecutor.Transform(filter: "and(ne(reference.name,null()),like(reference.name,*Valid*))").ToList();
+        var result = Transform(rql, filter: "and(ne(reference.name,null()),like(reference.name,*Valid*))").ToList();
 
         // Assert - Should include items with non-null names containing "Valid"
         Assert.Equal(5, result.Count);
@@ -225,10 +225,10 @@ public class SafeNavigationTests
     public void SafeNavigation_Ordering_HandlesNullsCorrectly()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
+        var rql = CreateRql(NavigationStrategy.Safe);
 
         // Act
-        var result = testExecutor.Transform(order: "reference.name").ToList();
+        var result = Transform(rql, order: "reference.name").ToList();
 
         // Assert - Should handle nulls gracefully and return all items
         Assert.Equal(8, result.Count);
@@ -242,11 +242,11 @@ public class SafeNavigationTests
     public void SafeNavigationOff_FilteringNullReferences_ThrowsNullReferenceException()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Default);
+        var rql = CreateRql(NavigationStrategy.Default);
 
         // Act & Assert
         var exception = Assert.Throws<NullReferenceException>(() =>
-            testExecutor.Transform(filter: "eq(reference.name,ValidReference)").ToList());
+            Transform(rql, filter: "eq(reference.name,ValidReference)").ToList());
 
         Assert.NotNull(exception);
     }
@@ -255,11 +255,11 @@ public class SafeNavigationTests
     public void SafeNavigationOff_NumericComparison_ThrowsNullReferenceException()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Default);
+        var rql = CreateRql(NavigationStrategy.Default);
 
         // Act & Assert
         var exception = Assert.Throws<NullReferenceException>(() =>
-            testExecutor.Transform(filter: "gt(reference.price,50)").ToList());
+            Transform(rql, filter: "gt(reference.price,50)").ToList());
 
         Assert.NotNull(exception);
     }
@@ -268,11 +268,11 @@ public class SafeNavigationTests
     public void SafeNavigationOff_CollectionOperations_ThrowsNullReferenceException()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Default);
+        var rql = CreateRql(NavigationStrategy.Default);
 
         // Act & Assert
         var exception = Assert.ThrowsAny<Exception>(() =>
-            testExecutor.Transform(filter: "any(tags,eq(value,Important))").ToList());
+            Transform(rql, filter: "any(tags,eq(value,Important))").ToList());
 
         Assert.NotNull(exception);
         Assert.True(exception is NullReferenceException or ArgumentNullException);
@@ -282,11 +282,11 @@ public class SafeNavigationTests
     public void SafeNavigationOff_OrderingNullReferences_ThrowsNullReferenceException()
     {
         // Arrange  
-        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Default);
+        var rql = CreateRql(NavigationStrategy.Default);
 
         // Act & Assert
         var exception = Assert.Throws<NullReferenceException>(() =>
-            testExecutor.Transform(order: "reference.name").ToList());
+            Transform(rql, order: "reference.name").ToList());
 
         Assert.NotNull(exception);
     }
@@ -299,15 +299,15 @@ public class SafeNavigationTests
     public void SafeNavigationConfiguration_FilterAndOrderingIndependent()
     {
         // Arrange
-        var filterOnOrderingOff = new SafeNavigationTestExecutor(
-            filterSafeNavigation: NavigationStrategy.Safe,
-            orderingSafeNavigation: NavigationStrategy.Default);
+        var filterOnOrderingOff = CreateRql(
+            filterNavigation: NavigationStrategy.Safe,
+            orderingNavigation: NavigationStrategy.Default);
 
-        var bothOn = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
+        var bothOn = CreateRql(NavigationStrategy.Safe);
 
         // Act & Assert
-        var result1 = filterOnOrderingOff.Transform(filter: "eq(name,HasValidReference)", order: "name").ToList();
-        var result2 = bothOn.Transform(filter: "eq(name,HasValidReference)", order: "name").ToList();
+        var result1 = Transform(filterOnOrderingOff, filter: "eq(name,HasValidReference)", order: "name").ToList();
+        var result2 = Transform(bothOn, filter: "eq(name,HasValidReference)", order: "name").ToList();
 
         Assert.NotNull(result1);
         Assert.NotNull(result2);
@@ -319,12 +319,12 @@ public class SafeNavigationTests
     public void SafeNavigationSettings_AreProperlyConfigured()
     {
         // Arrange & Act
-        var filterOn = new SafeNavigationTestExecutor(
-            filterSafeNavigation: NavigationStrategy.Safe,
-            orderingSafeNavigation: NavigationStrategy.Default);
+        var rql = CreateRql(
+            filterNavigation: NavigationStrategy.Safe,
+            orderingNavigation: NavigationStrategy.Default);
 
         // Assert - Configuration should be created without errors
-        Assert.NotNull(filterOn.Rql);
+        Assert.NotNull(rql);
     }
 
     #endregion
@@ -336,25 +336,25 @@ public class SafeNavigationTests
     /// </summary>
     private static IEnumerable<Product> CreateTestDataWithNulls()
     {
-        return new[]
-        {
-            new Product
+        return
+        [
+            new()
             {
                 Id = 1,
                 Name = "HasValidReference",
                 Category = "Test",
-                Reference = new Product { Id = 10, Name = "ValidReference", Category = "RefTest", Price = 300m },
-                Tags = new List<Tag> { new Tag { Value = "Valid" }, new Tag { Value = "Other" } }
+                Reference = new() { Id = 10, Name = "ValidReference", Category = "RefTest", Price = 300m },
+                Tags = [new() { Value = "Valid" }, new() { Value = "Other" }]
             },
-            new Product
+            new()
             {
                 Id = 2,
                 Name = "HasDifferentReference",
                 Category = "Test",
-                Reference = new Product { Id = 11, Name = "DifferentReference", Category = "RefTest", Price = 250m },
-                Tags = new List<Tag> { new Tag { Value = "Other" }, new Tag { Value = "Valid" } }
+                Reference = new() { Id = 11, Name = "DifferentReference", Category = "RefTest", Price = 250m },
+                Tags = [new() { Value = "Other" }, new() { Value = "Valid" }]
             },
-            new Product
+            new()
             {
                 Id = 3,
                 Name = "HasNullReference",
@@ -362,7 +362,7 @@ public class SafeNavigationTests
                 Reference = null!,
                 Tags = null!
             },
-            new Product
+            new()
             {
                 Id = 4,
                 Name = "AnotherNullReference",
@@ -370,39 +370,39 @@ public class SafeNavigationTests
                 Reference = null!,
                 Tags = null!
             },
-            new Product
+            new()
             {
                 Id = 5,
                 Name = "CheapProduct",
                 Category = "Test",
-                Reference = new Product { Id = 12, Name = "ValidReference", Category = "RefTest", Price = 25m },
-                Tags = new List<Tag> { new Tag { Value = "Budget" } }
+                Reference = new() { Id = 12, Name = "ValidReference", Category = "RefTest", Price = 25m },
+                Tags = [new() { Value = "Budget" }]
             },
-            new Product
+            new()
             {
                 Id = 6,
                 Name = "ExpensiveProduct",
                 Category = "Test",
-                Reference = new Product { Id = 13, Name = "ValidReference", Category = "RefTest", Price = 150m },
-                Tags = new List<Tag> { new Tag { Value = "Premium" } }
+                Reference = new() { Id = 13, Name = "ValidReference", Category = "RefTest", Price = 150m },
+                Tags = [new() { Value = "Premium" }]
             },
-            new Product
+            new()
             {
                 Id = 7,
                 Name = "HasTags",
                 Category = "Test",
-                Reference = new Product { Id = 14, Name = "ValidReference", Category = "RefTest", Price = 350m },
-                Tags = new List<Tag> { new Tag { Value = "Important" }, new Tag { Value = "Featured" } }
+                Reference = new() { Id = 14, Name = "ValidReference", Category = "RefTest", Price = 350m },
+                Tags = [new() { Value = "Important" }, new() { Value = "Featured" }]
             },
-            new Product
+            new()
             {
                 Id = 8,
                 Name = "HasNullTags",
                 Category = "Test",
-                Reference = new Product { Id = 15, Name = "ValidReference", Category = "RefTest", Price = 400m },
+                Reference = new() { Id = 15, Name = "ValidReference", Category = "RefTest", Price = 400m },
                 Tags = null!
             }
-        };
+        ];
     }
 
     /// <summary>
@@ -410,57 +410,57 @@ public class SafeNavigationTests
     /// </summary>
     private static IEnumerable<Product> CreateDeepTestDataWithNulls()
     {
-        return new[]
-        {
-            new Product
+        return
+        [
+            new()
             {
                 Id = 1,
                 Name = "FullChain",
                 Category = "Test",
-                Tags = new List<Tag> { new Tag { Value = "Deep" } },
-                Reference = new Product
+                Tags = [new() { Value = "Deep" }],
+                Reference = new()
                 {
                     Id = 10,
                     Name = "Level1",
                     Category = "RefTest",
                     Price = 50m,
-                    Tags = new List<Tag> { new Tag { Value = "Level1Tag" } },
-                    Reference = new Product
+                    Tags = [new() { Value = "Level1Tag" }],
+                    Reference = new()
                     {
                         Id = 20,
                         Name = "DeepValid",
                         Category = "DeepTest",
                         Price = 100m,
-                        Tags = new List<Tag> { new Tag { Value = "DeepTag" } },
+                        Tags = [new() { Value = "DeepTag" }],
                         Reference = null!
                     }
                 }
             },
-            new Product
+            new()
             {
                 Id = 2,
                 Name = "NullAtLevel1",
                 Category = "Test",
-                Tags = new List<Tag> { new Tag { Value = "Shallow" } },
+                Tags = [new() { Value = "Shallow" }],
                 Reference = null!
             },
-            new Product
+            new()
             {
                 Id = 3,
                 Name = "NullAtLevel2",
                 Category = "Test",
                 Tags = null!,
-                Reference = new Product
+                Reference = new()
                 {
                     Id = 11,
                     Name = "Level1",
                     Category = "RefTest",
                     Price = 25m,
-                    Tags = new List<Tag> { new Tag { Value = "Incomplete" } },
+                    Tags = [new() { Value = "Incomplete" }],
                     Reference = null!
                 }
             },
-            new Product
+            new()
             {
                 Id = 4,
                 Name = "AllNull",
@@ -468,57 +468,36 @@ public class SafeNavigationTests
                 Tags = null!,
                 Reference = null!
             }
-        };
+        ];
     }
 
     #endregion
 
-    #region Test Executor
+    #region Helper Methods
 
-    private class SafeNavigationTestExecutor : TestExecutor<Product>
+    private static IRqlQueryable<Product, Product> CreateRql(NavigationStrategy filterNavigation, NavigationStrategy orderingNavigation)
+        => RqlFactory.Make<Product>(services => { }, rqlConfig =>
+        {
+            rqlConfig.Settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
+            rqlConfig.Settings.Select.Explicit = RqlSelectModes.All;
+            rqlConfig.Settings.Select.MaxDepth = 10;
+            rqlConfig.Settings.Filter.Navigation = filterNavigation;
+            rqlConfig.Settings.Ordering.Navigation = orderingNavigation;
+            rqlConfig.Settings.Mapping.Transparent = true;
+        });
+
+    private static IRqlQueryable<Product, Product> CreateRql(NavigationStrategy mode)
+        => CreateRql(mode, mode);
+
+    private static IQueryable<Product> Transform(IRqlQueryable<Product, Product> rql, IEnumerable<Product>? data = null, string? filter = null, string? order = null)
     {
-        private readonly NavigationStrategy _filterSafeNavigation;
-        private readonly NavigationStrategy _orderingSafeNavigation;
+        var request = new RqlRequest();
+        if (!string.IsNullOrEmpty(filter)) request.Filter = filter;
+        if (!string.IsNullOrEmpty(order)) request.Order = order;
 
-        public SafeNavigationTestExecutor(NavigationStrategy mode)
-            : this(mode, mode)
-        {
-        }
-
-        public SafeNavigationTestExecutor(NavigationStrategy filterSafeNavigation, NavigationStrategy orderingSafeNavigation)
-        {
-            _filterSafeNavigation = filterSafeNavigation;
-            _orderingSafeNavigation = orderingSafeNavigation;
-        }
-
-        protected override IRqlQueryable<Product, Product> MakeRql()
-            => RqlFactory.Make<Product>(services => { }, rqlConfig =>
-            {
-                rqlConfig.Settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
-                rqlConfig.Settings.Select.Explicit = RqlSelectModes.All;
-                rqlConfig.Settings.Select.MaxDepth = 10;
-                rqlConfig.Settings.Filter.Navigation = _filterSafeNavigation;
-                rqlConfig.Settings.Ordering.Navigation = _orderingSafeNavigation;
-                rqlConfig.Settings.Mapping.Transparent = true;
-            });
-
-        public override IQueryable<Product> GetQuery() => CreateTestDataWithNulls().AsQueryable();
-
-        /// <summary>
-        /// Unified transform method for all test scenarios
-        /// </summary>
-        public IQueryable<Product> Transform(IEnumerable<Product>? data = null, string? filter = null, string? order = null)
-        {
-            var request = new RqlRequest();
-            if (!string.IsNullOrEmpty(filter)) request.Filter = filter;
-            if (!string.IsNullOrEmpty(order)) request.Order = order;
-
-            var testData = data?.AsQueryable() ?? GetQuery();
-            var result = Rql.Transform(testData, request, Customize);
-            return result.Query;
-        }
-
-        protected override void Customize(IRqlSettings settings) { }
+        var testData = data?.AsQueryable() ?? CreateTestDataWithNulls().AsQueryable();
+        var result = rql.Transform(testData, request);
+        return result.Query;
     }
 
     #endregion
