@@ -38,18 +38,18 @@ public class RqlParser : IRqlParser
         while (currentIndex < query.Length)
         {
             currentSymbol = querySpan[currentIndex];
-            if (currentSymbol == '=' && word.WrapSymbol == null)
+            if (currentSymbol == '=' && word.QuoteSymbol == null)
             {
                 HandleEqualsShortcut(query, ref currentIndex, ref word, expressions);
                 continue;
             }
-            else if (word.WrapSymbol != null)
+            else if (word.QuoteSymbol != null)
             {
-                HandleWrapEnd(currentSymbol, currentIndex, ref word);
+                HandleQuoteEnd(currentSymbol, currentIndex, ref word);
             }
             else if (_textDelimiters.Contains(currentSymbol))
             {
-                HandleWrapStart(currentSymbol, currentIndex, ref word);
+                HandleQuoteStart(currentSymbol, currentIndex, ref word);
             }
             else if (_operatorToType.TryGetValue(currentSymbol, out var nextType))
             {
@@ -135,19 +135,20 @@ public class RqlParser : IRqlParser
         word.GroupType = groupType;
     }
 
-    private static void HandleWrapStart(char currentSymbol, int currentIndex, ref Word word)
+    private static void HandleQuoteStart(char currentSymbol, int currentIndex, ref Word word)
     {
-        word.WrapSymbol = currentSymbol;
-        word.WrapStart = currentIndex;
+        word.QuoteSymbol = currentSymbol;
+        word.QuoteStart = currentIndex;
+        word.IsQuoted = true;
         word.WordLength++;
     }
 
-    private static void HandleWrapEnd(char currentSymbol, int currentIndex, ref Word word)
+    private static void HandleQuoteEnd(char currentSymbol, int currentIndex, ref Word word)
     {
-        if (currentSymbol == word.WrapSymbol)
+        if (currentSymbol == word.QuoteSymbol)
         {
-            word.WrapEnd = currentIndex;
-            word.WrapSymbol = null;
+            word.QuoteEnd = currentIndex;
+            word.QuoteSymbol = null;
         }
         word.WordLength++;
     }

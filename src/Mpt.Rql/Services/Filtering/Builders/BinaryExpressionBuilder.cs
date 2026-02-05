@@ -59,14 +59,25 @@ internal class BinaryExpressionBuilder : IConcreteExpressionBuilder<RqlBinary>
 
             return ((ComparisonOperator)comparison).Handler.Invoke(accessor, Expression.ConvertChecked(rightExpression.Value!.Expression, accessor.Type));
         }
-        else
-        {
-            var arg = GetRightConstantArgument(node.Right, true);
-            if (arg.IsError)
-                return arg.Errors;
 
-            return comparison.MakeExpression(propertyInfo, accessor, arg.Value);
+        // Try to interpret right side as property path if it's an unquoted constant
+        // Prefer property path over constant value when name matches a property
+        if (node.Right is RqlConstant constant && !string.IsNullOrEmpty(constant.Value) && !constant.IsQuoted)
+        {
+            var rightAsProperty = _pathBuilder.Build(parameter, constant.Value);
+            if (!rightAsProperty.IsError)
+            {
+                // Successfully resolved as property path
+                return ((ComparisonOperator)comparison).Handler.Invoke(accessor, Expression.ConvertChecked(rightAsProperty.Value!.Expression, accessor.Type));
+            }
         }
+
+        // Fallback to treating right side as constant
+        var arg = GetRightConstantArgument(node.Right, true);
+        if (arg.IsError)
+            return arg.Errors;
+
+        return comparison.MakeExpression(propertyInfo, accessor, arg.Value);
     }
 
     private static Result<Expression> MakeSearch(RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, ISearchOperator search)

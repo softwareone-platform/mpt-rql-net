@@ -4,7 +4,6 @@ using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Configuration;
 using Mpt.Rql.Settings;
 using Rql.Tests.Integration.Core;
-using Rql.Tests.Integration.Tests.Functionality.Utility;
 using Xunit;
 
 namespace Rql.Tests.Integration.Tests.Functionality;
@@ -46,15 +45,15 @@ public class SafeNavigationSettingsTests
     public void SafeNavigationIndependent_FilterOnOrderingOff_ThrowsOnOrdering()
     {
         // Arrange - Filter safe, ordering not safe
-        var testExecutor = new SafeNavigationTestExecutor(
-            filterSafeNavigation: NavigationStrategy.Safe,
-            orderingSafeNavigation: NavigationStrategy.Default);
+        var rql = CreateRql(
+            filterNavigation: NavigationStrategy.Safe,
+            orderingNavigation: NavigationStrategy.Default);
         var testData = CreateTestDataWithNulls();
 
         // Act & Assert - Filtering should work, but ordering should fail
         var exception = Assert.Throws<NullReferenceException>(() =>
         {
-            var query = testExecutor.Rql.Transform(testData.AsQueryable(),
+            var query = rql.Transform(testData.AsQueryable(),
                 new RqlRequest
                 {
                     Order = "reference.name"                       // Should fail
@@ -69,15 +68,15 @@ public class SafeNavigationSettingsTests
     public void SafeNavigationIndependent_OrderOnFilteringOff_ThrowsOnFiltering()
     {
         // Arrange - Ordering safe, filtering not safe
-        var testExecutor = new SafeNavigationTestExecutor(
-            filterSafeNavigation: NavigationStrategy.Default,
-            orderingSafeNavigation: NavigationStrategy.Safe);
+        var rql = CreateRql(
+            filterNavigation: NavigationStrategy.Default,
+            orderingNavigation: NavigationStrategy.Safe);
         var testData = CreateTestDataWithNulls();
 
         // Act & Assert - Filtering should fail, ordering doesn't get reached
         var exception = Assert.Throws<NullReferenceException>(() =>
         {
-            var result = testExecutor.Rql.Transform(testData.AsQueryable(),
+            var result = rql.Transform(testData.AsQueryable(),
                 new RqlRequest 
                 { 
                     Filter = "eq(reference.name,ValidReference)",  // Should fail
@@ -92,13 +91,13 @@ public class SafeNavigationSettingsTests
     public void SafeNavigationBoth_FilterAndOrderingOn_HandlesNullsCorrectly()
     {
         // Arrange - Both filter and ordering safe
-        var testExecutor = new SafeNavigationTestExecutor(
-            filterSafeNavigation: NavigationStrategy.Safe,
-            orderingSafeNavigation: NavigationStrategy.Safe);
+        var rql = CreateRql(
+            filterNavigation: NavigationStrategy.Safe,
+            orderingNavigation: NavigationStrategy.Safe);
         var testData = CreateTestDataWithNulls();
 
         // Act - Both filtering and ordering should work
-        var transformResult = testExecutor.Rql.Transform(testData.AsQueryable(),
+        var transformResult = rql.Transform(testData.AsQueryable(),
             new RqlRequest 
             { 
                 Filter = "eq(reference.name,ValidReference)",
@@ -118,15 +117,15 @@ public class SafeNavigationSettingsTests
     public void SafeNavigationBoth_FilterAndOrderingOff_ThrowsOnFiltering()
     {
         // Arrange - Both filter and ordering unsafe
-        var testExecutor = new SafeNavigationTestExecutor(
-            filterSafeNavigation: NavigationStrategy.Default,
-            orderingSafeNavigation: NavigationStrategy.Default);
+        var rql = CreateRql(
+            filterNavigation: NavigationStrategy.Default,
+            orderingNavigation: NavigationStrategy.Default);
         var testData = CreateTestDataWithNulls();
 
         // Act & Assert - Should fail on filtering (first operation)
         var exception = Assert.Throws<NullReferenceException>(() =>
         {
-            var result = testExecutor.Rql.Transform(testData.AsQueryable(),
+            var result = rql.Transform(testData.AsQueryable(),
                 new RqlRequest 
                 { 
                     Filter = "eq(reference.name,ValidReference)",  // Should fail
@@ -141,23 +140,23 @@ public class SafeNavigationSettingsTests
     public void SafeNavigationSettings_CanBeChangedAtRuntime()
     {
         // Arrange
-        var testExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Default);
+        var rqlDefault = CreateRql(NavigationStrategy.Default);
         var testData = CreateTestDataWithNulls();
 
         // Act & Assert - First should fail
         var exception = Assert.Throws<NullReferenceException>(() =>
         {
-            var result = testExecutor.Rql.Transform(testData.AsQueryable(),
+            var result = rqlDefault.Transform(testData.AsQueryable(),
                 new RqlRequest { Filter = "eq(reference.name,ValidReference)" }).Query.ToList();
         });
 
         Assert.NotNull(exception);
 
         // Now change settings to safe mode
-        var safeExecutor = new SafeNavigationTestExecutor(NavigationStrategy.Safe);
+        var rqlSafe = CreateRql(NavigationStrategy.Safe);
         
         // Should work now
-        var transformResult = safeExecutor.Rql.Transform(testData.AsQueryable(),
+        var transformResult = rqlSafe.Transform(testData.AsQueryable(),
             new RqlRequest { Filter = "eq(reference.name,ValidReference)" });
 
         Assert.True(transformResult.IsSuccess);
@@ -166,113 +165,55 @@ public class SafeNavigationSettingsTests
         Assert.Equal("HasValidReference", result[0].Name);
     }
 
+    #region Helper Methods
+
+    private static IRqlQueryable<Product, Product> CreateRql(NavigationStrategy filterNavigation, NavigationStrategy orderingNavigation)
+        => RqlFactory.Make<Product>(services => { }, rqlConfig =>
+        {
+            rqlConfig.Settings.Filter.Navigation = filterNavigation;
+            rqlConfig.Settings.Ordering.Navigation = orderingNavigation;
+            rqlConfig.Settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
+            rqlConfig.Settings.Select.Explicit = RqlSelectModes.All;
+            rqlConfig.Settings.Select.MaxDepth = 10;
+            rqlConfig.Settings.Mapping.Transparent = true;
+        });
+
+    private static IRqlQueryable<Product, Product> CreateRql(NavigationStrategy mode)
+        => CreateRql(mode, mode);
+
+    #endregion
+
     #region Test Data Creation
 
     private static IEnumerable<Product> CreateTestDataWithNulls()
     {
-        return new[]
-        {
-            new Product 
-            { 
-                Id = 1, 
-                Name = "HasValidReference", 
+        return
+        [
+            new()
+            {
+                Id = 1,
+                Name = "HasValidReference",
                 Category = "Test",
-                Reference = new Product { Id = 10, Name = "ValidReference", Category = "RefTest" },
-                Tags = new List<Tag> { new Tag { Value = "Test" } }
+                Reference = new() { Id = 10, Name = "ValidReference", Category = "RefTest" },
+                Tags = [new() { Value = "Test" }]
             },
-            new Product 
-            { 
-                Id = 2, 
-                Name = "HasNullReference", 
+            new()
+            {
+                Id = 2,
+                Name = "HasNullReference",
                 Category = "Test",
                 Reference = null!, // Explicit null
                 Tags = null! // Null collection
             },
-            new Product 
-            { 
-                Id = 3, 
-                Name = "AnotherNullReference", 
+            new()
+            {
+                Id = 3,
+                Name = "AnotherNullReference",
                 Category = "Test",
                 Reference = null!, // Another null
                 Tags = null! // Another null collection
             }
-        };
-    }
-
-    #endregion
-
-    #region Test Executor
-
-    private class SafeNavigationTestExecutor : TestExecutor<Product>
-    {
-        private readonly NavigationStrategy _filterSafeNavigation;
-        private readonly NavigationStrategy _orderingSafeNavigation;
-
-        public SafeNavigationTestExecutor(NavigationStrategy mode)
-            : this(mode, mode)
-        {
-        }
-
-        public SafeNavigationTestExecutor(NavigationStrategy filterSafeNavigation, NavigationStrategy orderingSafeNavigation)
-        {
-            _filterSafeNavigation = filterSafeNavigation;
-            _orderingSafeNavigation = orderingSafeNavigation;
-        }
-
-        protected override IRqlQueryable<Product, Product> MakeRql()
-            => RqlFactory.Make<Product>(services => { }, rqlConfig =>
-            {
-                // Configure SafeNavigation at service registration time
-                rqlConfig.Settings.Filter.Navigation = _filterSafeNavigation;
-                rqlConfig.Settings.Ordering.Navigation = _orderingSafeNavigation;
-                
-                rqlConfig.Settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
-                rqlConfig.Settings.Select.Explicit = RqlSelectModes.All;
-                rqlConfig.Settings.Select.MaxDepth = 10;
-
-                rqlConfig.Settings.Mapping.Transparent = true;
-            });
-
-        public override IQueryable<Product> GetQuery() => CreateSafeNavigationTestData().AsQueryable();
-
-        private static IEnumerable<Product> CreateSafeNavigationTestData()
-        {
-            return new[]
-            {
-                new Product 
-                { 
-                    Id = 1, 
-                    Name = "HasValidReference", 
-                    Category = "Test",
-                    Reference = new Product { Id = 10, Name = "ValidReference", Category = "RefTest", Price = 75m },
-                    Tags = new List<Tag> { new Tag { Value = "Important" }, new Tag { Value = "Valid" } },
-                    Orders = new List<ProductOrder>(),
-                    OrdersIds = new List<int>()
-                },
-                new Product 
-                { 
-                    Id = 2, 
-                    Name = "HasNullReference", 
-                    Category = "Test",
-                    Reference = null!,
-                    Tags = null!,
-                    Orders = new List<ProductOrder>(),
-                    OrdersIds = new List<int>()
-                }
-            };
-        }
-
-        protected override void Customize(IRqlSettings settings)
-        {
-            // This method is called during Transform, but settings might already be baked in
-            // We'll still set them here for completeness, but the real configuration should be in MakeRql
-            settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
-            settings.Select.Explicit = RqlSelectModes.All;
-            settings.Select.MaxDepth = 10;
-            
-            settings.Filter.Navigation = _filterSafeNavigation;
-            settings.Ordering.Navigation = _orderingSafeNavigation;
-        }
+        ];
     }
 
     #endregion

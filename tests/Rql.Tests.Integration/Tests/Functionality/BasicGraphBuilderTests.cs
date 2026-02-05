@@ -1,22 +1,31 @@
 using FluentAssertions;
-using Rql.Tests.Integration.Tests.Functionality.Utility;
+using Rql.Tests.Integration.Core;
+using Mpt.Rql;
 using Xunit;
 
 namespace Rql.Tests.Integration.Tests.Functionality;
 
 public class BasicGraphBuilderTests
 {
+    private readonly IRqlQueryable<Product, ShapedProduct> _rql;
+
     public BasicGraphBuilderTests()
     {
-        TestExecutor = new ProductShapeTestExecutor();
+        _rql = RqlFactory.Make<Product, ShapedProduct>(services => { }, rql =>
+        {
+            rql.Settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
+            rql.Settings.Select.Explicit = RqlSelectModes.All;
+            rql.Settings.Select.MaxDepth = 10;
+        });
     }
-
-    protected ProductShapeTestExecutor TestExecutor { get; set; }
 
     [Fact]
     public void Simple_Request_Should_BuildGraph()
     {
-        var graphResponse = TestExecutor.Rql.BuildGraph(new Mpt.Rql.RqlRequest { });
+        // Act
+        var graphResponse = _rql.BuildGraph(new RqlRequest { });
+
+        // Assert
         graphResponse.IsSuccess.Should().BeTrue();
     }
 }

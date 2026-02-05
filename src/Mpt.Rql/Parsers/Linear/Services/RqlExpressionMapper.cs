@@ -8,18 +8,18 @@ internal static class RqlExpressionMapper
     internal static RqlExpression MapFromWord(Word word)
     {
         var endIndex = word.WordStart + word.WordLength;
-        return RqlExpression.Constant(Unwrap(word, word.WordStart, endIndex));
+        return RqlExpression.Constant(RemoveQuotes(word, word.WordStart, endIndex), word.IsQuoted);
     }
 
-    private static string Unwrap(Word word, int fromIndex, int toIndex)
+    private static string RemoveQuotes(Word word, int fromIndex, int toIndex)
     {
-        if (word.WrapStart.HasValue)
+        if (word.QuoteStart.HasValue)
         {
-            var wrapStart = word.WrapStart.Value;
-            var wrapEnd = word.WrapEnd ?? word.Text.Length - 1;
+            var quoteStart = word.QuoteStart.Value;
+            var quoteEnd = word.QuoteEnd ?? word.Text.Length - 1;
 
-            fromIndex = wrapStart >= fromIndex && wrapEnd < toIndex ? wrapStart + 1 : fromIndex;
-            toIndex = wrapEnd < toIndex ? wrapEnd : toIndex;
+            fromIndex = quoteStart >= fromIndex && quoteEnd < toIndex ? quoteStart + 1 : fromIndex;
+            toIndex = quoteEnd < toIndex ? quoteEnd : toIndex;
         }
         return word.Text[fromIndex..toIndex].ToString();
     }

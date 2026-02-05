@@ -27,7 +27,7 @@ internal static class RqlParserFactory
     internal static IRqlParser RqlList(bool isIn, string property, params string[] values)
     {
         var member = RqlExpression.Constant(property);
-        var arguments = RqlExpression.Group(string.Empty, values.Select(RqlExpression.Constant));
+        var arguments = RqlExpression.Group(string.Empty, values.Select(v => RqlExpression.Constant(v)));
         RqlExpression rqlExpression = isIn ? RqlExpression.ListIn(member, arguments) : RqlExpression.ListOut(member, arguments);
 
         return BuildRqlParserMock(rqlExpression);
