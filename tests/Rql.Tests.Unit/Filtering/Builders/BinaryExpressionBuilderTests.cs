@@ -1,4 +1,5 @@
 using Moq;
+using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Argument;
 using Mpt.Rql.Abstractions.Binary;
 using Mpt.Rql.Abstractions.Group;
@@ -90,6 +91,10 @@ public class BinaryExpressionBuilderTests
     {
         // Arrange
         var propertyInfo = SetupPropertyInfo(_node);
+        // Setup the path builder to return an error for the right side constant value
+        // so it doesn't try to resolve it as a property path
+        _pathBuilderMock.Setup(pb => pb.Build(_pe, "right")).Returns(Error.Validation("Invalid property path."));
+        
         var comparisonOperatorMock = new Mock<IComparisonOperator>();
         comparisonOperatorMock.Setup(co => co.MakeExpression(propertyInfo, It.IsAny<Expression>(), It.IsAny<string>()))
             .Returns(Expression.Constant(true));
@@ -158,6 +163,103 @@ public class BinaryExpressionBuilderTests
         // Assert
         _operatorHandlerProviderMock.Verify(op => op.GetOperatorHandler(It.IsAny<Type>()), Times.Once);
         listOperatorMock.Verify(list => list.MakeExpression(propertyInfo, It.IsAny<MemberExpression>(), It.IsAny<IEnumerable<string>>()), Times.Once);
+    }
+
+    [Fact]
+    public void Build_WhenRightSideIsPropertyPath_ShouldUsePropertyComparison()
+    {
+        // Arrange
+        var node = new RqlEqual(new RqlConstant("left"), new RqlConstant("SomeProperty"));
+        var leftPropertyInfo = SetupPropertyInfo(node);
+        
+        var rightPropertyInfo = new RqlPropertyInfo { ElementType = typeof(string) };
+        var rightPathInfo = new MemberPathInfo(rightPropertyInfo, Expression.Property(_pe, "SomeProperty"));
+        _pathBuilderMock.Setup(pb => pb.Build(_pe, "SomeProperty")).Returns(rightPathInfo);
+
+        // Create a concrete comparison operator that can be cast
+        var settings = Rql.Tests.Common.Factory.RqlSettingsFactory.Default();
+        var equalOperator = new Mpt.Rql.Services.Filtering.Operators.Comparison.Implementation.Equal(settings);
+        _operatorHandlerProviderMock.Setup(op => op.GetOperatorHandler(It.IsAny<Type>())).Returns(equalOperator);
+
+        // Act
+        var result = _sut.Build(_pe, node);
+
+        // Assert
+        Assert.False(result.IsError);
+        // Verify that property path resolution was attempted
+        _pathBuilderMock.Verify(pb => pb.Build(_pe, "SomeProperty"), Times.Once);
+    }
+
+    [Fact]
+    public void Build_WhenRightSideIsNotPropertyPath_ShouldUseConstantComparison()
+    {
+        // Arrange
+        var node = new RqlEqual(new RqlConstant("left"), new RqlConstant("nonExistentProperty"));
+        var propertyInfo = SetupPropertyInfo(node);
+        
+        // Simulate that the right side cannot be resolved as a property path
+        _pathBuilderMock.Setup(pb => pb.Build(_pe, "nonExistentProperty")).Returns(Error.Validation("Invalid property path."));
+
+        var comparisonOperatorMock = new Mock<IComparisonOperator>();
+        comparisonOperatorMock.Setup(co => co.MakeExpression(propertyInfo, It.IsAny<Expression>(), "nonExistentProperty"))
+            .Returns(Expression.Constant(true));
+        _operatorHandlerProviderMock.Setup(op => op.GetOperatorHandler(It.IsAny<Type>())).Returns(comparisonOperatorMock.Object);
+
+        // Act
+        var result = _sut.Build(_pe, node);
+
+        // Assert
+        Assert.False(result.IsError);
+        // Verify that property path resolution was attempted
+        _pathBuilderMock.Verify(pb => pb.Build(_pe, "nonExistentProperty"), Times.Once);
+        // MakeExpression should be called when property path resolution fails
+        comparisonOperatorMock.Verify(comp => comp.MakeExpression(propertyInfo, It.IsAny<Expression>(), "nonExistentProperty"), Times.Once);
+    }
+
+    [Fact]
+    public void Build_WhenRightSideIsQuoted_ShouldUseConstantComparison()
+    {
+        // Arrange
+        var node = new RqlEqual(new RqlConstant("left"), RqlExpression.Constant("right", isQuoted: true));
+        var propertyInfo = SetupPropertyInfo(node);
+
+        var comparisonOperatorMock = new Mock<IComparisonOperator>();
+        comparisonOperatorMock.Setup(co => co.MakeExpression(propertyInfo, It.IsAny<Expression>(), "right"))
+            .Returns(Expression.Constant(true));
+        _operatorHandlerProviderMock.Setup(op => op.GetOperatorHandler(It.IsAny<Type>())).Returns(comparisonOperatorMock.Object);
+
+        // Act
+        var result = _sut.Build(_pe, node);
+
+        // Assert
+        Assert.False(result.IsError);
+        // Should not attempt property path resolution for quoted strings
+        _pathBuilderMock.Verify(pb => pb.Build(_pe, "right"), Times.Never);
+        // MakeExpression should be called
+        comparisonOperatorMock.Verify(comp => comp.MakeExpression(propertyInfo, It.IsAny<Expression>(), "right"), Times.Once);
+    }
+
+    [Fact]
+    public void Build_WhenRightSideIsEmptyString_ShouldUseConstantComparison()
+    {
+        // Arrange
+        var node = new RqlEqual(new RqlConstant("left"), new RqlConstant(""));
+        var propertyInfo = SetupPropertyInfo(node);
+
+        var comparisonOperatorMock = new Mock<IComparisonOperator>();
+        comparisonOperatorMock.Setup(co => co.MakeExpression(propertyInfo, It.IsAny<Expression>(), ""))
+            .Returns(Expression.Constant(true));
+        _operatorHandlerProviderMock.Setup(op => op.GetOperatorHandler(It.IsAny<Type>())).Returns(comparisonOperatorMock.Object);
+
+        // Act
+        var result = _sut.Build(_pe, node);
+
+        // Assert
+        Assert.False(result.IsError);
+        // Should not attempt property path resolution for empty strings
+        _pathBuilderMock.Verify(pb => pb.Build(_pe, ""), Times.Never);
+        // MakeExpression should be called
+        comparisonOperatorMock.Verify(comp => comp.MakeExpression(propertyInfo, It.IsAny<Expression>(), ""), Times.Once);
     }
 
     private RqlPropertyInfo SetupPropertyInfo(RqlBinary node)

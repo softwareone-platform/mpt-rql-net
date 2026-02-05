@@ -80,8 +80,8 @@ public abstract class RqlExpression
 
     #region Arguments
 
-    public static RqlConstant Constant(string value)
-        => new(value);
+    public static RqlConstant Constant(string value, bool isQuoted = false)
+        => new(value, isQuoted);
 
     public static RqlNull Null()
         => new();

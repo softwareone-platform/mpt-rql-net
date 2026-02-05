@@ -8,10 +8,11 @@ internal struct Word
     public int WordStart { get; set; }
     public int WordLength { get; set; }
 
-    public char? WrapSymbol { get; set; }
-    public int? WrapStart { get; set; }
-    public int? WrapEnd { get; set; }
+    public char? QuoteSymbol { get; set; }
+    public int? QuoteStart { get; set; }
+    public int? QuoteEnd { get; set; }
     public GroupType GroupType { get; set; }
+    public bool IsQuoted { get; set; }
 
     public readonly override string ToString() => Text.Slice(WordStart, WordLength).ToString();
 
