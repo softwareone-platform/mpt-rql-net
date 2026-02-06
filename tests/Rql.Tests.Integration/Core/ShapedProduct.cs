@@ -23,7 +23,7 @@ public class ShapedProduct : ITestEntity
     [RqlProperty(Select = RqlSelectModes.None)]
     public List<ShapedProductReference> HiddenCollection { get; set; } = null!;
 
-    [RqlProperty(IsIgnored = true)]
+    [RqlProperty(Mode = RqlPropertyMode.Ignored)]
     public ShapedProductReference? Ignored { get; set; } = null!;
 }
 

@@ -1,5 +1,6 @@
-namespace Mpt.Rql.Abstractions;
 
+#pragma warning disable IDE0130
+namespace Mpt.Rql;
 /// <summary>
 /// Defines the visibility and selection behavior of a property in RQL queries.
 /// </summary>
