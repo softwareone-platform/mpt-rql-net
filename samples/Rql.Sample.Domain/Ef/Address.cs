@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Rql.Sample.Domain.Ef;
+﻿namespace Rql.Sample.Domain.Ef;
 
 /// <summary>
 /// Street address information for customers.
@@ -50,9 +47,9 @@ public partial class Address
     /// </summary>
     public DateTime ModifiedDate { get; set; }
 
-    public virtual ICollection<CustomerAddress> CustomerAddresses { get; set; } = new List<CustomerAddress>();
+    public virtual ICollection<CustomerAddress> CustomerAddresses { get; set; } = [];
 
-    public virtual ICollection<SalesOrderHeader> SalesOrderHeaderBillToAddresses { get; set; } = new List<SalesOrderHeader>();
+    public virtual ICollection<SalesOrderHeader> SalesOrderHeaderBillToAddresses { get; set; } = [];
 
-    public virtual ICollection<SalesOrderHeader> SalesOrderHeaderShipToAddresses { get; set; } = new List<SalesOrderHeader>();
+    public virtual ICollection<SalesOrderHeader> SalesOrderHeaderShipToAddresses { get; set; } = [];
 }

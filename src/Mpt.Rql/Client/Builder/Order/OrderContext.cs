@@ -8,7 +8,7 @@ internal class OrderContext<T> : IOrderContext<T>, IOrderDefinitionProvider wher
 
     public void AddOrder<TValue>(Expression<Func<T, TValue>> orderExpression, OrderDirection direction)
     {
-        _orderDefinitions ??= new List<IOrderDefinition>();
+        _orderDefinitions ??= [];
         _orderDefinitions.Add(new OrderDefinition<T, TValue>(orderExpression, direction));
     }
 

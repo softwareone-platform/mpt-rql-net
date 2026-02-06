@@ -1,5 +1,3 @@
-using System;
-using System.Linq.Expressions;
 using FluentAssertions;
 using Moq;
 using Mpt.Rql.Abstractions;
@@ -11,6 +9,7 @@ using Mpt.Rql.Services.Filtering;
 using Mpt.Rql.Services.Ordering;
 using Mpt.Rql.Settings;
 using Rql.Tests.Unit.Services.Models;
+using System.Linq.Expressions;
 using Xunit;
 
 namespace Rql.Tests.Unit.Services;

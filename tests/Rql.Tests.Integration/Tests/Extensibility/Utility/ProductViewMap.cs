@@ -1,6 +1,5 @@
-using Rql.Tests.Integration.Core;
 using Mpt.Rql;
-using System.Linq.Expressions;
+using Rql.Tests.Integration.Core;
 
 namespace Rql.Tests.Integration.Tests.Extensibility.Utility;
 

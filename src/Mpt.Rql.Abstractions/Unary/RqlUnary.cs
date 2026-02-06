@@ -1,5 +1,3 @@
-using Mpt.Rql.Abstractions;
-
 namespace Mpt.Rql.Abstractions.Unary;
 
 public abstract class RqlUnary : RqlExpression

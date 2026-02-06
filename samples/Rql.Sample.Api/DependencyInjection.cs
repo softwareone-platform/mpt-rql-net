@@ -1,6 +1,6 @@
+using Mpt.Rql;
 using Rql.Sample.Api.Extensions.Core;
 using Rql.Sample.Contracts.Ef.Products;
-using Mpt.Rql;
 using System.Text.Json.Serialization;
 
 namespace Rql.Sample.Api;

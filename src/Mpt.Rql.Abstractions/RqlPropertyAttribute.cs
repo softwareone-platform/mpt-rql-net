@@ -1,4 +1,3 @@
-using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Exception;
 
 #pragma warning disable IDE0130
@@ -23,7 +22,7 @@ public class RqlPropertyAttribute : Attribute
     }
 
     public bool IsCore { get; set; }
-    
+
     /// <summary>
     /// Gets or sets the visibility and selection mode of the property in RQL queries.
     /// <para>

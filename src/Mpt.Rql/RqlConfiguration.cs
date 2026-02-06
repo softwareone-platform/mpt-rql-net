@@ -8,6 +8,7 @@ using System.Reflection;
 
 #pragma warning disable IDE0130
 namespace Mpt.Rql;
+
 public class RqlConfiguration
 {
     public RqlConfiguration()

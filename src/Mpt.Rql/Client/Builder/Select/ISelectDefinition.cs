@@ -1,5 +1,3 @@
-using Mpt.Rql.Client;
-
 namespace Mpt.Rql.Client.Builder.Select;
 
 internal interface ISelectDefinition

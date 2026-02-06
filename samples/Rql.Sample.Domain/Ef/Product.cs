@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Rql.Sample.Domain.Ef;
+﻿namespace Rql.Sample.Domain.Ef;
 
 /// <summary>
 /// Products sold or used in the manfacturing of sold products.
@@ -97,5 +94,5 @@ public partial class Product
 
     public virtual ProductModel? ProductModel { get; set; }
 
-    public virtual ICollection<SalesOrderDetail> SalesOrderDetails { get; set; } = new List<SalesOrderDetail>();
+    public virtual ICollection<SalesOrderDetail> SalesOrderDetails { get; set; } = [];
 }

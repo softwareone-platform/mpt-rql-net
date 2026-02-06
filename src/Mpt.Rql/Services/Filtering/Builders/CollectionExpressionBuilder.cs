@@ -2,7 +2,6 @@ using Mpt.Rql.Abstractions.Collection;
 using Mpt.Rql.Abstractions.Result;
 using Mpt.Rql.Core;
 using Mpt.Rql.Services.Context;
-using Mpt.Rql.Services.Filtering;
 using Mpt.Rql.Services.Filtering.Operators;
 using Mpt.Rql.Services.Filtering.Operators.Collection;
 using System.Linq.Expressions;

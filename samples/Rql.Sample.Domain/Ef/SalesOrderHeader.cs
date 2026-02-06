@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Rql.Sample.Domain.Ef;
+﻿namespace Rql.Sample.Domain.Ef;
 
 /// <summary>
 /// General sales order information.
@@ -122,7 +119,7 @@ public partial class SalesOrderHeader
 
     public virtual Customer Customer { get; set; } = null!;
 
-    public virtual ICollection<SalesOrderDetail> SalesOrderDetails { get; set; } = new List<SalesOrderDetail>();
+    public virtual ICollection<SalesOrderDetail> SalesOrderDetails { get; set; } = [];
 
     public virtual Address? ShipToAddress { get; set; }
 }

@@ -1,5 +1,3 @@
-using Mpt.Rql.Core;
-
 namespace Mpt.Rql.Core.Metadata;
 
 internal interface IMetadataProvider

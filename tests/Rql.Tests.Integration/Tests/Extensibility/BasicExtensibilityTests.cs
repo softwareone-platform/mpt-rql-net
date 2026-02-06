@@ -1,10 +1,10 @@
-using Rql.Tests.Integration.Core;
-using Rql.Tests.Integration.Tests.Extensibility.Utility;
 using Mpt.Rql;
-using Xunit;
 using Mpt.Rql.Services.Filtering.Operators.Comparison;
 using Mpt.Rql.Services.Filtering.Operators.List;
 using Mpt.Rql.Services.Filtering.Operators.Search;
+using Rql.Tests.Integration.Core;
+using Rql.Tests.Integration.Tests.Extensibility.Utility;
+using Xunit;
 
 namespace Rql.Tests.Integration.Tests.Extensibility;
 

@@ -9,7 +9,7 @@ internal class SelectContext<T> : ISelectDefinitionProvider, ISelectContext<T> w
 
     public ISelectContext<T> Include(params Expression<Func<T, object>>[] exp)
     {
-        _included ??= new List<ISelectDefinition>();
+        _included ??= [];
         foreach (var expression in exp)
         {
             _included.Add(new SelectDefinition<T, object>(expression));
@@ -20,7 +20,7 @@ internal class SelectContext<T> : ISelectDefinitionProvider, ISelectContext<T> w
 
     public ISelectContext<T> Exclude(params Expression<Func<T, object>>[] exp)
     {
-        _excluded ??= new List<ISelectDefinition>();
+        _excluded ??= [];
         foreach (var expression in exp)
         {
             _excluded.Add(new SelectDefinition<T, object>(expression));

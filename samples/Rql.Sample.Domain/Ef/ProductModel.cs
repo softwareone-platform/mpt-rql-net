@@ -1,6 +1,4 @@
 using Mpt.Rql;
-using System;
-using System.Collections.Generic;
 
 namespace Rql.Sample.Domain.Ef;
 
@@ -18,7 +16,7 @@ public partial class ProductModel
 
     public DateTime ModifiedDate { get; set; }
 
-    public virtual ICollection<ProductModelProductDescription> ProductModelProductDescriptions { get; set; } = new List<ProductModelProductDescription>();
+    public virtual ICollection<ProductModelProductDescription> ProductModelProductDescriptions { get; set; } = [];
 
-    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
+    public virtual ICollection<Product> Products { get; set; } = [];
 }

@@ -24,7 +24,7 @@ public class ResultTests
     {
         // Arrange
         var error = Error.General("Error occurred");
-        var result = new Result<string>(null, new List<Error> { error });
+        var result = new Result<string>(null, [error]);
 
         // Act & Assert
         Assert.True(result.IsError);

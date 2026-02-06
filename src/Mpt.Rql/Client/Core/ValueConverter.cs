@@ -9,15 +9,15 @@ internal static class ValueConverter
 
 #pragma warning disable S1135
     // TODO: switch to INumber<> implementation https://learn.microsoft.com/en-us/dotnet/api/system.numerics.inumber-1?view=net-7.0
-    private static readonly IList<Type> _numericTypes = new List<Type>
-    {
+    private static readonly IList<Type> _numericTypes =
+    [
         typeof(decimal),
         typeof(double),
         typeof(short),
         typeof(int),
         typeof(long),
         typeof(float),
-    };
+    ];
 
     public static string Convert<U>(U? value)
     {

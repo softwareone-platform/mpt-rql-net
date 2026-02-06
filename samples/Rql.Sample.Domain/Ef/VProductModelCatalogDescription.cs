@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Rql.Sample.Domain.Ef;
+﻿namespace Rql.Sample.Domain.Ef;
 
 public partial class VProductModelCatalogDescription
 {

@@ -1,5 +1,3 @@
-using Mpt.Rql.Abstractions.Configuration;
-
 namespace Mpt.Rql.Abstractions.Configuration.Ordering;
 
 /// <summary>

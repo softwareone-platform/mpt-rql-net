@@ -2,7 +2,6 @@ using Mpt.Rql;
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Binary;
 using Mpt.Rql.Abstractions.Collection;
-using Mpt.Rql.Abstractions.Configuration;
 using Mpt.Rql.Abstractions.Group;
 using Mpt.Rql.Abstractions.Unary;
 using Mpt.Rql.Client;

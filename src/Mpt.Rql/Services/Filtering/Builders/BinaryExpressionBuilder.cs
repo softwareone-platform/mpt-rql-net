@@ -5,7 +5,6 @@ using Mpt.Rql.Abstractions.Binary;
 using Mpt.Rql.Abstractions.Group;
 using Mpt.Rql.Abstractions.Result;
 using Mpt.Rql.Core;
-using Mpt.Rql.Services.Filtering;
 using Mpt.Rql.Services.Filtering.Operators;
 using Mpt.Rql.Services.Filtering.Operators.Comparison;
 using Mpt.Rql.Services.Filtering.Operators.Comparison.Implementation;

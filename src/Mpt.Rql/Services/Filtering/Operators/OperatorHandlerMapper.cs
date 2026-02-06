@@ -6,7 +6,7 @@ internal class OperatorHandlerMapper : IOperatorHandlerMapper
 
     public OperatorHandlerMapper()
     {
-        _mapping = new Dictionary<Type, Type>();
+        _mapping = [];
     }
 
     public bool ContainsKey(Type key) => _mapping.ContainsKey(key);

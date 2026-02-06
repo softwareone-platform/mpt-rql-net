@@ -1,6 +1,4 @@
 using Mpt.Rql.Abstractions.Configuration;
-using Mpt.Rql.Abstractions.Configuration.Filter;
-using Mpt.Rql.Core.Expressions;
 using Mpt.Rql.Services.Filtering.Operators;
 using Mpt.Rql.Settings;
 using System.Linq.Expressions;
@@ -24,7 +22,7 @@ public class StringExpressionHelperTests
         if (comparison.HasValue)
             settings.Filter.Strings.Comparison = comparison.Value;
         settings.Filter.Navigation = safeNavigation;
-        
+
         return settings;
     }
 
@@ -37,17 +35,17 @@ public class StringExpressionHelperTests
     {
         // Arrange
         var settings = CreateSettings(comparison);
-        
+
         // Act
         var expression = _memberExpression.StartsWith(searchValue, settings);
 
         // Assert
         Assert.IsAssignableFrom<MethodCallExpression>(expression);
         var methodCall = (MethodCallExpression)expression;
-        
+
         Assert.Equal("StartsWith", methodCall.Method.Name);
         Assert.Equal(_memberExpression, methodCall.Object);
-        
+
         if (comparison.HasValue)
         {
             // Should include StringComparison parameter for case insensitive
@@ -69,17 +67,17 @@ public class StringExpressionHelperTests
     {
         // Arrange
         var settings = CreateSettings(comparison);
-        
+
         // Act
         var expression = _memberExpression.EndsWith(searchValue, settings);
 
         // Assert
         Assert.IsAssignableFrom<MethodCallExpression>(expression);
         var methodCall = (MethodCallExpression)expression;
-        
+
         Assert.Equal("EndsWith", methodCall.Method.Name);
         Assert.Equal(_memberExpression, methodCall.Object);
-        
+
         if (comparison.HasValue)
         {
             // Should include StringComparison parameter for case insensitive
@@ -101,17 +99,17 @@ public class StringExpressionHelperTests
     {
         // Arrange
         var settings = CreateSettings(comparison);
-        
+
         // Act
         var expression = _memberExpression.Contains(searchValue, settings);
 
         // Assert
         Assert.IsAssignableFrom<MethodCallExpression>(expression);
         var methodCall = (MethodCallExpression)expression;
-        
+
         Assert.Equal("Contains", methodCall.Method.Name);
         Assert.Equal(_memberExpression, methodCall.Object);
-        
+
         if (comparison.HasValue)
         {
             // Should include StringComparison parameter for case insensitive
@@ -133,17 +131,17 @@ public class StringExpressionHelperTests
     {
         // Arrange
         var settings = CreateSettings(comparison);
-        
+
         // Act
         var expression = _memberExpression.Equals(searchValue, settings);
 
         // Assert
         Assert.IsAssignableFrom<MethodCallExpression>(expression);
         var methodCall = (MethodCallExpression)expression;
-        
+
         Assert.Equal("Equals", methodCall.Method.Name);
         Assert.Equal(_memberExpression, methodCall.Object);
-        
+
         if (comparison.HasValue)
         {
             // Should include StringComparison parameter for case insensitive
@@ -165,7 +163,7 @@ public class StringExpressionHelperTests
     {
         // Arrange
         var settings = CreateSettings(comparison);
-        
+
         // Act
         var expression = _memberExpression.NotEquals(searchValue, settings);
 
@@ -173,11 +171,11 @@ public class StringExpressionHelperTests
         Assert.IsType<UnaryExpression>(expression);
         var unaryExpression = (UnaryExpression)expression;
         Assert.Equal(ExpressionType.Not, unaryExpression.NodeType);
-        
+
         var methodCall = Assert.IsAssignableFrom<MethodCallExpression>(unaryExpression.Operand);
         Assert.Equal("Equals", methodCall.Method.Name);
         Assert.Equal(_memberExpression, methodCall.Object);
-        
+
         if (comparison.HasValue)
         {
             // Should include StringComparison parameter for case insensitive

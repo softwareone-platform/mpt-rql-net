@@ -13,7 +13,7 @@ internal class BuilderContext : IBuilderContext
 
     public bool TryGoToChild(IRqlPropertyInfo rqlProperty)
     {
-        if (CurrentNode?.TryGetChild(rqlProperty.Name, out var child) != true) 
+        if (CurrentNode?.TryGetChild(rqlProperty.Name, out var child) != true)
             return false;
 
         CurrentNode = child as RqlNode;

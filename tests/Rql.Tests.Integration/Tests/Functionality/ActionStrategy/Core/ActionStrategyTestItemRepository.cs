@@ -6,12 +6,12 @@ public static class ActionStrategyTestItemRepository
 
     static ActionStrategyTestItemRepository()
     {
-        _data = new List<ActionStrategyTestItem>
-        {
+        _data =
+        [
             new() { Id = 1, All = new(), FilterOnly = new (), Nothing = new(), OrderOnly = new (), SelectOnly = new() },
             new() { Id = 2, All = new(), FilterOnly = new (), Nothing = new(), OrderOnly = new (), SelectOnly = new() },
             new() { Id = 3, All = new(), FilterOnly = new (), Nothing = new(), OrderOnly = new (), SelectOnly = new() }
-        };
+        ];
     }
 
     public static IQueryable<ActionStrategyTestItem> Query() => _data.Select(s => s).AsQueryable();

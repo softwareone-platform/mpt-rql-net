@@ -85,7 +85,7 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
     private RqlNode? ProcessNode(RqlNode parentNode, string name, bool hierarchyOnly = false)
     {
         var (path, sign) = StringHelper.ExtractSign(name);
-        return ProcessNode(parentNode, path, sign,  hierarchyOnly );
+        return ProcessNode(parentNode, path, sign, hierarchyOnly);
     }
 
     private RqlNode? ProcessNode(RqlNode parentNode, ReadOnlyMemory<char> path, bool sign, bool hierarchyOnly = false)
@@ -94,9 +94,9 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
             ? parentNode.Property.ElementType ?? parentNode.Property.Property.PropertyType
             : typeof(TView);
 
-        if (!path.Span.SequenceEqual("*".AsSpan())) 
+        if (!path.Span.SequenceEqual("*".AsSpan()))
             return ProcessNodeInternal(parentNode, path, sign, hierarchyOnly);
-        
+
         var properties = _metadataProvider.GetPropertiesByDeclaringType(currentType);
         foreach (var property in properties)
         {
@@ -110,7 +110,7 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
         var currentType = parentNode.Property != null
             ? parentNode.Property.ElementType ?? parentNode.Property.Property.PropertyType
             : typeof(TView);
-        
+
         var currentNode = parentNode;
         var segments = GetProperties(currentType, path).ToList();
 

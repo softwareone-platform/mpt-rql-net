@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace Mpt.Rql.Client;
 
-public interface IFilteredRqlRequestBuilder<T>  : IRqlRequestBuilder where T : class
+public interface IFilteredRqlRequestBuilder<T> : IRqlRequestBuilder where T : class
 {
     IOrderedRqlRequestBuilder<T> OrderBy<TValue>(Expression<Func<T, TValue>> orderExpression);
     IOrderedRqlRequestBuilder<T> OrderByDescending<TValue>(Expression<Func<T, TValue>> orderExpression);

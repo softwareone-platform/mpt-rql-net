@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using Mpt.Rql.Client;
 
 namespace Mpt.Rql.Client.Builder.Request;
 

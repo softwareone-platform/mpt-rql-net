@@ -33,9 +33,9 @@ public class BasicOrderTests
         // Assert
         Assert.True(result.IsSuccess);
         var products = result.Query.ToList();
-        
+
         Assert.Equal(8, products.Count);
-        
+
         if (isHappyFlow)
         {
             // Verify correct ordering by checking sequence

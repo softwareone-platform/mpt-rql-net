@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Rql.Sample.Domain.Ef;
+﻿namespace Rql.Sample.Domain.Ef;
 
 /// <summary>
 /// Current version number of the AdventureWorksLT 2012 sample database. 

@@ -1,5 +1,4 @@
 using Mpt.Rql;
-using Mpt.Rql.Abstractions;
 
 namespace Rql.Tests.Unit.Services.Models;
 

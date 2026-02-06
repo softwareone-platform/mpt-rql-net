@@ -1,4 +1,3 @@
-using Newtonsoft.Json;
 using Mpt.Rql;
 
 namespace Rql.Tests.Integration.Core;

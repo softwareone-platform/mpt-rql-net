@@ -1,5 +1,4 @@
 using Mpt.Rql;
-using Mpt.Rql.Abstractions;
 using Rql.Tests.Common.Factory;
 using Rql.Tests.Common.Utility;
 using Xunit;
@@ -18,7 +17,7 @@ public class NullabilityValidationTests
         var properties = provider.GetPropertiesByDeclaringType(typeof(SampleEntity));
 
         // Assert - Verify that nullability is automatically detected
-        
+
         // MakeFlag is nullable bool (bool?)
         var makeFlagProp = properties.Single(p => p.Name == "makeFlag");
         Assert.True(makeFlagProp.IsNullable);
@@ -66,7 +65,7 @@ public class NullabilityValidationTests
         var properties = provider.GetPropertiesByDeclaringType(typeof(MetadataOperatorTestEntity));
 
         // Assert
-        
+
         // Nullable int should have Null operators
         var nullableIntProp = properties.Single(p => p.Name == "genericNullableDefaults");
         Assert.True((nullableIntProp.Operators & RqlOperators.Null) == RqlOperators.Null);
@@ -93,7 +92,7 @@ public class NullabilityValidationTests
     {
         // This test ensures that the new automatic nullability detection
         // works correctly and the old IsNullable attribute is obsolete
-        
+
         // Arrange
         var provider = MetadataProviderFactory.Public();
 

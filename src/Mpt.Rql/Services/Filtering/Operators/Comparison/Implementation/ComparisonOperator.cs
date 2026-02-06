@@ -46,7 +46,7 @@ internal abstract class ComparisonOperator(IRqlSettings settings) : IComparisonO
         var constant = ConstantBuilder.Build(converted.Value, accessor.Type);
 
         var binaryExpression = Handler(accessor, constant);
-        
+
         return binaryExpression.WithNullSafetyIfEnabled(accessor, settings);
     }
 

@@ -1,7 +1,6 @@
-using Mpt.Rql.Abstractions.Result;
 using Mpt.Rql.Abstractions.Configuration;
+using Mpt.Rql.Abstractions.Result;
 using Mpt.Rql.Core;
-using Mpt.Rql.Services.Filtering.Operators.Collection;
 using System.Reflection;
 
 namespace Mpt.Rql.Services.Filtering.Operators.Collection.Implementation;

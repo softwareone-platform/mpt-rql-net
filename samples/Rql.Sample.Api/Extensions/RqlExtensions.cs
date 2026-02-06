@@ -1,6 +1,6 @@
 
-using Rql.Sample.Api.Extensions.Core;
 using Mpt.Rql;
+using Rql.Sample.Api.Extensions.Core;
 
 #pragma warning disable IDE0130
 namespace Microsoft.Extensions.DependencyInjection;

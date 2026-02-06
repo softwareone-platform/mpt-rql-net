@@ -1,4 +1,3 @@
-using Mpt.Rql.Client;
 using System.Linq.Expressions;
 
 namespace Mpt.Rql.Client.Builder.Select;

@@ -8,8 +8,8 @@ internal static class QueryableSampleEntityCollection
 
     static QueryableSampleEntityCollection()
     {
-        _data = new List<SampleEntity>
-        {
+        _data =
+        [
             new SampleEntity { Id = 1, ProductName = "Jewelry Widget", Category = "Clothing", Price = 192.95M, SalePrice = 172.99M, ListDate = DateTime.Now },
             new SampleEntity { Id = 2, ProductName = "Camping Whatchamacallit", Category = "Activity", Price = 95, SalePrice = 74.99M , ListDate = DateTime.Now },
             new SampleEntity { Id = 3, ProductName = "Sports Contraption", Category = "Activity", Price = 820.95M, SalePrice = 64 , ListDate = DateTime.Now.AddDays(-7) },
@@ -17,7 +17,7 @@ internal static class QueryableSampleEntityCollection
             new SampleEntity { Id = 5, ProductName = "Dog Whatchamacallit", Category = "Pets", Price = 205.15M, SalePrice = 3 , ListDate = DateTime.Now.AddDays(-7) },
             new SampleEntity { Id = 6, ProductName = "Makeup Contraption", Category = "Beauty", Price = 129.99M, SalePrice = 129.99M , ListDate = DateTime.Now.AddDays(-7) },
             new SampleEntity { Id = 7, ProductName = "Bath Contraption", Category = "Beauty", Price = 106.99M, SalePrice = 84.95M , ListDate = DateTime.Now },
-        };
+        ];
     }
 
     internal static IReadOnlyList<SampleEntityView> Default() => QueryData<SampleEntityView>();

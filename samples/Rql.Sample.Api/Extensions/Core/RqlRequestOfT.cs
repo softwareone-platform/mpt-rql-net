@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using Mpt.Rql;
 
 namespace Rql.Sample.Api.Extensions.Core;
