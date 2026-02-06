@@ -20,7 +20,7 @@ public class MultiComparisionOperatorTests
     public void ToQueryOperator_WhenMultipleValues_ThenMultipleValuesAreGenerated()
     {
         // Arrange
-        var op = new In<User, int>(x => x.Id, new List<int> { 1, 2, 3 });
+        var op = new In<User, int>(x => x.Id, [1, 2, 3]);
 
         // Act
         var (property, value) = op.ToQueryOperator(_propertyVisitor);
@@ -33,7 +33,7 @@ public class MultiComparisionOperatorTests
     public void ToQueryOperator_WhenSingleValue_ThenValueIsGenerated()
     {
         // Arrange 
-        var op = new In<User, int>(x => x.Id, new List<int> { 1 });
+        var op = new In<User, int>(x => x.Id, [1]);
 
         // Act
         var (property, value) = op.ToQueryOperator(_propertyVisitor);
@@ -46,7 +46,7 @@ public class MultiComparisionOperatorTests
     public void ToQueryOperator_WhenEmpty_ThenValueIsGenerated()
     {
         // Arrange
-        var op = new In<User, int>(x => x.Id, new List<int>());
+        var op = new In<User, int>(x => x.Id, []);
 
         // Act
         var (property, value) = op.ToQueryOperator(_propertyVisitor);

@@ -5,6 +5,7 @@ using Mpt.Rql.Services.Mapping;
 using Xunit;
 
 namespace Rql.Tests.Unit.Services.Mapping;
+
 public class ConditionalMappingTests
 {
     [Fact]

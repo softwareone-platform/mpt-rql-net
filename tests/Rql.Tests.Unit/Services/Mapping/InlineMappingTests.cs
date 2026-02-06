@@ -4,6 +4,7 @@ using Mpt.Rql;
 using Xunit;
 
 namespace Rql.Tests.Unit.Services.Mapping;
+
 public class InlineMappingTests
 {
     [Fact]

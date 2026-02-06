@@ -6,7 +6,7 @@ public interface IRqlPropertyInfo
 {
     string Name { get; }
     PropertyInfo Property { get; }
-    
+
     /// <summary>
     /// Gets the visibility and selection mode of the property in RQL queries.
     /// <para>
@@ -20,7 +20,7 @@ public interface IRqlPropertyInfo
     /// </para>
     /// </summary>
     RqlPropertyMode Mode { get; }
-    
+
     bool IsCore { get; }
     bool IsNullable { get; }
     RqlSelectModes? SelectModeOverride { get; }

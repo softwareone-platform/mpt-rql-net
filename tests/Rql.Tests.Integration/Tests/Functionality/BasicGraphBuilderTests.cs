@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Rql.Tests.Integration.Core;
 using Mpt.Rql;
+using Rql.Tests.Integration.Core;
 using Xunit;
 
 namespace Rql.Tests.Integration.Tests.Functionality;

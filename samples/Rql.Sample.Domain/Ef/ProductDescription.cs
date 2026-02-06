@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Rql.Sample.Domain.Ef;
+﻿namespace Rql.Sample.Domain.Ef;
 
 /// <summary>
 /// Product descriptions in several languages.
@@ -28,5 +25,5 @@ public partial class ProductDescription
     /// </summary>
     public DateTime ModifiedDate { get; set; }
 
-    public virtual ICollection<ProductModelProductDescription> ProductModelProductDescriptions { get; set; } = new List<ProductModelProductDescription>();
+    public virtual ICollection<ProductModelProductDescription> ProductModelProductDescriptions { get; set; } = [];
 }

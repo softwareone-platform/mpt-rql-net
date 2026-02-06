@@ -6,6 +6,8 @@ namespace Mpt.Rql.Services.Filtering.Operators.Comparison.Implementation;
 
 internal class NotEqual(IRqlSettings settings) : ComparisonOperator(settings), INotEqual
 {
+    private readonly IRqlSettings _settings = settings;
+
     protected override RqlOperators Operator => RqlOperators.Ne;
 
     internal override Func<Expression, Expression, BinaryExpression> Handler => Expression.NotEqual;
@@ -15,7 +17,7 @@ internal class NotEqual(IRqlSettings settings) : ComparisonOperator(settings), I
     protected override Result<Expression> MakeBinaryExpression(Expression accessor, string? value)
     {
         if (accessor.Type == typeof(string) && value != null)
-            return accessor.NotEquals(value, settings);
+            return accessor.NotEquals(value, _settings);
 
         return base.MakeBinaryExpression(accessor, value);
     }

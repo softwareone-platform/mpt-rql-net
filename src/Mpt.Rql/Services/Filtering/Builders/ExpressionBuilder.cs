@@ -5,7 +5,6 @@ using Mpt.Rql.Abstractions.Collection;
 using Mpt.Rql.Abstractions.Group;
 using Mpt.Rql.Abstractions.Unary;
 using Mpt.Rql.Core;
-using Mpt.Rql.Services.Filtering;
 using System.Linq.Expressions;
 
 namespace Mpt.Rql.Services.Filtering.Builders;

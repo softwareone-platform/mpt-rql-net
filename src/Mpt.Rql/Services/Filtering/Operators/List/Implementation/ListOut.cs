@@ -1,6 +1,5 @@
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Core;
-using Mpt.Rql.Services.Filtering.Operators.List;
 using System.Linq.Expressions;
 
 namespace Mpt.Rql.Services.Filtering.Operators.List.Implementation;

@@ -1,5 +1,3 @@
-using Mpt.Rql.Client;
-
 namespace Mpt.Rql.Client.Builder.Request;
 
 #pragma warning disable S3444

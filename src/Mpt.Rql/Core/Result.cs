@@ -11,7 +11,7 @@ public class Result<T>
     public Result(T? value, List<Error>? errors = default)
     {
         Value = value;
-        Errors = errors ?? new();
+        Errors = errors ?? [];
     }
 
     public static implicit operator Result<T>(T value)
@@ -21,7 +21,7 @@ public class Result<T>
 
     public static implicit operator Result<T>(Error error)
     {
-        return new Result<T>(default, new() { error });
+        return new Result<T>(default, [error]);
     }
 
     public static implicit operator Result<T>(List<Error> errors)

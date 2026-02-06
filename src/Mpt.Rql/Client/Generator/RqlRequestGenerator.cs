@@ -1,4 +1,3 @@
-using Mpt.Rql.Client;
 using Mpt.Rql.Client.Builder.Order;
 using Mpt.Rql.Client.Builder.Select;
 

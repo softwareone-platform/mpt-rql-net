@@ -1,4 +1,3 @@
-using Newtonsoft.Json;
 using Mpt.Rql;
 
 namespace Rql.Tests.Integration.Core;
@@ -30,9 +29,6 @@ public class Product : ITestEntity
     public List<int> OrdersIds { get; set; } = null!;
 
     public List<Tag> Tags { get; set; } = null!;
-
-    [RqlProperty(IsIgnored = true)]
-    public bool Ignored { get; set; }
 }
 
 public class ProductOrder

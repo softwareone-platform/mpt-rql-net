@@ -1,7 +1,7 @@
 using Mpt.Rql.Abstractions.Group;
-using System.Linq.Expressions;
 using Mpt.Rql.Abstractions.Result;
 using Mpt.Rql.Core;
+using System.Linq.Expressions;
 
 namespace Mpt.Rql.Services.Filtering.Builders;
 

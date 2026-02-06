@@ -1,5 +1,5 @@
-using Rql.Tests.Integration.Core;
 using Mpt.Rql;
+using Rql.Tests.Integration.Core;
 
 namespace Rql.Tests.Integration.Tests.Functionality.ActionStrategy.Core;
 

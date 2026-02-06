@@ -1,4 +1,3 @@
-using Mpt.Rql.Client;
 using Mpt.Rql.Client.Builder.Select;
 
 namespace Mpt.Rql.Client.Generator;

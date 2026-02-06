@@ -1,6 +1,4 @@
 using Mpt.Rql;
-using System;
-using System.Collections.Generic;
 
 namespace Rql.Sample.Domain.Ef;
 
@@ -36,9 +34,9 @@ public partial class ProductCategory
     /// </summary>
     public DateTime ModifiedDate { get; set; }
 
-    public virtual ICollection<ProductCategory> InverseParentProductCategory { get; set; } = new List<ProductCategory>();
+    public virtual ICollection<ProductCategory> InverseParentProductCategory { get; set; } = [];
 
     public virtual ProductCategory? ParentProductCategory { get; set; }
 
-    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
+    public virtual ICollection<Product> Products { get; set; } = [];
 }

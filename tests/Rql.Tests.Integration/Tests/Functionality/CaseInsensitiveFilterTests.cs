@@ -16,7 +16,7 @@ public class CaseInsensitiveFilterTests
             rql.Settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive | RqlSelectModes.Reference;
             rql.Settings.Select.Explicit = RqlSelectModes.All;
             rql.Settings.Select.MaxDepth = 10;
-            
+
             // Enable case insensitive string comparisons
             rql.Settings.Filter.Strings.Comparison = StringComparison.OrdinalIgnoreCase;
             rql.Settings.Filter.Strings.Strategy = StringComparisonStrategy.Default;
@@ -84,7 +84,7 @@ public class CaseInsensitiveFilterTests
             ],
             OrdersIds = [8]
         }
-    }.Select(p => 
+    }.Select(p =>
     {
         p.Reference = p;
         p.Collection = [p, p];

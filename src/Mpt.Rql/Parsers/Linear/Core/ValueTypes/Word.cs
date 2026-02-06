@@ -14,7 +14,7 @@ internal struct Word
     public GroupType GroupType { get; set; }
     public bool IsQuoted { get; set; }
 
-    public readonly override string ToString() => Text.Slice(WordStart, WordLength).ToString();
+    public override readonly string ToString() => Text.Slice(WordStart, WordLength).ToString();
 
     public static Word Make(ReadOnlyMemory<char> text, int start)
         => new() { Text = text, WordStart = start };

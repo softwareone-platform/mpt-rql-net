@@ -1,6 +1,4 @@
-using System.Linq.Expressions;
 using Mpt.Rql;
-using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Configuration;
 using Mpt.Rql.Settings;
 using Rql.Tests.Integration.Core;
@@ -20,7 +18,7 @@ public class SafeNavigationSettingsTests
     {
         // Arrange & Act
         var settings = new RqlSettings();
-        
+
         // Assert
         Assert.Equal(NavigationStrategy.Default, settings.Filter.Navigation);
         Assert.Equal(NavigationStrategy.Default, settings.Ordering.Navigation);
@@ -31,11 +29,11 @@ public class SafeNavigationSettingsTests
     {
         // Arrange
         var settings = new RqlSettings();
-        
+
         // Act
         settings.Filter.Navigation = NavigationStrategy.Safe;
         settings.Ordering.Navigation = NavigationStrategy.Default;
-        
+
         // Assert
         Assert.Equal(NavigationStrategy.Safe, settings.Filter.Navigation);
         Assert.Equal(NavigationStrategy.Default, settings.Ordering.Navigation);
@@ -77,8 +75,8 @@ public class SafeNavigationSettingsTests
         var exception = Assert.Throws<NullReferenceException>(() =>
         {
             var result = rql.Transform(testData.AsQueryable(),
-                new RqlRequest 
-                { 
+                new RqlRequest
+                {
                     Filter = "eq(reference.name,ValidReference)",  // Should fail
                     Order = "reference.name"                       // Doesn't get reached
                 }).Query.ToList();
@@ -98,14 +96,14 @@ public class SafeNavigationSettingsTests
 
         // Act - Both filtering and ordering should work
         var transformResult = rql.Transform(testData.AsQueryable(),
-            new RqlRequest 
-            { 
+            new RqlRequest
+            {
                 Filter = "eq(reference.name,ValidReference)",
                 Order = "reference.name"
             });
 
         Assert.True(transformResult.IsSuccess, $"Transform failed: {string.Join(", ", transformResult.Errors?.Select(e => e.Message) ?? [])}");
-        
+
         var result = transformResult.Query.ToList();
 
         // Assert - Should find the valid reference and handle ordering gracefully
@@ -126,8 +124,8 @@ public class SafeNavigationSettingsTests
         var exception = Assert.Throws<NullReferenceException>(() =>
         {
             var result = rql.Transform(testData.AsQueryable(),
-                new RqlRequest 
-                { 
+                new RqlRequest
+                {
                     Filter = "eq(reference.name,ValidReference)",  // Should fail
                     Order = "reference.name"                       // Doesn't get reached
                 }).Query.ToList();
@@ -154,7 +152,7 @@ public class SafeNavigationSettingsTests
 
         // Now change settings to safe mode
         var rqlSafe = CreateRql(NavigationStrategy.Safe);
-        
+
         // Should work now
         var transformResult = rqlSafe.Transform(testData.AsQueryable(),
             new RqlRequest { Filter = "eq(reference.name,ValidReference)" });

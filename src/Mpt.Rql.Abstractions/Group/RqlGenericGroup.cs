@@ -1,5 +1,3 @@
-using Mpt.Rql.Abstractions;
-
 namespace Mpt.Rql.Abstractions.Group;
 
 public class RqlGenericGroup : RqlGroup

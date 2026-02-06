@@ -1,5 +1,4 @@
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Services;
 using Mpt.Rql.Services.Context;
 
 namespace Mpt.Rql.Services.Projection;

@@ -94,7 +94,7 @@ public class BinaryExpressionBuilderTests
         // Setup the path builder to return an error for the right side constant value
         // so it doesn't try to resolve it as a property path
         _pathBuilderMock.Setup(pb => pb.Build(_pe, "right")).Returns(Error.Validation("Invalid property path."));
-        
+
         var comparisonOperatorMock = new Mock<IComparisonOperator>();
         comparisonOperatorMock.Setup(co => co.MakeExpression(propertyInfo, It.IsAny<Expression>(), It.IsAny<string>()))
             .Returns(Expression.Constant(true));
@@ -171,7 +171,7 @@ public class BinaryExpressionBuilderTests
         // Arrange
         var node = new RqlEqual(new RqlConstant("left"), new RqlConstant("SomeProperty"));
         var leftPropertyInfo = SetupPropertyInfo(node);
-        
+
         var rightPropertyInfo = new RqlPropertyInfo { ElementType = typeof(string) };
         var rightPathInfo = new MemberPathInfo(rightPropertyInfo, Expression.Property(_pe, "SomeProperty"));
         _pathBuilderMock.Setup(pb => pb.Build(_pe, "SomeProperty")).Returns(rightPathInfo);
@@ -196,7 +196,7 @@ public class BinaryExpressionBuilderTests
         // Arrange
         var node = new RqlEqual(new RqlConstant("left"), new RqlConstant("nonExistentProperty"));
         var propertyInfo = SetupPropertyInfo(node);
-        
+
         // Simulate that the right side cannot be resolved as a property path
         _pathBuilderMock.Setup(pb => pb.Build(_pe, "nonExistentProperty")).Returns(Error.Validation("Invalid property path."));
 

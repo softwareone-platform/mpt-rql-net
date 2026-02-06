@@ -9,7 +9,7 @@ namespace Mpt.Rql.Parsers.Linear.Services;
 
 public class RqlParser : IRqlParser
 {
-    private static readonly HashSet<char> _textDelimiters = new() { '"', '\'' };
+    private static readonly HashSet<char> _textDelimiters = ['"', '\''];
     private static readonly Dictionary<char, GroupType> _operatorToType = new()
     {
         { ',' , GroupType.And },

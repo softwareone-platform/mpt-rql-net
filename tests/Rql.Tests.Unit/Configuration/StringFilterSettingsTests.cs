@@ -21,10 +21,11 @@ public class StringFilterSettingsTests
     public void RqlStringFilterSettings_CanSetStrategy()
     {
         // Arrange
-        var settings = new RqlStringFilterSettings();
-
-        // Act
-        settings.Strategy = StringComparisonStrategy.Lexicographical;
+        var settings = new RqlStringFilterSettings
+        {
+            // Act
+            Strategy = StringComparisonStrategy.Lexicographical
+        };
 
         // Assert
         Assert.Equal(StringComparisonStrategy.Lexicographical, settings.Strategy);
@@ -34,10 +35,11 @@ public class StringFilterSettingsTests
     public void RqlStringFilterSettings_CanSetComparison()
     {
         // Arrange
-        var settings = new RqlStringFilterSettings();
-
-        // Act
-        settings.Comparison = StringComparison.OrdinalIgnoreCase;
+        var settings = new RqlStringFilterSettings
+        {
+            // Act
+            Comparison = StringComparison.OrdinalIgnoreCase
+        };
 
         // Assert
         Assert.Equal(StringComparison.OrdinalIgnoreCase, settings.Comparison);
@@ -51,11 +53,12 @@ public class StringFilterSettingsTests
     public void RqlStringFilterSettings_CanSetAllCombinations(StringComparisonStrategy strategy, StringComparison? comparison)
     {
         // Arrange
-        var settings = new RqlStringFilterSettings();
-
-        // Act
-        settings.Strategy = strategy;
-        settings.Comparison = comparison;
+        var settings = new RqlStringFilterSettings
+        {
+            // Act
+            Strategy = strategy,
+            Comparison = comparison
+        };
 
         // Assert
         Assert.Equal(strategy, settings.Strategy);
