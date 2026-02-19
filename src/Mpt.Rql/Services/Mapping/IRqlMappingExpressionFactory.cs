@@ -9,7 +9,7 @@ public interface IRqlMappingExpressionFactory<TType>
     /// Gets the mapping expression used to project <typeparamref name="TType"/> properties in RQL queries.
     /// </summary>
     /// <returns>
-    /// A <see cref="LambdaExpression"/> representing the mapping configuration for <typeparamref name="TType"/>.
+    /// An expression representing the mapping configuration for <typeparamref name="TType"/>.
     /// </returns>
-    LambdaExpression GetMappingExpression();
+    Expression<Func<TType, object?>> GetMappingExpression();
 }

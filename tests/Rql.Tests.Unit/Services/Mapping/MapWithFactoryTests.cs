@@ -62,11 +62,11 @@ public class MapWithFactoryTests
         ctxSimple.MapWithFactory<ConditionalFormatter>(v => v.DisplayName);
 
         // Assert
-        var verboseExpression = (Expression<Func<Product, string>>)ctxVerbose.Mapping[nameof(ProductView.DisplayName)].SourceExpression;
+        var verboseExpression = (Expression<Func<Product, object?>>)ctxVerbose.Mapping[nameof(ProductView.DisplayName)].SourceExpression;
         var verboseCompiled = verboseExpression.Compile();
         verboseCompiled(new Product { Name = "Widget", Category = "Tools" }).Should().Be("Tools: Widget");
 
-        var simpleExpression = (Expression<Func<Product, string>>)ctxSimple.Mapping[nameof(ProductView.DisplayName)].SourceExpression;
+        var simpleExpression = (Expression<Func<Product, object?>>)ctxSimple.Mapping[nameof(ProductView.DisplayName)].SourceExpression;
         var simpleCompiled = simpleExpression.Compile();
         simpleCompiled(new Product { Name = "Widget", Category = "Tools" }).Should().Be("Widget");
     }
@@ -90,10 +90,9 @@ public class MapWithFactoryTests
 
     private class TestExpressionFactory : IRqlMappingExpressionFactory<Storage>
     {
-        public LambdaExpression GetMappingExpression()
+        public Expression<Func<Storage, object?>> GetMappingExpression()
         {
-            Expression<Func<Storage, string>> expr = s => s.FirstName + " " + s.LastName;
-            return expr;
+            return s => s.FirstName + " " + s.LastName;
         }
     }
 
@@ -122,18 +121,16 @@ public class MapWithFactoryTests
             _config = config;
         }
 
-        public LambdaExpression GetMappingExpression()
+        public Expression<Func<Product, object?>> GetMappingExpression()
         {
             // .NET if condition to select which expression to return
             if (_config.UseVerboseFormat)
             {
-                Expression<Func<Product, string>> verbose = p => p.Category + ": " + p.Name;
-                return verbose;
+                return p => p.Category + ": " + p.Name;
             }
             else
             {
-                Expression<Func<Product, string>> simple = p => p.Name;
-                return simple;
+                return p => p.Name;
             }
         }
     }
