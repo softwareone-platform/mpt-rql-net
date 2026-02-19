@@ -14,6 +14,12 @@ public interface IRqlMapperContext<TStorage, TView>
     IRqlMapperSwitchContext<TStorage> Switch<TTo>(Expression<Func<TView, TTo?>> to);
 
     IRqlMapperContext<TStorage, TView> Ignore<TTo>(Expression<Func<TView, TTo?>> toIgnore);
+
+    /// <summary>
+    /// Maps a property using an expression factory resolved from DI that implements IRqlMappingExpressionFactory<TStorage>.
+    /// </summary>
+    IRqlMapperContext<TStorage, TView> MapWithFactory<TService>(Expression<Func<TView, object?>> to) 
+        where TService: class, IRqlMappingExpressionFactory<TStorage>;
 }
 
 public interface IRqlMapperSwitchContext<TFromOwner>
