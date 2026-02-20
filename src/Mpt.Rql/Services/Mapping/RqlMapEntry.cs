@@ -16,6 +16,12 @@ public class RqlMapEntry
 
     public bool IsDynamic { get; internal set; }
 
+    /// <summary>
+    /// The type of the expression factory used to create the mapping, if applicable.
+    /// Set when MapWithFactory is used.
+    /// </summary>
+    public Type? FactoryType { get; internal set; }
+
     public Type TargetType => TargetProperty.ElementType ?? TargetProperty.Property.PropertyType;
 }
 

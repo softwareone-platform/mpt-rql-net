@@ -75,7 +75,8 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
             SourceExpression = sourceExpression,
             IsDynamic = true,
             InlineMap = null,
-            Conditions = null
+            Conditions = null,
+            FactoryType = typeof(TService)
         });
     }
 
@@ -157,7 +158,15 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
 
     private IRqlPropertyInfo GetTargetProperty<TTo>(Expression<Func<TView, TTo?>> to)
     {
-        var memberExpression = to.Body as MemberExpression ?? throw new RqlMappingException("Path must be a member expression");
+        Expression body = to.Body;
+        
+        // Unwrap Convert expression if present (happens when using object? as return type)
+        if (body is UnaryExpression { NodeType: ExpressionType.Convert } unaryExpr)
+        {
+            body = unaryExpr.Operand;
+        }
+        
+        var memberExpression = body as MemberExpression ?? throw new RqlMappingException("Path must be a member expression");
 
         if (memberExpression.Expression is not ParameterExpression)
             throw new RqlMappingException($"Only immediate properties are supported: {memberExpression}");
