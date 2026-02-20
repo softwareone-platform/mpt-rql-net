@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Mpt.Rql;
 using Mpt.Rql.Core.Metadata;
 using Mpt.Rql.Services.Mapping;
@@ -96,8 +97,9 @@ public class RqlMapperContextTests
     }
     private static RqlMapperContext<TStorage, TView> MakeContext<TStorage, TView>()
     {
+        var services = new ServiceCollection();
         var metadataProvider = new MetadataProvider(new PropertyNameProvider(), new MetadataFactory(new Mpt.Rql.Settings.GlobalRqlSettings()));
-        return new RqlMapperContext<TStorage, TView>(metadataProvider);
+        return new RqlMapperContext<TStorage, TView>(services.BuildServiceProvider(), metadataProvider);
     }
 
     private class Storage

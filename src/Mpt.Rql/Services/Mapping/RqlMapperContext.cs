@@ -12,14 +12,16 @@ internal abstract class RqlMapperContext
 
 internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperContext<TStorage, TView>
 {
+    private readonly IServiceProvider _serviceProvider;
     private readonly IRqlMetadataProvider _rqlMetadataProvider;
     private readonly Dictionary<string, IRqlPropertyInfo> _targetProperties;
     private readonly Dictionary<string, RqlMapEntry> _mapping;
     private readonly HashSet<string> _ignored;
     private readonly HashSet<RqlMapEntry> _switch;
 
-    public RqlMapperContext(IRqlMetadataProvider rqlMetadataProvider)
+    public RqlMapperContext(IServiceProvider serviceProvider, IRqlMetadataProvider rqlMetadataProvider)
     {
+        _serviceProvider = serviceProvider;
         _mapping = [];
         _ignored = [];
         _switch = [];
@@ -55,6 +57,26 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
 
         _switch.Add(entry);
         return new RqlMapperSwitchContext<TStorage>(entry);
+    }
+
+    public IRqlMapperContext<TStorage, TView> MapWithFactory<TService>(Expression<Func<TView, object?>> to)
+        where TService : class, IRqlMappingExpressionFactory<TStorage>
+    {
+        var targetProperty = GetTargetProperty(to);
+        
+        var factory = _serviceProvider.GetService(typeof(TService)) as IRqlMappingExpressionFactory<TStorage> 
+            ?? throw new RqlMappingException($"Expression factory of type {typeof(TService).Name} not found in dependency injection container. Ensure it is registered.");
+        
+        var sourceExpression = factory.GetMappingExpression();
+        
+        return MapInternal(new RqlMapEntry
+        {
+            TargetProperty = targetProperty,
+            SourceExpression = sourceExpression,
+            IsDynamic = true,
+            InlineMap = null,
+            Conditions = null
+        });
     }
 
     public IRqlMapperContext<TStorage, TView> Ignore<TTo>(Expression<Func<TView, TTo?>> toIgnore)
@@ -111,7 +133,7 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
         Dictionary<string, RqlMapEntry>? inline = null;
         if (configureInline != null)
         {
-            var mapperContext = new RqlMapperContext<TFrom, TTo>(_rqlMetadataProvider);
+            var mapperContext = new RqlMapperContext<TFrom, TTo>(_serviceProvider, _rqlMetadataProvider);
             configureInline(mapperContext);
             mapperContext.AddMissing();
             inline = mapperContext.Mapping;
