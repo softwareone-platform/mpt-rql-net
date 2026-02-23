@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Configuration.Filter;
@@ -23,7 +24,9 @@ public class CaseSensitivityTests
         var settings = new RqlSettings();
         settings.Filter.Strings.Comparison = caseInsensitive ? StringComparison.OrdinalIgnoreCase : null;
 
-        var contextSubstitute = new QueryContext<TView>();
+        var services = new ServiceCollection();
+
+        var contextSubstitute = new QueryContext<TView>(services.BuildServiceProvider());
         var graphBuilder = new Mock<IFilteringGraphBuilder<TView>>();
         var builder = ExpressionBuilderFactory.GetBinary(operatorInstance);
         var sut = new FilteringService<TView>(contextSubstitute, graphBuilder.Object, builder, parserMock);

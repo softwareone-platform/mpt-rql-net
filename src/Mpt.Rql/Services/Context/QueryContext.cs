@@ -2,10 +2,12 @@ using Mpt.Rql.Abstractions.Result;
 
 namespace Mpt.Rql.Services.Context;
 
-internal class QueryContext<TView> : IQueryContext<TView>
+internal class QueryContext<TView>(IServiceProvider serviceProvider) : IQueryContext<TView>
 {
     private List<Error>? _errors;
     private List<Func<IQueryable<TView>, IQueryable<TView>>>? _transformations;
+
+    public IServiceProvider ServiceProvider { get; } = serviceProvider;
 
     public IEnumerable<Error> GetErrors() => _errors ?? Enumerable.Empty<Error>();
 

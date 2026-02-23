@@ -8,7 +8,7 @@ public class RqlMapEntry
 {
     public IRqlPropertyInfo TargetProperty { get; internal set; } = null!;
 
-    public LambdaExpression SourceExpression { get; internal set; } = null!;
+    public LambdaExpression? SourceExpression { get; internal set; }
 
     public IReadOnlyDictionary<string, RqlMapEntry>? InlineMap { get; internal set; }
 

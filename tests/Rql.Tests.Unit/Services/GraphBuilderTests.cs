@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Mpt.Rql;
 using Mpt.Rql.Core;
@@ -27,7 +28,8 @@ public class GraphBuilderTests
         var actionValidatorMock = new Mock<IActionValidator>();
         actionValidatorMock.Setup(av => av.Validate(It.IsAny<RqlPropertyInfo>(), It.IsAny<RqlActions>())).Returns(true);
 
-        _queryContext = new QueryContext<Product>();
+        var services = new ServiceCollection();
+        _queryContext = new QueryContext<Product>(services.BuildServiceProvider());
         _rqlParser = new RqlParser();
 
         var settings = new GlobalRqlSettings();

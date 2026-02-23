@@ -63,16 +63,11 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
         where TService : class, IRqlMappingExpressionFactory<TStorage>
     {
         var targetProperty = GetTargetProperty(to);
-        
-        var factory = _serviceProvider.GetService(typeof(TService)) as IRqlMappingExpressionFactory<TStorage> 
-            ?? throw new RqlMappingException($"Expression factory of type {typeof(TService).Name} not found in dependency injection container. Ensure it is registered.");
-        
-        var sourceExpression = factory.GetMappingExpression();
-        
+
         return MapInternal(new RqlMapEntry
         {
             TargetProperty = targetProperty,
-            SourceExpression = sourceExpression,
+            SourceExpression = null,
             IsDynamic = true,
             InlineMap = null,
             Conditions = null,
@@ -159,13 +154,13 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
     private IRqlPropertyInfo GetTargetProperty<TTo>(Expression<Func<TView, TTo?>> to)
     {
         Expression body = to.Body;
-        
+
         // Unwrap Convert expression if present (happens when using object? as return type)
         if (body is UnaryExpression { NodeType: ExpressionType.Convert } unaryExpr)
         {
             body = unaryExpr.Operand;
         }
-        
+
         var memberExpression = body as MemberExpression ?? throw new RqlMappingException("Path must be a member expression");
 
         if (memberExpression.Expression is not ParameterExpression)
