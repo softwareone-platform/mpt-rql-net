@@ -29,7 +29,10 @@ public class GraphBuilderTests
         actionValidatorMock.Setup(av => av.Validate(It.IsAny<RqlPropertyInfo>(), It.IsAny<RqlActions>())).Returns(true);
 
         var services = new ServiceCollection();
-        _queryContext = new QueryContext<Product>(services.BuildServiceProvider());
+        var serviceAccessor = new ExternalServiceAccessor();
+        serviceAccessor.SetServiceProvider(services.BuildServiceProvider());
+
+        _queryContext = new QueryContext<Product>(serviceAccessor);
         _rqlParser = new RqlParser();
 
         var settings = new GlobalRqlSettings();

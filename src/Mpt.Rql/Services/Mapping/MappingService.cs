@@ -1,6 +1,5 @@
 using Mpt.Rql.Core.Metadata;
 using Mpt.Rql.Services.Context;
-using System;
 using System.Collections;
 using System.Linq.Expressions;
 
@@ -76,9 +75,9 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
         LambdaExpression sourceExpression;
         if (map.FactoryType != null)
         {
-            var factory = _queryContext.ServiceProvider.GetService(map.FactoryType) as IRqlMappingExpressionFactory<TStorage> 
+            var factory = _queryContext.ExternalServices.GetService(map.FactoryType) as IRqlMappingExpressionFactory
                 ?? throw new RqlMappingException($"Expression factory of type {map.FactoryType.Name} not found in dependency injection container. Ensure it is registered.");
-            sourceExpression = factory.GetMappingExpression();
+            sourceExpression = factory.GetStorageExpressionLambda();
         }
         else
         {
@@ -86,7 +85,7 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
         }
 
         var replaceParamVisitor = new ReplaceParameterVisitor(sourceExpression.Parameters[0], param);
-        var fromExpression = replaceParamVisitor.Visit(sourceExpression.Body);
+        var fromExpression = replaceParamVisitor.Visit(ExpressionHelper.UnwrapCastExpression(sourceExpression.Body));
 
         if (map.IsDynamic)
         {
