@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Configuration.Filter;
+using Mpt.Rql.Core;
 using Mpt.Rql.Services.Context;
 using Mpt.Rql.Services.Filtering;
 using Mpt.Rql.Services.Filtering.Operators;
@@ -25,8 +26,10 @@ public class CaseSensitivityTests
         settings.Filter.Strings.Comparison = caseInsensitive ? StringComparison.OrdinalIgnoreCase : null;
 
         var services = new ServiceCollection();
+        var serviceAccessor = new ExternalServiceAccessor();
+        serviceAccessor.SetServiceProvider(services.BuildServiceProvider());
 
-        var contextSubstitute = new QueryContext<TView>(services.BuildServiceProvider());
+        var contextSubstitute = new QueryContext<TView>(serviceAccessor);
         var graphBuilder = new Mock<IFilteringGraphBuilder<TView>>();
         var builder = ExpressionBuilderFactory.GetBinary(operatorInstance);
         var sut = new FilteringService<TView>(contextSubstitute, graphBuilder.Object, builder, parserMock);

@@ -44,11 +44,11 @@ public class MapWithFactoryTests
 
         // Act - Verify factories return different expressions based on configuration
         var verboseFactory = servicesVerbose.BuildServiceProvider().GetRequiredService<ConditionalFormatter>();
-        var verboseExpression = verboseFactory.GetMappingExpression();
+        var verboseExpression = verboseFactory.GetStorageExpression();
         var verboseCompiled = verboseExpression.Compile();
         
         var simpleFactory = servicesSimple.BuildServiceProvider().GetRequiredService<ConditionalFormatter>();
-        var simpleExpression = simpleFactory.GetMappingExpression();
+        var simpleExpression = simpleFactory.GetStorageExpression();
         var simpleCompiled = simpleExpression.Compile();
 
         // Assert
@@ -123,7 +123,7 @@ public class MapWithFactoryTests
 
     private class TestExpressionFactory : IRqlMappingExpressionFactory<Storage>
     {
-        public Expression<Func<Storage, object?>> GetMappingExpression()
+        public Expression<Func<Storage, object?>> GetStorageExpression()
         {
             return s => s.FirstName + " " + s.LastName;
         }
@@ -154,7 +154,7 @@ public class MapWithFactoryTests
             _config = config;
         }
 
-        public Expression<Func<Product, object?>> GetMappingExpression()
+        public Expression<Func<Product, object?>> GetStorageExpression()
         {
             if (_config.UseVerboseFormat)
             {
@@ -183,7 +183,7 @@ public class MapWithFactoryTests
 
     private class IntPropertyFactory : IRqlMappingExpressionFactory<TypedEntity>
     {
-        public Expression<Func<TypedEntity, object?>> GetMappingExpression()
+        public Expression<Func<TypedEntity, object?>> GetStorageExpression()
         {
             return e => e.Age;
         }
@@ -191,7 +191,7 @@ public class MapWithFactoryTests
 
     private class BoolPropertyFactory : IRqlMappingExpressionFactory<TypedEntity>
     {
-        public Expression<Func<TypedEntity, object?>> GetMappingExpression()
+        public Expression<Func<TypedEntity, object?>> GetStorageExpression()
         {
             return e => e.IsActive;
         }
@@ -199,7 +199,7 @@ public class MapWithFactoryTests
 
     private class DoublePropertyFactory : IRqlMappingExpressionFactory<TypedEntity>
     {
-        public Expression<Func<TypedEntity, object?>> GetMappingExpression()
+        public Expression<Func<TypedEntity, object?>> GetStorageExpression()
         {
             return e => e.Score;
         }

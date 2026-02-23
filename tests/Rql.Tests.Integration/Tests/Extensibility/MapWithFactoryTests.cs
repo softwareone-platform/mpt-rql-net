@@ -180,7 +180,7 @@ internal class ProductToDIFactoryViewMapper : IRqlMapper<Product, ProductViewWit
 // Factories
 internal class FullNameFactory : IRqlMappingExpressionFactory<Product>
 {
-    public Expression<Func<Product, object?>> GetMappingExpression()
+    public Expression<Func<Product, object?>> GetStorageExpression()
     {
         return p => "Product: " + p.Id.ToString();
     }
@@ -200,7 +200,7 @@ internal class ConditionalFormatterFactory : IRqlMappingExpressionFactory<Produc
         _settings = settings;
     }
 
-    public Expression<Func<Product, object?>> GetMappingExpression()
+    public Expression<Func<Product, object?>> GetStorageExpression()
     {
         if (_settings.Verbose)
         {
@@ -227,7 +227,7 @@ internal class DIAwareFactory : IRqlMappingExpressionFactory<Product>
         _settings = settings;
     }
 
-    public Expression<Func<Product, object?>> GetMappingExpression()
+    public Expression<Func<Product, object?>> GetStorageExpression()
     {
         var prefix = _settings.Prefix;
         return p => prefix + ": " + p.Name;

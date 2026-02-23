@@ -153,13 +153,7 @@ internal class RqlMapperContext<TStorage, TView> : RqlMapperContext, IRqlMapperC
 
     private IRqlPropertyInfo GetTargetProperty<TTo>(Expression<Func<TView, TTo?>> to)
     {
-        Expression body = to.Body;
-
-        // Unwrap Convert expression if present (happens when using object? as return type)
-        if (body is UnaryExpression { NodeType: ExpressionType.Convert } unaryExpr)
-        {
-            body = unaryExpr.Operand;
-        }
+        Expression body = ExpressionHelper.UnwrapCastExpression(to.Body);
 
         var memberExpression = body as MemberExpression ?? throw new RqlMappingException("Path must be a member expression");
 

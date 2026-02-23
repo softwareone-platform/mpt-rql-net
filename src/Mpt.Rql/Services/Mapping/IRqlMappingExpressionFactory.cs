@@ -3,7 +3,12 @@ using System.Linq.Expressions;
 #pragma warning disable IDE0130
 namespace Mpt.Rql;
 
-public interface IRqlMappingExpressionFactory<TType>
+public interface IRqlMappingExpressionFactory
+{
+    LambdaExpression GetStorageExpressionLambda();
+}
+
+public interface IRqlMappingExpressionFactory<TType> : IRqlMappingExpressionFactory
 {
     /// <summary>
     /// Gets the mapping expression used to project <typeparamref name="TType"/> properties in RQL queries.
@@ -11,5 +16,8 @@ public interface IRqlMappingExpressionFactory<TType>
     /// <returns>
     /// An expression representing the mapping configuration for <typeparamref name="TType"/>.
     /// </returns>
-    Expression<Func<TType, object?>> GetMappingExpression();
+    Expression<Func<TType, object?>> GetStorageExpression();
+
+    LambdaExpression IRqlMappingExpressionFactory.GetStorageExpressionLambda()
+        => GetStorageExpression();
 }

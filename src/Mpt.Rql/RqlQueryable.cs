@@ -41,9 +41,10 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
         var settingsAccessor = GetService<IRqlSettingsAccessor>();
         configure(settingsAccessor.Current);
 
+        GetService<IExternalServiceAccessor>().SetServiceProvider(_serviceProvider);
+
         var context = GetService<IQueryContext<TView>>();
 
-        GetService<IExternalServiceAccessor>().SetServiceProvider(_serviceProvider);
         GetService<IFilteringService<TView>>().Process(request.Filter);
         GetService<IOrderingService<TView>>().Process(request.Order);
         GetService<IProjectionService<TView>>().Process(request.Select);

@@ -1,10 +1,11 @@
 using Mpt.Rql.Abstractions.Result;
+using Mpt.Rql.Core;
 
 namespace Mpt.Rql.Services.Context;
 
 internal interface IQueryContext<TView>
 {
-    IServiceProvider ServiceProvider { get; }
+    IServiceProvider ExternalServices { get; }
     IEnumerable<Error> GetErrors();
     void AddTransformation(Func<IQueryable<TView>, IQueryable<TView>> func);
     IQueryable<TView> ApplyTransformations(IQueryable<TView> query);
