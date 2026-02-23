@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Mpt.Rql;
 using Mpt.Rql.Abstractions;
@@ -26,7 +27,8 @@ public class FilteringServiceTests
 
     private static (FilteringService<TView> sut, QueryContext<TView> context) BuildSut<TView>(IRqlParser parserMock, IOperator operatorInstance)
     {
-        var contextSubstitute = new QueryContext<TView>();
+        var services = new ServiceCollection();
+        var contextSubstitute = new QueryContext<TView>(services.BuildServiceProvider());
         var graphBuilder = new Mock<IFilteringGraphBuilder<TView>>();
         var builder = ExpressionBuilderFactory.GetBinary(operatorInstance);
         var sut = new FilteringService<TView>(contextSubstitute, graphBuilder.Object, builder, parserMock);

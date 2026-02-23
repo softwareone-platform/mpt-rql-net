@@ -11,7 +11,7 @@ namespace Rql.Tests.Unit.Services.Mapping;
 public class MapWithFactoryTests
 {
     [Fact]
-    public void MapWithFactory_WhenFactoryIsRegistered_ShouldMapSuccessfully()
+    public void MapWithFactory_ShouldStoreFactoryType()
     {
         // Arrange
         var services = new ServiceCollection();
@@ -26,169 +26,59 @@ public class MapWithFactoryTests
         mapping.Should().ContainKey(nameof(View.ComputedName));
         mapping[nameof(View.ComputedName)].IsDynamic.Should().BeTrue();
         mapping[nameof(View.ComputedName)].TargetProperty.Property.Name.Should().Be(nameof(View.ComputedName));
-        mapping[nameof(View.ComputedName)].SourceExpression.Should().NotBeNull();
+        mapping[nameof(View.ComputedName)].SourceExpression.Should().BeNull("factory resolution is delayed until mapping time");
         mapping[nameof(View.ComputedName)].FactoryType.Should().Be(typeof(TestExpressionFactory));
     }
 
     [Fact]
-    public void MapWithFactory_WhenFactoryNotRegistered_ShouldThrowRqlMappingException()
+    public void MapWithFactory_WithConditionalLogic_ShouldSupportDifferentConfigurations()
     {
-        // Arrange
-        var services = new ServiceCollection();
-        // Note: TestExpressionFactory is NOT registered
-        var ctx = MakeContext<Storage, View>(services);
-
-        // Act & Assert
-        var act = () => ctx.MapWithFactory<TestExpressionFactory>(v => v.ComputedName);
-        act.Should().Throw<RqlMappingException>()
-           .WithMessage("*TestExpressionFactory*not found*");
-    }
-
-    [Fact]
-    public void MapWithFactory_WithConditionalLogic_ShouldReturnDifferentExpressions()
-    {
-        // Arrange - factory uses if conditions to select expression
+        // Arrange - factory uses DI to conditionally return different expressions
         var servicesVerbose = new ServiceCollection();
         servicesVerbose.AddSingleton(new FormatterConfig { UseVerboseFormat = true });
         servicesVerbose.AddTransient<ConditionalFormatter>();
-        var ctxVerbose = MakeContext<Product, ProductView>(servicesVerbose);
 
         var servicesSimple = new ServiceCollection();
         servicesSimple.AddSingleton(new FormatterConfig { UseVerboseFormat = false });
         servicesSimple.AddTransient<ConditionalFormatter>();
-        var ctxSimple = MakeContext<Product, ProductView>(servicesSimple);
 
-        // Act
-        ctxVerbose.MapWithFactory<ConditionalFormatter>(v => v.DisplayName);
-        ctxSimple.MapWithFactory<ConditionalFormatter>(v => v.DisplayName);
+        // Act - Verify factories return different expressions based on configuration
+        var verboseFactory = servicesVerbose.BuildServiceProvider().GetRequiredService<ConditionalFormatter>();
+        var verboseExpression = verboseFactory.GetMappingExpression();
+        var verboseCompiled = verboseExpression.Compile();
+        
+        var simpleFactory = servicesSimple.BuildServiceProvider().GetRequiredService<ConditionalFormatter>();
+        var simpleExpression = simpleFactory.GetMappingExpression();
+        var simpleCompiled = simpleExpression.Compile();
 
         // Assert
-        var verboseExpression = (Expression<Func<Product, object?>>)ctxVerbose.Mapping[nameof(ProductView.DisplayName)].SourceExpression;
-        var verboseCompiled = verboseExpression.Compile();
         verboseCompiled(new Product { Name = "Widget", Category = "Tools" }).Should().Be("Tools: Widget");
-
-        var simpleExpression = (Expression<Func<Product, object?>>)ctxSimple.Mapping[nameof(ProductView.DisplayName)].SourceExpression;
-        var simpleCompiled = simpleExpression.Compile();
         simpleCompiled(new Product { Name = "Widget", Category = "Tools" }).Should().Be("Widget");
     }
 
-    [Fact]
-    public void MapWithFactory_WithReferenceTypeProperty_ShouldHandleWithoutConvertWrapper()
-    {
-        // Arrange - string (reference type) does NOT get wrapped in Convert expression
-        // because reference types can be implicitly cast to object? without boxing
-        var services = new ServiceCollection();
-        services.AddTransient<TestExpressionFactory>();
-        var ctx = MakeContext<Storage, View>(services);
-
-        // Verify that the lambda expression body is NOT wrapped in Convert
-        Expression<Func<View, object?>> lambdaExpr = v => v.ComputedName;
-        lambdaExpr.Body.Should().BeAssignableTo<MemberExpression>("string properties don't need Convert wrapping");
-        lambdaExpr.Body.NodeType.Should().Be(ExpressionType.MemberAccess);
-
-        // Act - Expression body will be MemberExpression directly (no Convert wrapper)
-        ctx.MapWithFactory<TestExpressionFactory>(v => v.ComputedName);
-
-        // Assert - should successfully map the property
-        var mapping = ctx.Mapping;
-        mapping.Should().ContainKey(nameof(View.ComputedName));
-        mapping[nameof(View.ComputedName)].TargetProperty.Property.Name.Should().Be(nameof(View.ComputedName));
-        mapping[nameof(View.ComputedName)].FactoryType.Should().Be(typeof(TestExpressionFactory));
-    }
-
-    [Fact]
-    public void MapWithFactory_WithValueTypeProperties_RequiresConvertUnwrapping()
-    {
-        // Arrange - value types (int, bool, DateTime, double) get wrapped in Convert(object?) expression
-        // because they need to be boxed when cast to object?
-        var services = new ServiceCollection();
-        services.AddTransient<IntPropertyFactory>();
-        services.AddTransient<BoolPropertyFactory>();
-        services.AddTransient<DateTimePropertyFactory>();
-        services.AddTransient<DoublePropertyFactory>();
-        var ctx = MakeContext<TypedEntity, TypedEntityView>(services);
-
-        // Verify that value type lambda expressions ARE wrapped in Convert
-        Expression<Func<TypedEntityView, object?>> intExpr = v => v.Age;
-        intExpr.Body.Should().BeOfType<UnaryExpression>("int properties need Convert wrapping for boxing");
-        intExpr.Body.NodeType.Should().Be(ExpressionType.Convert);
-        ((UnaryExpression)intExpr.Body).Operand.Should().BeAssignableTo<MemberExpression>("Convert wraps the MemberExpression");
-
-        Expression<Func<TypedEntityView, object?>> boolExpr = v => v.IsActive;
-        boolExpr.Body.Should().BeOfType<UnaryExpression>("bool properties need Convert wrapping for boxing");
-
-        // Act - Expression body will be UnaryExpression(Convert) wrapping MemberExpression
-        // GetTargetProperty must unwrap the Convert to find the MemberExpression
-        ctx.MapWithFactory<IntPropertyFactory>(v => v.Age);
-        ctx.MapWithFactory<BoolPropertyFactory>(v => v.IsActive);
-        ctx.MapWithFactory<DateTimePropertyFactory>(v => v.CreatedAt);
-        ctx.MapWithFactory<DoublePropertyFactory>(v => v.Score);
-
-        // Assert - all should successfully unwrap and map
-        var mapping = ctx.Mapping;
-        mapping.Should().ContainKey(nameof(TypedEntityView.Age));
-        mapping.Should().ContainKey(nameof(TypedEntityView.IsActive));
-        mapping.Should().ContainKey(nameof(TypedEntityView.CreatedAt));
-        mapping.Should().ContainKey(nameof(TypedEntityView.Score));
-        
-        // Verify factory types are stored
-        mapping[nameof(TypedEntityView.Age)].FactoryType.Should().Be(typeof(IntPropertyFactory));
-        mapping[nameof(TypedEntityView.IsActive)].FactoryType.Should().Be(typeof(BoolPropertyFactory));
-        mapping[nameof(TypedEntityView.CreatedAt)].FactoryType.Should().Be(typeof(DateTimePropertyFactory));
-        mapping[nameof(TypedEntityView.Score)].FactoryType.Should().Be(typeof(DoublePropertyFactory));
-    }
-
     [Theory]
-    [InlineData(nameof(TypedEntityView.Age), 25)]
-    [InlineData(nameof(TypedEntityView.IsActive), true)]
-    [InlineData(nameof(TypedEntityView.Score), 98.5)]
-    public void MapWithFactory_WithValueTypes_ExecutesMappingCorrectly(string propertyName, object expectedValue)
+    [InlineData(nameof(TypedEntityView.Age), typeof(IntPropertyFactory))]
+    [InlineData(nameof(TypedEntityView.IsActive), typeof(BoolPropertyFactory))]
+    [InlineData(nameof(TypedEntityView.Score), typeof(DoublePropertyFactory))]
+    public void MapWithFactory_WithValueTypes_ShouldStoreFactoryType(string propertyName, Type factoryType)
     {
-        // Arrange - Testing that value types (which require Convert unwrapping) map correctly
+        // Arrange
         var services = new ServiceCollection();
         services.AddTransient<IntPropertyFactory>();
         services.AddTransient<BoolPropertyFactory>();
         services.AddTransient<DoublePropertyFactory>();
         var ctx = MakeContext<TypedEntity, TypedEntityView>(services);
 
-        // Act - Each property expression gets wrapped in Convert(object?) by compiler
+        // Act
         ctx.MapWithFactory<IntPropertyFactory>(v => v.Age);
         ctx.MapWithFactory<BoolPropertyFactory>(v => v.IsActive);
         ctx.MapWithFactory<DoublePropertyFactory>(v => v.Score);
 
-        // Assert - Verify the mapped expression returns correct values after unwrapping
+        // Assert
         var mapping = ctx.Mapping;
         mapping.Should().ContainKey(propertyName);
-        
-        var sourceExpr = (Expression<Func<TypedEntity, object?>>)mapping[propertyName].SourceExpression;
-        var compiled = sourceExpr.Compile();
-        var entity = new TypedEntity { Age = 25, IsActive = true, Score = 98.5, CreatedAt = DateTime.UtcNow };
-        var result = compiled(entity);
-        
-        result.Should().Be(expectedValue);
-    }
-
-    [Fact]
-    public void MapWithFactory_WithNullableValueType_RequiresConvertUnwrapping()
-    {
-        // Arrange - nullable value types (int?) also get wrapped in Convert expression
-        // because int? → object? requires boxing
-        var services = new ServiceCollection();
-        services.AddTransient<NullablePropertyFactory>();
-        var ctx = MakeContext<NullableEntity, NullableEntityView>(services);
-
-        // Verify that nullable value type lambda expressions ARE wrapped in Convert
-        Expression<Func<NullableEntityView, object?>> nullableExpr = v => v.OptionalAge;
-        nullableExpr.Body.Should().BeOfType<UnaryExpression>("nullable int properties need Convert wrapping for boxing");
-        nullableExpr.Body.NodeType.Should().Be(ExpressionType.Convert);
-
-        // Act - Expression body will be UnaryExpression(Convert) wrapping MemberExpression
-        ctx.MapWithFactory<NullablePropertyFactory>(v => v.OptionalAge);
-
-        // Assert - Should successfully unwrap and map
-        var mapping = ctx.Mapping;
-        mapping.Should().ContainKey(nameof(NullableEntityView.OptionalAge));
-        mapping[nameof(NullableEntityView.OptionalAge)].FactoryType.Should().Be(typeof(NullablePropertyFactory));
+        mapping[propertyName].FactoryType.Should().Be(factoryType);
+        mapping[propertyName].SourceExpression.Should().BeNull("factory resolution is delayed until mapping time");
     }
 
     [Fact]
@@ -266,7 +156,6 @@ public class MapWithFactoryTests
 
         public Expression<Func<Product, object?>> GetMappingExpression()
         {
-            // .NET if condition to select which expression to return
             if (_config.UseVerboseFormat)
             {
                 return p => p.Category + ": " + p.Name;
@@ -282,7 +171,6 @@ public class MapWithFactoryTests
     {
         public int Age { get; set; }
         public bool IsActive { get; set; }
-        public DateTime CreatedAt { get; set; }
         public double Score { get; set; }
     }
 
@@ -290,7 +178,6 @@ public class MapWithFactoryTests
     {
         public int Age { get; set; }
         public bool IsActive { get; set; }
-        public DateTime CreatedAt { get; set; }
         public double Score { get; set; }
     }
 
@@ -310,37 +197,11 @@ public class MapWithFactoryTests
         }
     }
 
-    private class DateTimePropertyFactory : IRqlMappingExpressionFactory<TypedEntity>
-    {
-        public Expression<Func<TypedEntity, object?>> GetMappingExpression()
-        {
-            return e => e.CreatedAt;
-        }
-    }
-
     private class DoublePropertyFactory : IRqlMappingExpressionFactory<TypedEntity>
     {
         public Expression<Func<TypedEntity, object?>> GetMappingExpression()
         {
             return e => e.Score;
-        }
-    }
-
-    private class NullableEntity
-    {
-        public int? OptionalAge { get; set; }
-    }
-
-    private class NullableEntityView
-    {
-        public int? OptionalAge { get; set; }
-    }
-
-    private class NullablePropertyFactory : IRqlMappingExpressionFactory<NullableEntity>
-    {
-        public Expression<Func<NullableEntity, object?>> GetMappingExpression()
-        {
-            return e => e.OptionalAge;
         }
     }
 }

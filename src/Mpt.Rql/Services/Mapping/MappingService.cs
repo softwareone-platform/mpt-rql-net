@@ -1,5 +1,6 @@
 using Mpt.Rql.Core.Metadata;
 using Mpt.Rql.Services.Context;
+using System;
 using System.Collections;
 using System.Linq.Expressions;
 
@@ -71,8 +72,21 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
     private Expression MakeBindExpression(Expression param, IRqlNode node, RqlMapEntry map)
     {
         var targetType = node.Property.Property.PropertyType;
-        var replaceParamVisitor = new ReplaceParameterVisitor(map.SourceExpression.Parameters[0], param);
-        var fromExpression = replaceParamVisitor.Visit(map.SourceExpression.Body);
+
+        LambdaExpression sourceExpression;
+        if (map.FactoryType != null)
+        {
+            var factory = _queryContext.ServiceProvider.GetService(map.FactoryType) as IRqlMappingExpressionFactory<TStorage> 
+                ?? throw new RqlMappingException($"Expression factory of type {map.FactoryType.Name} not found in dependency injection container. Ensure it is registered.");
+            sourceExpression = factory.GetMappingExpression();
+        }
+        else
+        {
+            sourceExpression = map.SourceExpression!;
+        }
+
+        var replaceParamVisitor = new ReplaceParameterVisitor(sourceExpression.Parameters[0], param);
+        var fromExpression = replaceParamVisitor.Visit(sourceExpression.Body);
 
         if (map.IsDynamic)
         {
