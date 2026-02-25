@@ -81,9 +81,12 @@ internal class MappingService<TStorage, TView>(IQueryContext<TView> queryContext
         var replaceParamVisitor = new ReplaceParameterVisitor(sourceExpression.Parameters[0], param);
         var fromExpression = replaceParamVisitor.Visit(ExpressionHelper.UnwrapCastExpression(sourceExpression.Body));
 
-        if (hint.HasFlag(ExpressionFactoryHint.TakeFirst))
+        if (hint == ExpressionFactoryHint.TakeFirst)
         {
-            fromExpression = MakeCollectionInitUnsafe(fromExpression, node, map, f => f.GetFirstOrDefault());
+            if (!fromExpression.Type.IsGenericType || fromExpression.Type.GenericTypeArguments.Length == 0)
+                throw new RqlMappingException($"Expression factory with TakeFirst hint for property '{node.Property.Property.Name}' must return a collection expression.");
+
+            fromExpression = MakeCollectionInitCore(fromExpression, node, map, f => f.GetFirstOrDefault(), applyToPrimitives: true);
         }
         else if (map.IsDynamic)
         {
@@ -129,15 +132,21 @@ internal class MappingService<TStorage, TView>(IQueryContext<TView> queryContext
         if (!typeof(IList).IsAssignableFrom(node.Property.Property.PropertyType))
             throw new NotSupportedException($"Cannot map property '{node.Property.Property.Name}' of type {node.Property.Property.DeclaringType!.Name}. Rql temporarily support only list coollections.");
 
-        return MakeCollectionInitUnsafe(fromExpression, node, map, finalFuntionSelector);
+        return MakeCollectionInitCore(fromExpression, node, map, finalFuntionSelector);
     }
 
-    private Expression MakeCollectionInitUnsafe(Expression fromExpression, IRqlNode node, RqlMapEntry map, Func<IProjectionFunctions, MethodInfo> finalFuntionSelector)
+    private Expression MakeCollectionInitCore(Expression fromExpression, IRqlNode node, RqlMapEntry map, Func<IProjectionFunctions, MethodInfo> finalFuntionSelector, bool applyToPrimitives = false)
     {
         var srcItemType = fromExpression.Type.GenericTypeArguments[0];
 
         if (!TypeHelper.IsUserComplexType(srcItemType))
-            return fromExpression;
+        {
+            if (!applyToPrimitives)
+                return fromExpression;
+
+            var primitiveFunctions = (IProjectionFunctions)Activator.CreateInstance(typeof(ProjectionFunctions<>).MakeGenericType(srcItemType))!;
+            return Expression.Call(null, finalFuntionSelector(primitiveFunctions), fromExpression);
+        }
 
         var innerMap = GetInnerMapFromEntry(srcItemType, map);
         var innerParam = Expression.Parameter(srcItemType);

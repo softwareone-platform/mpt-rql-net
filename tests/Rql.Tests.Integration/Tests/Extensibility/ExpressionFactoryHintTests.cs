@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Mpt.Rql;
+using Mpt.Rql.Services.Mapping;
 using Rql.Tests.Integration.Core;
 using System.Linq.Expressions;
 using Xunit;
@@ -139,6 +140,78 @@ public class ExpressionFactoryHintTests
         var product1 = mapped.First(m => m.Id == 1);
         product1.Orders.Should().HaveCount(3);
     }
+
+    [Fact]
+    public void TakeFirst_WithPrimitiveCollection_ShouldReturnFirstElement()
+    {
+        // Arrange
+        var rql = RqlFactory.Make<Product, ProductFirstOrderIdView>(
+            services =>
+            {
+                services.AddTransient<FirstOrderIdFactory>();
+            },
+            config => config.ScanForMappers(typeof(ExpressionFactoryHintTests).Assembly));
+
+        var testData = ProductRepository.Query();
+
+        // Act
+        var result = rql.Transform(testData, new RqlRequest { Select = "Id,FirstOrderId" });
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        var mapped = result.Query.ToList();
+
+        // Product 1 has OrdersIds = [1, 2, 3]
+        var product1 = mapped.First(m => m.Id == 1);
+        product1.FirstOrderId.Should().Be(1);
+    }
+
+    [Fact]
+    public void TakeFirst_WithPrimitiveCollection_WhenEmpty_ShouldReturnDefault()
+    {
+        // Arrange
+        var rql = RqlFactory.Make<Product, ProductFirstOrderIdView>(
+            services =>
+            {
+                services.AddTransient<FirstOrderIdFactory>();
+            },
+            config => config.ScanForMappers(typeof(ExpressionFactoryHintTests).Assembly));
+
+        var testData = ProductRepository.Query();
+
+        // Act
+        var result = rql.Transform(testData, new RqlRequest { Select = "Id,FirstOrderId" });
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        var mapped = result.Query.ToList();
+
+        // Product 2 has OrdersIds = []
+        var product2 = mapped.First(m => m.Id == 2);
+        product2.FirstOrderId.Should().Be(0);
+    }
+
+    [Fact]
+    public void TakeFirst_WithNonCollectionExpression_ShouldThrowMappingException()
+    {
+        // Arrange
+        var rql = RqlFactory.Make<Product, ProductBadFactoryView>(
+            services =>
+            {
+                services.AddTransient<NonCollectionTakeFirstFactory>();
+            },
+            config => config.ScanForMappers(typeof(ExpressionFactoryHintTests).Assembly));
+
+        var testData = ProductRepository.Query();
+
+        // Act & Assert
+        var exception = Assert.Throws<RqlMappingException>(() =>
+            rql.Transform(testData, new RqlRequest { Select = "Id,BadField" }));
+
+        exception.Message.Should().Contain("TakeFirst");
+        exception.Message.Should().Contain("BadField");
+        exception.Message.Should().Contain("collection");
+    }
 }
 
 // View models
@@ -233,4 +306,58 @@ internal class OrderListFactory : IRqlMappingExpressionFactory<Product>
 
     public Expression<Func<Product, object?>> GetStorageExpression()
         => p => p.Orders;
+}
+
+// Primitive collection TakeFirst
+internal class ProductFirstOrderIdView
+{
+    [RqlProperty(IsCore = true)]
+    public int Id { get; set; }
+
+    [RqlProperty(IsCore = true)]
+    public int FirstOrderId { get; set; }
+}
+
+internal class ProductToFirstOrderIdViewMapper : IRqlMapper<Product, ProductFirstOrderIdView>
+{
+    public void MapEntity(IRqlMapperContext<Product, ProductFirstOrderIdView> context)
+    {
+        context.MapStatic(v => v.Id, s => s.Id);
+        context.MapWithFactory<FirstOrderIdFactory>(v => v.FirstOrderId);
+    }
+}
+
+internal class FirstOrderIdFactory : IRqlMappingExpressionFactory<Product>
+{
+    public ExpressionFactoryHint Hint => ExpressionFactoryHint.TakeFirst;
+
+    public Expression<Func<Product, object?>> GetStorageExpression()
+        => p => p.OrdersIds;
+}
+
+// Non-collection TakeFirst (should fail)
+internal class ProductBadFactoryView
+{
+    [RqlProperty(IsCore = true)]
+    public int Id { get; set; }
+
+    [RqlProperty(IsCore = true)]
+    public string BadField { get; set; } = null!;
+}
+
+internal class ProductToBadFactoryViewMapper : IRqlMapper<Product, ProductBadFactoryView>
+{
+    public void MapEntity(IRqlMapperContext<Product, ProductBadFactoryView> context)
+    {
+        context.MapStatic(v => v.Id, s => s.Id);
+        context.MapWithFactory<NonCollectionTakeFirstFactory>(v => v.BadField);
+    }
+}
+
+internal class NonCollectionTakeFirstFactory : IRqlMappingExpressionFactory<Product>
+{
+    public ExpressionFactoryHint Hint => ExpressionFactoryHint.TakeFirst;
+
+    public Expression<Func<Product, object?>> GetStorageExpression()
+        => p => p.Name; // Not a collection — should throw
 }
