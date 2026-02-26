@@ -18,6 +18,7 @@ internal class RqlSettingsAccessor(IRqlGlobalSettings globalSettings) : IRqlSett
 
         // Deep copy Mapping settings
         _instance.Mapping.Transparent = globalSettings.Mapping.Transparent;
+        _instance.Mapping.Navigation = globalSettings.Mapping.Navigation;
 
         // Deep copy Select settings  
         _instance.Select.Implicit = globalSettings.Select.Implicit;

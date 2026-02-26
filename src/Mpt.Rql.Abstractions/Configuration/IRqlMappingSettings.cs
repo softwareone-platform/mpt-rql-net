@@ -10,4 +10,11 @@ public interface IRqlMappingSettings
     /// Note that enabling this feature may increase amount of data transferred between application and database server.
     /// </summary>
     bool Transparent { get; set; }
+
+    /// <summary>
+    /// Controls the navigation strategy for mapping expressions.
+    /// When set to <see cref="NavigationStrategy.Safe"/>, uses null conditional operators (?.) for safe property access during mapping.
+    /// This helps prevent null reference exceptions when accessing nested properties that may be null.
+    /// </summary>
+    NavigationStrategy Navigation { get; set; }
 }

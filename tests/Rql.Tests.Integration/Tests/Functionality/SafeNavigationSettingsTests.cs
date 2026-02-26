@@ -33,10 +33,12 @@ public class SafeNavigationSettingsTests
         // Act
         settings.Filter.Navigation = NavigationStrategy.Safe;
         settings.Ordering.Navigation = NavigationStrategy.Default;
+        settings.Mapping.Navigation = NavigationStrategy.Default;
 
         // Assert
         Assert.Equal(NavigationStrategy.Safe, settings.Filter.Navigation);
         Assert.Equal(NavigationStrategy.Default, settings.Ordering.Navigation);
+        Assert.Equal(NavigationStrategy.Default, settings.Mapping.Navigation);
     }
 
     [Fact]
