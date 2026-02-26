@@ -42,10 +42,9 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
         {
             if (typeMap.TryGetValue(node.Property.Property.Name, out var map))
             {
+                // check if the target property is writable before attempting to bind
                 if (!node.Property.Property.CanWrite)
-                {
                     continue;
-                }
 
                 var fromExpression = MakeBindExpression(param, node, map);
                 fromExpression = TryMakeConditionalBindExpression(param, node, fromExpression, map);
@@ -97,18 +96,17 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
 
         if (map.IsDynamic)
         {
-            var useSafeNavigation = _settings.Mapping.NullPropagation == NavigationStrategy.Safe;
             fromExpression = node.Property.Type switch
             {
-                RqlPropertyType.Reference => MakeReferenceInit(fromExpression, node, map, useSafeNavigation),
-                RqlPropertyType.Collection => MakeCollectionInit(fromExpression, node, map, useSafeNavigation),
-                RqlPropertyType.Primitive => useSafeNavigation ? ApplyNullPropagation(fromExpression) : fromExpression,
+                RqlPropertyType.Reference => MakeReferenceInit(fromExpression, node, map),
+                RqlPropertyType.Collection => MakeCollectionInit(fromExpression, node, map),
+                RqlPropertyType.Primitive => UseSafeNavigation ? ApplyNullPropagation(fromExpression) : fromExpression,
                 _ => fromExpression
             };
         }
-        else if (_settings.Mapping.NullPropagation == NavigationStrategy.Safe)
+        else if (UseSafeNavigation)
         {
-            // Apply null propagation for simple property mappings
+            // Apply null propagation for static property mappings (e.g., t => t.Nested.Value)
             fromExpression = ApplyNullPropagation(fromExpression);
         }
 
@@ -121,7 +119,7 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
         return fromExpression;
     }
 
-    private Expression MakeReferenceInit(Expression fromExpression, IRqlNode node, RqlMapEntry map, bool useSafeNavigation)
+    private Expression MakeReferenceInit(Expression fromExpression, IRqlNode node, RqlMapEntry map)
     {
         var innerMap = GetInnerMapFromEntry(fromExpression.Type, map);
 
@@ -129,7 +127,7 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
 
         // When safe navigation is enabled or property is nullable, add null check
         // This handles deserialized data where non-nullable reference types may be null
-        if (useSafeNavigation || node.Property.IsNullable)
+        if (UseSafeNavigation || node.Property.IsNullable)
         {
             fromExpression = Expression.Condition(
                 Expression.NotEqual(fromExpression, Expression.Constant(null, fromExpression.Type)),
@@ -144,7 +142,7 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
         return fromExpression;
     }
 
-    private Expression MakeCollectionInit(Expression fromExpression, IRqlNode node, RqlMapEntry map, bool useSafeNavigation)
+    private Expression MakeCollectionInit(Expression fromExpression, IRqlNode node, RqlMapEntry map)
     {
         // Temporarily only support List
         if (!typeof(IList).IsAssignableFrom(node.Property.Property.PropertyType))
@@ -155,7 +153,7 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
         if (!TypeHelper.IsUserComplexType(srcItemType))
         {
             // For simple types, apply null check if safe navigation is enabled
-            if (useSafeNavigation)
+            if (UseSafeNavigation)
             {
                 return Expression.Condition(
                     Expression.NotEqual(fromExpression, Expression.Constant(null, fromExpression.Type)),
@@ -174,7 +172,7 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
         var toListCall = Expression.Call(null, functions.GetToList(), selectCall);
 
         // Add null check for the collection if safe navigation is enabled
-        if (useSafeNavigation)
+        if (UseSafeNavigation)
         {
             return Expression.Condition(
                 Expression.NotEqual(fromExpression, Expression.Constant(null, fromExpression.Type)),
@@ -293,4 +291,6 @@ internal class MappingService<TStorage, TView> : IMappingService<TStorage, TView
 
         return false;
     }
+
+    private bool UseSafeNavigation => _settings.Mapping.Navigation == NavigationStrategy.Safe;
 }

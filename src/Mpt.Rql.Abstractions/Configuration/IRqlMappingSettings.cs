@@ -16,5 +16,5 @@ public interface IRqlMappingSettings
     /// When set to <see cref="NavigationStrategy.Safe"/>, uses null conditional operators (?.) for safe property access during mapping.
     /// This helps prevent null reference exceptions when accessing nested properties that may be null.
     /// </summary>
-    NavigationStrategy NullPropagation { get; set; }
+    NavigationStrategy Navigation { get; set; }
 }
