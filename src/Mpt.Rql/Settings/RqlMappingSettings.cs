@@ -5,4 +5,5 @@ namespace Mpt.Rql.Settings;
 internal record RqlMappingSettings : IRqlMappingSettings
 {
     public bool Transparent { get; set; }
+    public NavigationStrategy Navigation { get; set; }
 }
