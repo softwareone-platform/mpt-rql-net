@@ -73,6 +73,7 @@ internal class MappingService<TStorage, TView>(IQueryContext<TView> queryContext
 
         LambdaExpression sourceExpression;
         var hint = ExpressionFactoryHint.None;
+
         if (map.FactoryType != null)
         {
             var factory = queryContext.ExternalServices.GetService(map.FactoryType) as IRqlMappingExpressionFactory
@@ -88,28 +89,16 @@ internal class MappingService<TStorage, TView>(IQueryContext<TView> queryContext
         var replaceParamVisitor = new ReplaceParameterVisitor(sourceExpression.Parameters[0], param);
         var fromExpression = replaceParamVisitor.Visit(ExpressionHelper.UnwrapCastExpression(sourceExpression.Body));
 
-        if (hint == ExpressionFactoryHint.TakeFirst)
+        fromExpression = hint switch
         {
-            if (!fromExpression.Type.IsGenericType || fromExpression.Type.GenericTypeArguments.Length == 0)
-                throw new RqlMappingException($"Expression factory with TakeFirst hint for property '{node.Property.Property.Name}' must return a collection expression.");
-
-            fromExpression = MakeCollectionInitCore(fromExpression, node, map, f => f.GetFirstOrDefault(), applyToPrimitives: true);
-        }
-        else if (map.IsDynamic)
-        {
-            fromExpression = node.Property.Type switch
+            ExpressionFactoryHint.TakeFirst => MakeTakeFirstAccess(fromExpression, node, map),
+            _ => node.Property.Type switch
             {
                 RqlPropertyType.Reference => MakeReferenceInit(fromExpression, node, map),
                 RqlPropertyType.Collection => MakeCollectionInit(fromExpression, node, map, f => f.GetToList()),
-                RqlPropertyType.Primitive => _useSafeNavigation ? ApplyNullPropagation(fromExpression) : fromExpression,
-                _ => fromExpression
-            };
-        }
-        else if (_useSafeNavigation)
-        {
-            // Apply null propagation for static property mappings (e.g., t => t.Nested.Value)
-            fromExpression = ApplyNullPropagation(fromExpression);
-        }
+                _ => MakeDirectPropertyAccess(fromExpression)
+            }
+        };
 
         if (!IsTypeCompatible(targetType, fromExpression.Type))
             throw new NotSupportedException($"Cannot map property '{node.Property.Property.Name}' of type {node.Property.Property.DeclaringType!.Name}. Type mismatch.");
@@ -120,39 +109,51 @@ internal class MappingService<TStorage, TView>(IQueryContext<TView> queryContext
         return fromExpression;
     }
 
+    private Expression MakeTakeFirstAccess(Expression fromExpression, IRqlNode node, RqlMapEntry map)
+    {
+        if (!fromExpression.Type.IsGenericType || fromExpression.Type.GenericTypeArguments.Length == 0)
+            throw new RqlMappingException($"Expression factory with TakeFirst hint for property '{node.Property.Property.Name}' must return a collection expression.");
+
+        return MakeCollectionInitCore(fromExpression, node, map, f => f.GetFirstOrDefault(), applyToPrimitives: true);
+    }
+
     private Expression MakeReferenceInit(Expression fromExpression, IRqlNode node, RqlMapEntry map)
     {
-        var innerMap = GetInnerMapFromEntry(fromExpression.Type, map);
+        if (!map.IsDynamic)
+            return MakeDirectPropertyAccess(fromExpression);
 
+        var innerMap = GetInnerMapFromEntry(fromExpression.Type, map);
         var subInit = MakeInitExpression(fromExpression, node, map.TargetType, innerMap);
 
         // When safe navigation is enabled or property is nullable, add null check
         // This handles deserialized data where non-nullable reference types may be null
         if (_useSafeNavigation || node.Property.IsNullable)
         {
-            fromExpression = Expression.Condition(
+            return Expression.Condition(
                 Expression.NotEqual(fromExpression, Expression.Constant(null, fromExpression.Type)),
                 subInit,
                 Expression.Constant(null, subInit.Type));
         }
-        else
-        {
-            fromExpression = subInit;
-        }
 
-        return fromExpression;
+        return subInit;
     }
 
-    private Expression MakeCollectionInit(Expression fromExpression, IRqlNode node, RqlMapEntry map, Func<IProjectionFunctions, MethodInfo> finalFuntionSelector)
+    private Expression MakeDirectPropertyAccess(Expression fromExpression)
+        => _useSafeNavigation ? ApplyNullPropagation(fromExpression) : fromExpression;
+
+    private Expression MakeCollectionInit(Expression fromExpression, IRqlNode node, RqlMapEntry map, Func<IProjectionFunctions, MethodInfo> finalFunctionSelector)
     {
+        if (!map.IsDynamic)
+            return MakeDirectPropertyAccess(fromExpression);
+
         // Temporarily only support List
         if (!typeof(IList).IsAssignableFrom(node.Property.Property.PropertyType))
             throw new NotSupportedException($"Cannot map property '{node.Property.Property.Name}' of type {node.Property.Property.DeclaringType!.Name}. Rql temporarily support only list coollections.");
 
-        return MakeCollectionInitCore(fromExpression, node, map, finalFuntionSelector);
+        return MakeCollectionInitCore(fromExpression, node, map, finalFunctionSelector);
     }
 
-    private Expression MakeCollectionInitCore(Expression fromExpression, IRqlNode node, RqlMapEntry map, Func<IProjectionFunctions, MethodInfo> finalFuntionSelector, bool applyToPrimitives = false)
+    private Expression MakeCollectionInitCore(Expression fromExpression, IRqlNode node, RqlMapEntry map, Func<IProjectionFunctions, MethodInfo> finalFunctionSelector, bool applyToPrimitives = false)
     {
         var srcItemType = fromExpression.Type.GenericTypeArguments[0];
 
@@ -164,7 +165,7 @@ internal class MappingService<TStorage, TView>(IQueryContext<TView> queryContext
             if (applyToPrimitives)
             {
                 var primitiveFunctions = (IProjectionFunctions)Activator.CreateInstance(typeof(ProjectionFunctions<>).MakeGenericType(srcItemType))!;
-                finalExpression = Expression.Call(null, finalFuntionSelector(primitiveFunctions), fromExpression);
+                finalExpression = Expression.Call(null, finalFunctionSelector(primitiveFunctions), fromExpression);
             }
         }
         else
@@ -175,7 +176,7 @@ internal class MappingService<TStorage, TView>(IQueryContext<TView> queryContext
             var selectLambda = Expression.Lambda(subInit, innerParam);
             var functions = (IProjectionFunctions)Activator.CreateInstance(typeof(ProjectionFunctions<,>).MakeGenericType(srcItemType, map.TargetType))!;
             var selectCall = Expression.Call(null, functions.GetSelect(), fromExpression, selectLambda);
-            finalExpression = Expression.Call(null, finalFuntionSelector(functions), selectCall);
+            finalExpression = Expression.Call(null, finalFunctionSelector(functions), selectCall);
         }
 
         // Add null check for the collection if safe navigation is enabled
