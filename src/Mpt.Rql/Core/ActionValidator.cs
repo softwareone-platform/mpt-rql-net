@@ -13,7 +13,7 @@ internal class ActionValidator(IExternalServiceAccessor externalServices) : IAct
                     $"The instance of type {propertyInfo.ActionStrategy.FullName} defined as action strategy for property " +
                     $"({propertyInfo.Property!.DeclaringType!.FullName}).{propertyInfo.Property.Name} " +
                     $"cannot be found. Make sure that service has been registered.")
-                : strategy.IsAllowed(action);
+                : strategy.IsAllowed(action, propertyInfo);
         }
 
         return propertyInfo.Actions.HasFlag(action);
