@@ -16,6 +16,11 @@ internal class RqlQueryableWorker<TStorage>(IServiceProvider rootProvider) : Rql
 /// to pool and reuse DI scopes across calls. Between calls only the stateful
 /// <see cref="IResettable"/> services are reset — all resolved service instances are reused.
 ///
+/// <para><b>Pool behavior:</b> Uses a bounded <see cref="ConcurrentQueue{T}"/> (no thread-affinity
+/// issues, safe for async/await). Pool is capped at <c>Environment.ProcessorCount * 2</c>.
+/// When the pool is full, returned scopes are disposed instead of retained — the pool naturally
+/// shrinks after load spikes.</para>
+///
 /// <para><b>Per-call cost at steady state:</b></para>
 /// <list type="bullet">
 ///   <item>Reset 4 fields via <see cref="IResettable"/> (QueryContext, BuilderContext, RqlSettingsAccessor, ExternalServiceAccessor)</item>
@@ -23,16 +28,14 @@ internal class RqlQueryableWorker<TStorage>(IServiceProvider rootProvider) : Rql
 ///   <item>1 new RqlResponse (or zero with the reusable response overload)</item>
 ///   <item>Zero scope creation, zero service resolution, zero dictionary lookups</item>
 /// </list>
-///
-/// <para><b>Thread safety:</b> Fully thread-safe. Each concurrent call rents its own
-/// isolated scope from a lock-free <see cref="ConcurrentBag{T}"/>.
-/// The pool self-sizes to actual concurrency.</para>
 /// </summary>
 internal class RqlQueryableLinqWorker<TStorage, TView> : RqlQueryableLinq<TStorage, TView>, IDisposable
 {
     private readonly IServiceProvider _rootProvider;
-    private readonly ConcurrentBag<PooledScope> _pool = new();
+    private readonly ConcurrentQueue<PooledScope> _pool = new();
     private volatile bool _disposed;
+    private int _poolSize;
+    private readonly int _maxPoolSize = Environment.ProcessorCount * 2;
 
     public RqlQueryableLinqWorker(IServiceProvider rootProvider) : base(rootProvider)
     {
@@ -60,8 +63,9 @@ internal class RqlQueryableLinqWorker<TStorage, TView> : RqlQueryableLinq<TStora
     private PooledScope Rent()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (_pool.TryTake(out var scope))
+        if (_pool.TryDequeue(out var scope))
         {
+            Interlocked.Decrement(ref _poolSize);
             scope.Reset();
             return scope;
         }
@@ -70,13 +74,14 @@ internal class RqlQueryableLinqWorker<TStorage, TView> : RqlQueryableLinq<TStora
 
     private void Return(PooledScope scope)
     {
-        if (_disposed)
+        if (_disposed || Interlocked.Increment(ref _poolSize) > _maxPoolSize)
         {
+            Interlocked.Decrement(ref _poolSize);
             scope.Dispose();
             return;
         }
 
-        _pool.Add(scope);
+        _pool.Enqueue(scope);
     }
 
     public void Dispose()
@@ -84,7 +89,7 @@ internal class RqlQueryableLinqWorker<TStorage, TView> : RqlQueryableLinq<TStora
         if (_disposed) return;
         _disposed = true;
 
-        while (_pool.TryTake(out var scope))
+        while (_pool.TryDequeue(out var scope))
         {
             scope.Dispose();
         }
