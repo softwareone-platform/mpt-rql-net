@@ -11,6 +11,16 @@ internal static class RqlFactory
     public static IRqlQueryable<TStorage, TView> Make<TStorage, TView>(Action<ServiceCollection> configureServices, Action<RqlConfiguration>? configureRql = null)
      => MakeProvider(configureServices, configureRql).GetRequiredService<IRqlQueryable<TStorage, TView>>();
 
+    public static IRqlQueryable<TStorage, TStorage> MakeWorker<TStorage>(Action<ServiceCollection> configureServices, Action<RqlConfiguration>? configureRql = null)
+        => MakeWorker<TStorage, TStorage>(configureServices, configureRql);
+
+    public static IRqlQueryable<TStorage, TView> MakeWorker<TStorage, TView>(Action<ServiceCollection> configureServices, Action<RqlConfiguration>? configureRql = null)
+     => MakeProvider(configureServices, rql =>
+     {
+         rql.AsWorker();
+         configureRql?.Invoke(rql);
+     }).GetRequiredService<IRqlQueryable<TStorage, TView>>();
+
     public static IServiceProvider MakeProvider(Action<ServiceCollection> configureServices, Action<RqlConfiguration>? configureRql = null)
     {
         var services = new ServiceCollection();

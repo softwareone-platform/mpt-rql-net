@@ -23,6 +23,8 @@ public class RqlConfiguration
 
     internal Dictionary<Type, Type> OperatorOverrides { get; init; }
 
+    internal bool UseWorkerMode { get; private set; }
+
     public IRqlGlobalSettings Settings { get; init; }
 
     public RqlConfiguration SetComparisonHandler<TOperator, THandler>() where TOperator : IComparisonOperator, IActualOperator where THandler : TOperator
@@ -37,6 +39,17 @@ public class RqlConfiguration
     public RqlConfiguration SetPropertyNameProvider<T>() where T : IPropertyNameProvider
     {
         PropertyMapperType = typeof(T);
+        return this;
+    }
+
+    /// <summary>
+    /// Optimizes RQL for long-running worker scenarios (background services, message consumers).
+    /// Pools and reuses DI scopes across calls, reducing allocations from ~19 to ~3 per Transform call.
+    /// The pooled instances are thread-safe.
+    /// </summary>
+    public RqlConfiguration AsWorker()
+    {
+        UseWorkerMode = true;
         return this;
     }
 

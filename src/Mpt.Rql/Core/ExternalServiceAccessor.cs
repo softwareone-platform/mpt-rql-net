@@ -7,7 +7,7 @@ internal interface IExternalServiceAccessor
     object? GetService(Type type);
 }
 
-internal class ExternalServiceAccessor : IExternalServiceAccessor
+internal class ExternalServiceAccessor : IExternalServiceAccessor, IResettable
 {
     private IServiceProvider? _serviceProvider;
 
@@ -26,4 +26,8 @@ internal class ExternalServiceAccessor : IExternalServiceAccessor
         return _serviceProvider!.GetService(type);
     }
 
+    public void Reset()
+    {
+        _serviceProvider = null;
+    }
 }

@@ -1,8 +1,9 @@
 using Mpt.Rql.Abstractions.Configuration;
+using Mpt.Rql.Core;
 
 namespace Mpt.Rql.Settings;
 
-internal class RqlSettingsAccessor(IRqlGlobalSettings globalSettings) : IRqlSettingsAccessor
+internal class RqlSettingsAccessor(IRqlGlobalSettings globalSettings) : IRqlSettingsAccessor, IResettable
 {
     private IRqlSettings? _instance;
 
@@ -34,5 +35,13 @@ internal class RqlSettingsAccessor(IRqlGlobalSettings globalSettings) : IRqlSett
         _instance.Ordering.Navigation = globalSettings.Ordering.Navigation;
 
         return _instance;
+    }
+
+    /// <summary>
+    /// Clears cached settings so the next access creates a fresh copy from global settings.
+    /// </summary>
+    public void Reset()
+    {
+        _instance = null;
     }
 }

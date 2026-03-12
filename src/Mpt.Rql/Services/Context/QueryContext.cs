@@ -3,7 +3,7 @@ using Mpt.Rql.Core;
 
 namespace Mpt.Rql.Services.Context;
 
-internal class QueryContext<TView>(IExternalServiceAccessor serviceAccessor) : IQueryContext<TView>
+internal class QueryContext<TView>(IExternalServiceAccessor serviceAccessor) : IQueryContext<TView>, IResettable
 {
     private List<Error>? _errors;
     private List<Func<IQueryable<TView>, IQueryable<TView>>>? _transformations;
@@ -43,9 +43,19 @@ internal class QueryContext<TView>(IExternalServiceAccessor serviceAccessor) : I
         _errors!.AddRange(errors);
     }
 
-    public RqlNode Graph { get; } = RqlNode.MakeRoot();
+    public RqlNode Graph { get; private set; } = RqlNode.MakeRoot();
 
     public bool HasErrors => _errors != null;
+
+    /// <summary>
+    /// Clears all per-request state so this instance can be reused within the same scope.
+    /// </summary>
+    public void Reset()
+    {
+        _errors = null;
+        _transformations = null;
+        Graph = RqlNode.MakeRoot();
+    }
 
     private void EnsureErrors() => _errors ??= [];
 }

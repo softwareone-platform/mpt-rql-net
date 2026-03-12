@@ -40,8 +40,7 @@ public static class RqlExtensions
 
         services.AddSingleton<IRqlParser, RqlParser>();
 
-        services.AddScoped(typeof(IRqlQueryable<>), typeof(RqlQueryable<>));
-        services.AddScoped(typeof(IRqlQueryable<,>), typeof(RqlQueryableLinq<,>));
+        RegisterQueryable(services, options);
 
         services.AddScoped(typeof(IMappingService<,>), typeof(MappingService<,>));
 
@@ -124,6 +123,20 @@ public static class RqlExtensions
 
         services.AddSingleton<IOperatorHandlerMapper>(expMapping);
         services.AddScoped<IOperatorHandlerProvider, OperatorHandlerProvider>();
+    }
+
+    private static void RegisterQueryable(IServiceCollection services, RqlConfiguration options)
+    {
+        if (options.UseWorkerMode)
+        {
+            services.AddSingleton(typeof(IRqlQueryable<>), typeof(RqlQueryableWorker<>));
+            services.AddSingleton(typeof(IRqlQueryable<,>), typeof(RqlQueryableLinqWorker<,>));
+        }
+        else
+        {
+            services.AddScoped(typeof(IRqlQueryable<>), typeof(RqlQueryable<>));
+            services.AddScoped(typeof(IRqlQueryable<,>), typeof(RqlQueryableLinq<,>));
+        }
     }
 
     private static void ScanForViewMappers(IServiceCollection services, Assembly mappingsAssembly)

@@ -1,8 +1,9 @@
 using Mpt.Rql.Abstractions;
+using Mpt.Rql.Core;
 
 namespace Mpt.Rql.Services.Context;
 
-internal class BuilderContext : IBuilderContext
+internal class BuilderContext : IBuilderContext, IResettable
 {
     public RqlNode? CurrentNode { get; private set; }
 
@@ -32,5 +33,13 @@ internal class BuilderContext : IBuilderContext
         if (!string.IsNullOrEmpty(result))
             result += ".";
         return result + suffix;
+    }
+
+    /// <summary>
+    /// Clears navigation state so this instance can be reused within the same scope.
+    /// </summary>
+    public void Reset()
+    {
+        CurrentNode = null;
     }
 }
