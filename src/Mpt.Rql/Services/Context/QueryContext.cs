@@ -8,7 +8,7 @@ internal class QueryContext<TView>(IExternalServiceAccessor serviceAccessor) : I
     private List<Error>? _errors;
     private List<Func<IQueryable<TView>, IQueryable<TView>>>? _transformations;
 
-    public IServiceProvider ExternalServices { get; } = serviceAccessor.GetServiceProvider();
+    public IServiceProvider ExternalServices => serviceAccessor.GetServiceProvider();
 
     public IEnumerable<Error> GetErrors() => _errors ?? Enumerable.Empty<Error>();
 
