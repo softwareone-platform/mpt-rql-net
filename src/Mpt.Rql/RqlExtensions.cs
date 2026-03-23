@@ -17,6 +17,7 @@ using Mpt.Rql.Services.Filtering.Builders;
 using Mpt.Rql.Services.Filtering.Operators;
 using Mpt.Rql.Services.Mapping;
 using Mpt.Rql.Services.Ordering;
+using Mpt.Rql.Services.Ordering.Functions;
 using Mpt.Rql.Services.Projection;
 using Mpt.Rql.Settings;
 using System.Reflection;
@@ -61,6 +62,8 @@ public static class RqlExtensions
         services.AddScoped(typeof(IOrderingService<>), typeof(OrderingService<>));
         services.AddScoped<IOrderingPathInfoBuilder, OrderingPathInfoBuilder>();
         services.AddScoped(typeof(IOrderingGraphBuilder<>), typeof(OrderingGraphBuilder<>));
+        services.AddScoped<IOrderingFunction, OrderByOrderingFunction>();
+        services.AddScoped<IOrderingFunctionProvider, OrderingFunctionProvider>();
 
         services.AddScoped(typeof(IProjectionService<>), typeof(ProjectionService<>));
         services.AddScoped(typeof(IProjectionGraphBuilder<>), typeof(ProjectionGraphBuilder<>));
