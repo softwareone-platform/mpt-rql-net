@@ -53,7 +53,7 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
                 .Where(item => item is RqlConstant || item is RqlGenericGroup)
                 .ToList();
 
-        if (!orderItems.Any())
+        if (orderItems.Count == 0)
         {
             _context.AddError(Error.Validation("No valid ordering properties were detected", MakeErrorCode("no_props")));
             return;
@@ -64,55 +64,11 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
 
         foreach (var item in orderItems)
         {
-            Expression? keyExpression = null;
-            bool isAsc;
-
-            if (item is RqlConstant constant)
-            {
-                var (path, constIsAsc) = StringHelper.ExtractSign(constant.Value);
-                isAsc = constIsAsc;
-
-                var member = _pathBuilder.Build(param, path.ToString());
-                if (member.IsError)
-                {
-                    _context.AddErrors(member.Errors);
-                    continue;
-                }
-
-                keyExpression = member.Value!.Expression;
-            }
-            else if (item is RqlGenericGroup group)
-            {
-                var (funcNameMemory, funcIsAsc) = StringHelper.ExtractSign(group.Name);
-                isAsc = funcIsAsc;
-                var funcName = funcNameMemory.ToString();
-
-                if (!_functionProvider.TryGet(funcName, out var function))
-                {
-                    _context.AddError(Error.Validation(
-                        $"Unknown ordering function '{funcName}'.",
-                        MakeErrorCode("unknown_func")));
-                    continue;
-                }
-
-                var arguments = (group.Items ?? [])
-                    .OfType<RqlConstant>()
-                    .Select(c => c.Value)
-                    .ToArray();
-
-                var funcResult = function.Build(param, arguments);
-                if (funcResult.IsError)
-                {
-                    _context.AddErrors(funcResult.Errors);
-                    continue;
-                }
-
-                keyExpression = funcResult.Value!;
-            }
-            else
-            {
+            var resolved = ResolveOrderItem(item, param);
+            if (resolved == null)
                 continue;
-            }
+
+            var (keyExpression, isAsc) = resolved.Value;
 
             var method = MakeOrderingMethod(keyExpression, isAsc, isFirst);
             var expression = Expression.Lambda(keyExpression, param);
@@ -120,6 +76,59 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
             _context.AddTransformation(q => (IQueryable<TView>)method.Invoke(null, new object[] { q, expression })!);
             isFirst = false;
         }
+    }
+
+    private (Expression KeyExpression, bool IsAsc)? ResolveOrderItem(RqlExpression item, ParameterExpression param)
+    {
+        if (item is RqlConstant constant)
+            return ResolveConstantOrder(constant, param);
+
+        if (item is RqlGenericGroup group)
+            return ResolveFunctionOrder(group, param);
+
+        return null;
+    }
+
+    private (Expression KeyExpression, bool IsAsc)? ResolveConstantOrder(RqlConstant constant, ParameterExpression param)
+    {
+        var (path, isAsc) = StringHelper.ExtractSign(constant.Value);
+
+        var member = _pathBuilder.Build(param, path.ToString());
+        if (member.IsError)
+        {
+            _context.AddErrors(member.Errors);
+            return null;
+        }
+
+        return (member.Value!.Expression, isAsc);
+    }
+
+    private (Expression KeyExpression, bool IsAsc)? ResolveFunctionOrder(RqlGenericGroup group, ParameterExpression param)
+    {
+        var (funcNameMemory, isAsc) = StringHelper.ExtractSign(group.Name);
+        var funcName = funcNameMemory.ToString();
+
+        if (!_functionProvider.TryGet(funcName, out var function))
+        {
+            _context.AddError(Error.Validation(
+                $"Unknown ordering function '{funcName}'.",
+                MakeErrorCode("unknown_func")));
+            return null;
+        }
+
+        var arguments = (group.Items ?? [])
+            .OfType<RqlConstant>()
+            .Select(c => c.Value)
+            .ToArray();
+
+        var funcResult = function.Build(param, arguments);
+        if (funcResult.IsError)
+        {
+            _context.AddErrors(funcResult.Errors);
+            return null;
+        }
+
+        return (funcResult.Value!, isAsc);
     }
 
     private static MethodInfo MakeOrderingMethod(Expression member, bool isAsc, bool isFirst)

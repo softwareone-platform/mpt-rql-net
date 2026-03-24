@@ -133,7 +133,7 @@ internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBui
         return new MemberPathInfo(innerPropertyInfo, finalExpr);
     }
 
-    private static Expression WrapWithCollectionNullCheck(
+    private static ConditionalExpression WrapWithCollectionNullCheck(
         Expression collectionExpression,
         Expression valueExpression,
         List<Expression>? priorMemberAccess)

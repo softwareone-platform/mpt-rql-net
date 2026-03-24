@@ -10,6 +10,9 @@ namespace Rql.Tests.Integration.Tests.Functionality;
 /// </summary>
 public class CollectionOrderTests
 {
+    private static readonly string[] TagsAscending = ["Tag1", "Tag2", "Tag3", "Tag4", "Tag5", "Tag6", "Tag7", "Tag8"];
+    private static readonly string[] TagsDescending = ["Tag8", "Tag7", "Tag6", "Tag5", "Tag4", "Tag3", "Tag2", "Tag1"];
+
     private readonly IRqlQueryable<Product, Product> _rql;
 
     public CollectionOrderTests()
@@ -77,12 +80,12 @@ public class CollectionOrderTests
         Assert.Equal(8, products.Count);
 
         // Products with empty orders (null first order id) sort before products with orders
-        var emptyOrderProducts = products.TakeWhile(p => !p.Orders.Any()).ToList();
+        var emptyOrderProducts = products.TakeWhile(p => p.Orders.Count == 0).ToList();
         Assert.NotEmpty(emptyOrderProducts);
         Assert.All(emptyOrderProducts, p => Assert.Empty(p.Orders));
 
         // At least one product with an order follows
-        Assert.Contains(products, p => p.Orders.Any());
+        Assert.Contains(products, p => p.Orders.Count > 0);
     }
 
     [Fact]
@@ -100,7 +103,7 @@ public class CollectionOrderTests
 
         // Tags are "Tag1".."Tag8"; string sort: Tag1 < Tag2 < ... < Tag8
         var tagValues = products.Select(p => p.Tags.First().Value).ToList();
-        Assert.Equal(new[] { "Tag1", "Tag2", "Tag3", "Tag4", "Tag5", "Tag6", "Tag7", "Tag8" }, tagValues);
+        Assert.Equal(TagsAscending, tagValues);
     }
 
     [Fact]
@@ -114,7 +117,7 @@ public class CollectionOrderTests
         var products = result.Query.ToList();
 
         var tagValues = products.Select(p => p.Tags.First().Value).ToList();
-        Assert.Equal(new[] { "Tag8", "Tag7", "Tag6", "Tag5", "Tag4", "Tag3", "Tag2", "Tag1" }, tagValues);
+        Assert.Equal(TagsDescending, tagValues);
     }
 
     [Fact]
@@ -144,7 +147,7 @@ public class CollectionOrderTests
         // Primary key: orders.clientName (null-first)
         // Secondary key: id (ascending)
         // Empty-orders products come first, ordered by id
-        var emptyOrdersProducts = products.TakeWhile(p => !p.Orders.Any()).ToList();
+        var emptyOrdersProducts = products.TakeWhile(p => p.Orders.Count == 0).ToList();
         Assert.NotEmpty(emptyOrdersProducts);
         var ids = emptyOrdersProducts.Select(p => p.Id).ToList();
         Assert.Equal(ids.OrderBy(x => x).ToList(), ids); // secondary sort by id is ascending
