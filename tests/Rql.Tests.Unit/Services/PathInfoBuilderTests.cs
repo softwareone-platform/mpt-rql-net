@@ -189,4 +189,133 @@ public class PathInfoBuilderTests
         result.Errors.Should().NotBeEmpty();
         result.Errors[0].Message.Should().Be("Invalid property path.");
     }
+
+    [Fact]
+    public void Build_Ordering_CollectionInnerStringProperty_ReturnsStringType()
+    {
+        // Arrange
+        var (_, ordering) = MakeBuilders(NavigationStrategy.Default, NavigationStrategy.Default);
+        var param = Expression.Parameter(typeof(Product), "p");
+
+        // Act
+        var result = ordering.Build(param, "items.name");
+
+        // Assert
+        result.IsError.Should().BeFalse();
+        result.Value!.Expression.Type.Should().Be(typeof(string));
+    }
+
+    [Fact]
+    public void Build_Ordering_CollectionInnerValueTypeProperty_ReturnsNullableType()
+    {
+        // Arrange: int property inside a collection should come back as int? so empty collections
+        // return null (rather than 0) and sort correctly
+        var (_, ordering) = MakeBuilders(NavigationStrategy.Default, NavigationStrategy.Default);
+        var param = Expression.Parameter(typeof(Product), "p");
+
+        // Act
+        var result = ordering.Build(param, "items.id");
+
+        // Assert
+        result.IsError.Should().BeFalse();
+        result.Value!.Expression.Type.Should().Be(typeof(int?));
+    }
+
+    [Fact]
+    public void Build_Ordering_CollectionInnerProperty_ReturnsFirstElementValue()
+    {
+        // Arrange
+        var (_, ordering) = MakeBuilders(NavigationStrategy.Default, NavigationStrategy.Default);
+        var param = Expression.Parameter(typeof(Product), "p");
+        var built = ordering.Build(param, "items.name");
+        built.IsError.Should().BeFalse();
+
+        var body = Expression.Convert(built.Value!.Expression, typeof(object));
+        var lambda = Expression.Lambda<Func<Product, object>>(body, param).Compile();
+        var product = new Product { Items = [new Item { Id = 1, Name = "First" }, new Item { Id = 2, Name = "Second" }] };
+
+        // Act
+        var value = lambda(product);
+
+        // Assert
+        value.Should().Be("First");
+    }
+
+    [Fact]
+    public void Build_Ordering_CollectionInnerProperty_EmptyCollection_ReturnsNull()
+    {
+        // Arrange
+        var (_, ordering) = MakeBuilders(NavigationStrategy.Default, NavigationStrategy.Default);
+        var param = Expression.Parameter(typeof(Product), "p");
+        var built = ordering.Build(param, "items.name");
+        built.IsError.Should().BeFalse();
+
+        var body = Expression.Convert(built.Value!.Expression, typeof(object));
+        var lambda = Expression.Lambda<Func<Product, object>>(body, param).Compile();
+        var product = new Product { Items = [] };
+
+        // Act
+        var value = lambda(product);
+
+        // Assert
+        value.Should().BeNull();
+    }
+
+    [Fact]
+    public void Build_Ordering_CollectionInnerProperty_SafeNavigationOn_NullCollection_ReturnsNull()
+    {
+        // Arrange
+        var (_, ordering) = MakeBuilders(NavigationStrategy.Default, NavigationStrategy.Safe);
+        var param = Expression.Parameter(typeof(Product), "p");
+        var built = ordering.Build(param, "items.name");
+        built.IsError.Should().BeFalse();
+
+        var body = Expression.Convert(built.Value!.Expression, typeof(object));
+        var lambda = Expression.Lambda<Func<Product, object>>(body, param).Compile();
+        var product = new Product { Items = null! };
+
+        // Act
+        var value = lambda(product);
+
+        // Assert
+        value.Should().BeNull();
+    }
+
+    [Fact]
+    public void Build_Ordering_CollectionInnerProperty_SafeNavigation_WithPreCollectionReference_NullReference_ReturnsNull()
+    {
+        // Arrange: path crosses a reference (coreCategory) then a collection (products) — exercises the
+        // priorMemberAccess non-empty branch of WrapWithCollectionNullCheck
+        var (_, ordering) = MakeBuilders(NavigationStrategy.Default, NavigationStrategy.Safe);
+        var param = Expression.Parameter(typeof(Product), "p");
+        var built = ordering.Build(param, "coreCategory.products.name");
+        built.IsError.Should().BeFalse();
+
+        var body = Expression.Convert(built.Value!.Expression, typeof(object));
+        var lambda = Expression.Lambda<Func<Product, object>>(body, param).Compile();
+
+        // CoreCategory is null — should not throw despite the chain
+        var product = new Product { Name = "test" };
+
+        // Act
+        var value = lambda(product);
+
+        // Assert
+        value.Should().BeNull();
+    }
+
+    [Fact]
+    public void Build_Ordering_CollectionInnerProperty_InvalidSubPath_ReturnsError()
+    {
+        // Arrange
+        var (_, ordering) = MakeBuilders(NavigationStrategy.Default, NavigationStrategy.Default);
+        var param = Expression.Parameter(typeof(Product), "p");
+
+        // Act
+        var result = ordering.Build(param, "items.nonExistent");
+
+        // Assert
+        result.IsError.Should().BeTrue();
+        result.Errors[0].Message.Should().Be("Invalid property path.");
+    }
 }
