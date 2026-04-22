@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 
 namespace Mpt.Rql.Core;
 
-internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBuilderContext builderContext) : IPathInfoBuilder
+internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBuilderContext builderContext, IEnumerable<IRqlCustomPropertyResolver>? customPropertyResolvers = null) : IPathInfoBuilder
 {
     public Result<MemberPathInfo> Build(Expression root, RqlExpression rqlExpression)
     {
@@ -55,7 +55,23 @@ internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBui
             currentPathLength += segment.Length;
             var propertyPath = path.AsMemory(0, currentPathLength).ToString();
 
-            if (!metadataProvider.TryGetPropertyByDisplayName(currentType, segment, out propInfo) || propInfo!.Mode == RqlPropertyMode.Ignored)
+            if (metadataProvider.TryGetPropertyByDisplayName(currentType, segment, out propInfo) && propInfo!.Mode != RqlPropertyMode.Ignored)
+            {
+                // Standard CLR property resolution
+                currentType = propInfo.Property.PropertyType;
+                pathExpression = Expression.MakeMemberAccess(pathExpression, propInfo.Property);
+            }
+            else if (TryResolveCustomProperty(pathExpression, segment, out var resolvedExpr, out var resolvedPropInfo))
+            {
+                // Custom resolver handled this segment (e.g. JSON_VALUE)
+                propInfo = CreateFromCustomResolver(resolvedPropInfo);
+                pathExpression = resolvedExpr;
+
+                // Custom resolvers produce leaf expressions — no further dot-navigation. Nested property access is out of scope.
+                if (currentPathLength < path.Length)
+                    return Error.Validation("Nested property access on custom-resolved properties is not supported.", builderContext.GetFullPath(propertyPath));
+            }
+            else
             {
                 return Error.Validation("Invalid property path.", builderContext.GetFullPath(propertyPath));
             }
@@ -64,9 +80,6 @@ internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBui
 
             if (validationResult.IsError)
                 return validationResult.Errors;
-
-            currentType = propInfo.Property.PropertyType;
-            pathExpression = Expression.MakeMemberAccess(pathExpression, propInfo!.Property!);
 
             if (safeNavigation)
             {
@@ -106,6 +119,41 @@ internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBui
             Expression.Equal(currentAccess, Expression.Constant(null, currentAccess.Type)),
             Expression.Constant(null, nextAccessType),
             nextAccess);
+    }
+
+    /// <summary>
+    /// Creates an internal <see cref="RqlPropertyInfo"/> from a custom resolver's <see cref="IRqlPropertyInfo"/>.
+    /// All fields are copied from the source as-is.
+    /// </summary>
+    private static RqlPropertyInfo CreateFromCustomResolver(IRqlPropertyInfo source) => new()
+    {
+        Name = source.Name,
+        Property = source.Property,
+        Mode = source.Mode,
+        Type = source.Type,
+        IsCore = source.IsCore,
+        SelectModeOverride = source.SelectModeOverride,
+        Actions = source.Actions,
+        Operators = source.Operators,
+        ElementType = source.ElementType,
+        IsNullable = source.IsNullable
+    };
+
+    private bool TryResolveCustomProperty(Expression parentExpression, string propertyName,
+        out Expression resolvedExpression, out IRqlPropertyInfo resolvedPropertyInfo)
+    {
+        if (customPropertyResolvers != null)
+        {
+            foreach (var resolver in customPropertyResolvers)
+            {
+                if (resolver.TryResolve(parentExpression, propertyName, out resolvedExpression, out resolvedPropertyInfo))
+                    return true;
+            }
+        }
+
+        resolvedExpression = null!;
+        resolvedPropertyInfo = null!;
+        return false;
     }
 
     protected abstract Result<bool> ValidatePath(RqlPropertyInfo property, string path);
