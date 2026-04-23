@@ -72,10 +72,7 @@ internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBui
                 // Hand the resolver this segment AND every remaining segment as one dotted key.
                 // This lets resolvers translate a deep path (e.g. "$.a.b.c") in a single
                 // call and produce one scalar leaf expression.
-                var remainingSegments = i == nameSegments.Length - 1
-                    ? segment
-                    : string.Join('.', nameSegments, i, nameSegments.Length - i);
-
+                var remainingSegments = string.Join('.', nameSegments, i, nameSegments.Length - i);
                 if (!TryResolveCustomProperty(propInfo, pathExpression, remainingSegments, out var resolvedExpr, out var customPropInfo))
                     return Error.Validation("Invalid property path.", builderContext.GetFullPath(path));
 
