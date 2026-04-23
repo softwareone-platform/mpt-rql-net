@@ -1,3 +1,4 @@
+using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Configuration;
 using Mpt.Rql.Abstractions.Exception;
 using System.Collections;
@@ -42,6 +43,17 @@ internal class MetadataFactory : IMetadataFactory
                         $"does not implement {typeof(IActionStrategy).FullName}");
 
                 propertyInfo.ActionStrategy = attribute.ActionStrategy;
+            }
+
+            if (attribute.CustomResolver != null)
+            {
+                if (!typeof(IRqlCustomPropertyResolver).IsAssignableFrom(attribute.CustomResolver))
+                    throw new RqlInvalidCustomResolverException(
+                        $"Type {attribute.CustomResolver.FullName} defined as custom resolver for property " +
+                        $"({property.DeclaringType!.FullName}).{property.Name} " +
+                        $"does not implement {typeof(IRqlCustomPropertyResolver).FullName}");
+
+                propertyInfo.CustomResolver = attribute.CustomResolver;
             }
 
             if (attribute.ActionsSet)

@@ -1,6 +1,7 @@
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Argument;
 using Mpt.Rql.Abstractions.Argument.Pointer;
+using Mpt.Rql.Abstractions.Exception;
 using Mpt.Rql.Abstractions.Result;
 using Mpt.Rql.Core.Metadata;
 using Mpt.Rql.Services.Context;
@@ -8,7 +9,7 @@ using System.Linq.Expressions;
 
 namespace Mpt.Rql.Core;
 
-internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBuilderContext builderContext, IEnumerable<IRqlCustomPropertyResolver>? customPropertyResolvers = null) : IPathInfoBuilder
+internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBuilderContext builderContext, IExternalServiceAccessor externalServices) : IPathInfoBuilder
 {
     public Result<MemberPathInfo> Build(Expression root, RqlExpression rqlExpression)
     {
@@ -46,30 +47,42 @@ internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBui
         RqlPropertyInfo? propInfo = null;
         var pathExpression = root;
         var currentPathLength = 0;
+        var customResolverConsumedPath = false;
 
-        foreach (var segment in nameSegments)
+        for (var i = 0; i < nameSegments.Length && !customResolverConsumedPath; i++)
         {
+            var segment = nameSegments[i];
+
             if (currentPathLength > 0)
                 currentPathLength++; // account for dot
 
             currentPathLength += segment.Length;
             var propertyPath = path.AsMemory(0, currentPathLength).ToString();
 
-            if (metadataProvider.TryGetPropertyByDisplayName(currentType, segment, out propInfo) && propInfo!.Mode != RqlPropertyMode.Ignored)
+            var metadataFound = metadataProvider.TryGetPropertyByDisplayName(currentType, segment, out var resolvedPropInfo);
+            if (metadataFound && resolvedPropInfo!.Mode != RqlPropertyMode.Ignored)
             {
                 // Standard CLR property resolution
-                currentType = propInfo.Property.PropertyType;
-                pathExpression = Expression.MakeMemberAccess(pathExpression, propInfo.Property);
+                propInfo = resolvedPropInfo;
+                currentType = resolvedPropInfo.Property.PropertyType;
+                pathExpression = Expression.MakeMemberAccess(pathExpression, resolvedPropInfo.Property);
             }
-            else if (TryResolveCustomProperty(pathExpression, segment, out var resolvedExpr, out var resolvedPropInfo))
+            else if (!metadataFound && propInfo?.CustomResolver != null)
             {
-                // Custom resolver handled this segment (e.g. JSON_VALUE)
-                propInfo = CreateFromCustomResolver(resolvedPropInfo);
-                pathExpression = resolvedExpr;
+                // Hand the resolver this segment AND every remaining segment as one dotted key.
+                // This lets resolvers translate a deep path (e.g. "$.a.b.c") in a single
+                // call and produce one scalar leaf expression.
+                var remainingSegments = i == nameSegments.Length - 1
+                    ? segment
+                    : string.Join('.', nameSegments, i, nameSegments.Length - i);
 
-                // Custom resolvers produce leaf expressions — no further dot-navigation. Nested property access is out of scope.
-                if (currentPathLength < path.Length)
-                    return Error.Validation("Nested property access on custom-resolved properties is not supported.", builderContext.GetFullPath(propertyPath));
+                if (!TryResolveCustomProperty(propInfo, pathExpression, remainingSegments, out var resolvedExpr, out var customPropInfo))
+                    return Error.Validation("Invalid property path.", builderContext.GetFullPath(path));
+
+                propInfo = CreateFromCustomResolver(customPropInfo);
+                pathExpression = resolvedExpr;
+                propertyPath = path; // validation messages reference the full path the resolver consumed
+                customResolverConsumedPath = true;
             }
             else
             {
@@ -139,21 +152,23 @@ internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBui
         IsNullable = source.IsNullable
     };
 
-    private bool TryResolveCustomProperty(Expression parentExpression, string propertyName,
-        out Expression resolvedExpression, out IRqlPropertyInfo resolvedPropertyInfo)
+    private bool TryResolveCustomProperty(
+        RqlPropertyInfo ownerPropertyInfo,
+        Expression parentExpression,
+        string propertyPath,
+        out Expression resolvedExpression,
+        out IRqlPropertyInfo resolvedPropertyInfo)
     {
-        if (customPropertyResolvers != null)
+        var resolverType = ownerPropertyInfo.CustomResolver!;
+        if (externalServices.GetService(resolverType) is not IRqlCustomPropertyResolver resolver)
         {
-            foreach (var resolver in customPropertyResolvers)
-            {
-                if (resolver.TryResolve(parentExpression, propertyName, out resolvedExpression, out resolvedPropertyInfo))
-                    return true;
-            }
+            throw new RqlInvalidCustomResolverException(
+                $"The instance of type {resolverType.FullName} defined as custom resolver for property " +
+                $"({ownerPropertyInfo.Property!.DeclaringType!.FullName}).{ownerPropertyInfo.Property.Name} " +
+                $"cannot be found. Make sure that service has been registered.");
         }
 
-        resolvedExpression = null!;
-        resolvedPropertyInfo = null!;
-        return false;
+        return resolver.TryResolve(parentExpression, propertyPath, out resolvedExpression, out resolvedPropertyInfo);
     }
 
     protected abstract Result<bool> ValidatePath(RqlPropertyInfo property, string path);
