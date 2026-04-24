@@ -33,8 +33,9 @@ public class PathInfoBuilderTests
             Ordering = { Navigation = orderNav }
         };
 
-        var filtering = new FilteringPathInfoBuilder(actionValidator.Object, metadataProvider, builderContext, opSettings);
-        var ordering = new OrderingPathInfoBuilder(actionValidator.Object, metadataProvider, builderContext, opSettings);
+        var externalServices = Mock.Of<IExternalServiceAccessor>();
+        var filtering = new FilteringPathInfoBuilder(actionValidator.Object, metadataProvider, builderContext, opSettings, externalServices);
+        var ordering = new OrderingPathInfoBuilder(actionValidator.Object, metadataProvider, builderContext, opSettings, externalServices);
         return (filtering, ordering);
     }
 

@@ -8,8 +8,8 @@ namespace Mpt.Rql.Services.Ordering;
 
 internal interface IOrderingPathInfoBuilder : IPathInfoBuilder { }
 
-internal class OrderingPathInfoBuilder(IActionValidator actionValidator, IMetadataProvider metadataProvider, IBuilderContext builderContext, IRqlSettings settings)
-    : PathInfoBuilder(metadataProvider, builderContext), IOrderingPathInfoBuilder
+internal class OrderingPathInfoBuilder(IActionValidator actionValidator, IMetadataProvider metadataProvider, IBuilderContext builderContext, IRqlSettings settings, IExternalServiceAccessor externalServices)
+    : PathInfoBuilder(metadataProvider, builderContext, externalServices), IOrderingPathInfoBuilder
 {
     private readonly IActionValidator _actionValidator = actionValidator;
     private readonly IBuilderContext _builderContext = builderContext;

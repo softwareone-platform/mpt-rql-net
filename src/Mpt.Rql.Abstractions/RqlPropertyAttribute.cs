@@ -1,3 +1,4 @@
+using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Exception;
 
 #pragma warning disable IDE0130
@@ -117,4 +118,11 @@ public class RqlPropertyAttribute : Attribute
     /// <exception cref="RqlInvalidActionStrategyException">Thrown when provided type does not implement <see cref="IActionStrategy"</exception>
     public Type? ActionStrategy { get; set; }
 
+    /// <summary>
+    /// Type used to translate RQL sub-paths under this property — e.g. keys of a dynamic
+    /// bag whose children aren't visible to CLR reflection. Must implement
+    /// <see cref="IRqlCustomPropertyResolver"/> and be registered in DI.
+    /// </summary>
+    /// <exception cref="RqlInvalidCustomResolverException">Thrown when provided type does not implement <see cref="IRqlCustomPropertyResolver"/>.</exception>
+    public Type? CustomResolver { get; set; }
 }

@@ -8,8 +8,8 @@ namespace Mpt.Rql.Services.Filtering;
 
 internal interface IFilteringPathInfoBuilder : IPathInfoBuilder { }
 
-internal class FilteringPathInfoBuilder(IActionValidator actionValidator, IMetadataProvider metadataProvider, IBuilderContext builderContext, IRqlSettings settings)
-    : PathInfoBuilder(metadataProvider, builderContext), IFilteringPathInfoBuilder
+internal class FilteringPathInfoBuilder(IActionValidator actionValidator, IMetadataProvider metadataProvider, IBuilderContext builderContext, IRqlSettings settings, IExternalServiceAccessor externalServices)
+    : PathInfoBuilder(metadataProvider, builderContext, externalServices), IFilteringPathInfoBuilder
 {
     private readonly IActionValidator _actionValidator = actionValidator;
     private readonly IBuilderContext _builderContext = builderContext;
