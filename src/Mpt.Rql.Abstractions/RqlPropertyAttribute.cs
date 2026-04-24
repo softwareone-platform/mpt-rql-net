@@ -1,3 +1,4 @@
+using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Exception;
 
 #pragma warning disable IDE0130
@@ -119,7 +120,7 @@ public class RqlPropertyAttribute : Attribute
 
     /// <summary>
     /// Type used to translate RQL sub-paths under this property — e.g. keys of a dynamic
-    /// <see cref="System.Text.Json.JsonElement"/> bag. Must implement
+    /// bag whose children aren't visible to CLR reflection. Must implement
     /// <see cref="IRqlCustomPropertyResolver"/> and be registered in DI.
     /// </summary>
     /// <exception cref="RqlInvalidCustomResolverException">Thrown when provided type does not implement <see cref="IRqlCustomPropertyResolver"/>.</exception>

@@ -36,74 +36,90 @@ internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBui
 
     public Result<MemberPathInfo> Build(Expression root, string path)
     {
-        var nameSegments = path.Split('.');
-        var safeNavigation = UseSafeNavigation();
+        var segments = path.Split('.');
+        var memberAccess = new List<Expression>(segments.Length);
 
-        List<Expression>? memberAccess = null;
-        if (safeNavigation)
-            memberAccess = new List<Expression>(nameSegments.Length);
-
-        var currentType = root.Type;
-        RqlPropertyInfo? propInfo = null;
-        var pathExpression = root;
+        var state = PathWalkState.Initial(root);
         var currentPathLength = 0;
-        var customResolverConsumedPath = false;
 
-        for (var i = 0; i < nameSegments.Length && !customResolverConsumedPath; i++)
+        foreach (var segment in segments.TakeWhile(_ => !state.ResolverConsumedPath))
         {
-            var segment = nameSegments[i];
-
             if (currentPathLength > 0)
                 currentPathLength++; // account for dot
-
             currentPathLength += segment.Length;
-            var propertyPath = path.AsMemory(0, currentPathLength).ToString();
 
-            var metadataFound = metadataProvider.TryGetPropertyByDisplayName(currentType, segment, out var resolvedPropInfo);
-            if (metadataFound && resolvedPropInfo!.Mode != RqlPropertyMode.Ignored)
-            {
-                // Standard CLR property resolution
-                propInfo = resolvedPropInfo;
-                currentType = resolvedPropInfo.Property.PropertyType;
-                pathExpression = Expression.MakeMemberAccess(pathExpression, resolvedPropInfo.Property);
-            }
-            else if (!metadataFound && propInfo?.CustomResolver != null)
-            {
-                // Hand the resolver this segment AND every remaining segment as one dotted key.
-                // This lets resolvers translate a deep path (e.g. "$.a.b.c") in a single
-                // call and produce one scalar leaf expression.
-                var remainingSegments = string.Join('.', nameSegments, i, nameSegments.Length - i);
-                if (!TryResolveCustomProperty(propInfo, pathExpression, remainingSegments, out var resolvedExpr, out var customPropInfo))
-                    return Error.Validation("Invalid property path.", builderContext.GetFullPath(path));
+            var advanceState = AdvanceSegment(state, segment, path, currentPathLength);
+            if (advanceState.IsError)
+                return advanceState.Errors;
+            state = advanceState.Value;
 
-                propInfo = CreateFromCustomResolver(customPropInfo);
-                pathExpression = resolvedExpr;
-                propertyPath = path; // validation messages reference the full path the resolver consumed
-                customResolverConsumedPath = true;
-            }
-            else
-            {
-                return Error.Validation("Invalid property path.", builderContext.GetFullPath(propertyPath));
-            }
+            var validation = ValidatePath(state.PropInfo!, state.PropertyPath);
+            if (validation.IsError)
+                return validation.Errors;
 
-            var validationResult = ValidatePath(propInfo, propertyPath);
-
-            if (validationResult.IsError)
-                return validationResult.Errors;
-
-            if (safeNavigation)
-            {
-                // register member access expressions for further processing
-                memberAccess!.Add(pathExpression);
-            }
+            memberAccess.Add(state.Expression);
         }
 
-        if (safeNavigation)
+        var finalExpression = UseSafeNavigation()
+            ? BuildConditionalExpression(memberAccess, 0)
+            : state.Expression;
+
+        return new MemberPathInfo(state.PropInfo!, finalExpression);
+    }
+
+    /// <summary>
+    /// Resolves one path segment against metadata or — if the segment has no CLR counterpart —
+    /// the parent property's custom resolver. Returns the advanced walk state or a validation error.
+    /// </summary>
+    private Result<PathWalkState> AdvanceSegment(PathWalkState state, string segment, string path, int currentPathLength)
+    {
+        var propertyPath = path[..currentPathLength];
+
+        if (metadataProvider.TryGetPropertyByDisplayName(state.CurrentType, segment, out var resolvedPropInfo))
         {
-            pathExpression = BuildConditionalExpression(memberAccess!, 0);
+            if (resolvedPropInfo!.Mode == RqlPropertyMode.Ignored)
+                return CreateInvalidPathValidationError(propertyPath);
+
+            return state with
+            {
+                PropInfo = resolvedPropInfo,
+                CurrentType = resolvedPropInfo.Property.PropertyType,
+                Expression = Expression.MakeMemberAccess(state.Expression, resolvedPropInfo.Property),
+                PropertyPath = propertyPath,
+            };
         }
 
-        return new MemberPathInfo(propInfo!, pathExpression);
+        if (state.PropInfo?.CustomResolver is null)
+            return CreateInvalidPathValidationError(propertyPath);
+
+        // Hand the resolver this segment AND every remaining segment as one dotted key, so it can
+        // translate a deep path (e.g. "$.a.b.c") in a single call and produce one scalar leaf.
+        var remainingSegments = path[(currentPathLength - segment.Length)..];
+        if (!TryResolveCustomProperty(state.PropInfo, state.Expression, remainingSegments, out var leaf, out var customPropInfo))
+            return CreateInvalidPathValidationError(path);
+
+        return state with
+        {
+            PropInfo = CreateFromCustomResolver(customPropInfo),
+            Expression = leaf,
+            PropertyPath = path, // validation messages reference the full path the resolver consumed
+            ResolverConsumedPath = true,
+        };
+
+        Result<PathWalkState> CreateInvalidPathValidationError(string invalidPath)
+        {
+            return Error.Validation("Invalid property path.", builderContext.GetFullPath(invalidPath));
+        }
+    }
+
+    private readonly record struct PathWalkState(
+        Expression Expression,
+        Type CurrentType,
+        RqlPropertyInfo? PropInfo,
+        string PropertyPath,
+        bool ResolverConsumedPath)
+    {
+        public static PathWalkState Initial(Expression root) => new(root, root.Type, null, string.Empty, false);
     }
 
     private static Expression BuildConditionalExpression(List<Expression> memberAccess, int index)
