@@ -55,12 +55,14 @@ internal class Like(IRqlSettings settings) : ILike
     private static string CleanToLiteralSearchString(string pattern, bool startsWithWildCard, bool startsWithEscapedWildCard,
         bool endsWithEscapedWildCard, bool endsWithWildCard)
     {
-        if (startsWithWildCard) pattern = pattern[1..];
-        else if (startsWithEscapedWildCard) pattern = pattern[1..];
+        var start = startsWithWildCard || startsWithEscapedWildCard ? 1 : 0;
+        var end = pattern.Length;
 
-        if (endsWithEscapedWildCard) pattern = $"{pattern[..^2]}{_wildcard}";
-        else if (endsWithWildCard) pattern = pattern[..^1];
+        if (endsWithEscapedWildCard) end = Math.Max(start, end - 2);
+        else if (endsWithWildCard) end = Math.Max(start, end - 1);
 
-        return pattern;
+        var literal = pattern[start..end];
+
+        return endsWithEscapedWildCard ? $"{literal}{_wildcard}" : literal;
     }
 }

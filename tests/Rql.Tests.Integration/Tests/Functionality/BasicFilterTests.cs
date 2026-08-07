@@ -404,6 +404,51 @@ public class BasicFilterTests
     }
 
     [Theory]
+    [InlineData("like(name,*)")]
+    [InlineData("like(name,**)")]
+    [InlineData("ilike(name,'*')")]
+    public void Like_Name_BareWildcard_MatchesAll(string query)
+    {
+        // Arrange
+        var testData = GetTestData();
+
+        // Act
+        var result = _rql.Transform(testData.AsQueryable(), new RqlRequest { Filter = query });
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var products = result.Query.ToList();
+        Assert.Equal(testData.Count, products.Count);
+    }
+
+    [Theory]
+    [InlineData(@"like(name,\*)")]
+    public void Like_Name_EscapedWildcardOnly_MatchesLiteralAsterisk(string query)
+    {
+        // Arrange
+        var testData = GetTestData();
+        var literalAsterisk = new Product
+        {
+            Id = 9, Name = "*", Category = "Activity", Price = 1M, SellPrice = 1M, ListDate = DateTime.Now,
+            Desc = "Desc9", Orders = [], OrdersIds = []
+        };
+        // Mirrors the self-referencing wiring GetTestData applies to every product.
+        literalAsterisk.Reference = literalAsterisk;
+        literalAsterisk.Collection = [literalAsterisk, literalAsterisk];
+        literalAsterisk.Tags = [new Tag { Value = $"Tag{literalAsterisk.Id}" }];
+        testData.Add(literalAsterisk);
+
+        // Act
+        var result = _rql.Transform(testData.AsQueryable(), new RqlRequest { Filter = query });
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var products = result.Query.ToList();
+        Assert.Single(products);
+        Assert.Equal("*", products[0].Name);
+    }
+
+    [Theory]
     [InlineData("like(name,*Widget)")]
     public void Like_Name_EndsWith(string query)
     {
