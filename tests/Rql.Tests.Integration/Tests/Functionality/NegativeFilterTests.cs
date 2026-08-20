@@ -1,4 +1,5 @@
 ﻿using Mpt.Rql;
+using Mpt.Rql.Abstractions.Exception;
 using Mpt.Rql.Abstractions.Result;
 using Rql.Tests.Integration.Core;
 using Xunit;
@@ -77,5 +78,20 @@ public class NegativeFilterTests
         Assert.False(result.IsSuccess);
         Assert.All(result.Errors, e => Assert.Equal(ErrorType.Validation, e.Type));
         Assert.DoesNotContain(result.Errors, e => e.Message.Contains("RQL package maintainer"));
+    }
+
+    [Theory]
+    [InlineData("any()")]
+    [InlineData("all()")]
+    public void Collection_WithoutArguments_ThrowsRqlCollectionParserException(string query)
+    {
+        // Arrange
+        var testData = ProductRepository.Query();
+
+        // Act and Assert
+        var exception = Assert.Throws<RqlCollectionParserException>(() =>
+            _rql.Transform(testData, new RqlRequest { Filter = query }));
+
+        Assert.Equal("Collection expression must have at least 1 argument", exception.Message);
     }
 }
