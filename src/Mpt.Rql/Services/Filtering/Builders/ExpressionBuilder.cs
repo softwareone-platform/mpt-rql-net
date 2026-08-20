@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Mpt.Rql.Abstractions;
+using Mpt.Rql.Abstractions.Argument;
 using Mpt.Rql.Abstractions.Binary;
 using Mpt.Rql.Abstractions.Collection;
 using Mpt.Rql.Abstractions.Group;
@@ -26,6 +27,10 @@ internal class ExpressionBuilder : IExpressionBuilder
             RqlBinary binary => Build(pe, binary),
             RqlUnary unary => Build(pe, unary),
             RqlCollection collection => Build(pe, collection),
+            // Arguments are consumed by the binary/collection builders, so reaching here means the
+            // client used a bare value where an expression was expected, e.g. "?query=someBareWord".
+            RqlConstant constant => FilteringError.NotAnExpression(constant.Value),
+            RqlArgument => FilteringError.NotAnExpression(),
             _ => FilteringError.Internal
         };
 

@@ -27,8 +27,11 @@ internal class GroupExpressionBuilder : IConcreteExpressionBuilder<RqlGroup>
         if (handler.IsError)
             return handler.Errors;
 
+        if (node.Items is null || node.Items.Count == 0)
+            return FilteringError.EmptyGroup;
+
         var errors = new List<Error>();
-        var filter = _builder.Build(pe, node.Items![0]);
+        var filter = _builder.Build(pe, node.Items[0]);
 
         if (filter.IsError)
             errors.AddRange(filter.Errors);
