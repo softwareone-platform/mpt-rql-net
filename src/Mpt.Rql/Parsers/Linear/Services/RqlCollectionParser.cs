@@ -16,6 +16,9 @@ internal static class RqlCollectionParser
 
     internal static RqlExpression Parse(string term, IList<ExpressionPair> innerExpressionPairs)
     {
+        if (innerExpressionPairs.Count == 0)
+            throw new RqlCollectionParserException("Collection expression must have at least 1 argument");
+
         var left = innerExpressionPairs[0].Expression;
 
         if (!_expressionFunctionMap.TryGetValue(term, out var resolvedExpression))

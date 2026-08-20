@@ -1,4 +1,5 @@
 ﻿using Mpt.Rql;
+using Mpt.Rql.Abstractions.Exception;
 using Rql.Tests.Integration.Core;
 using Xunit;
 
@@ -32,5 +33,20 @@ public class NegativeFilterTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Contains("Invalid property path.", result.Errors.First().Message);
+    }
+
+    [Theory]
+    [InlineData("any()")]
+    [InlineData("all()")]
+    public void Collection_WithoutArguments_ThrowsRqlCollectionParserException(string query)
+    {
+        // Arrange
+        var testData = ProductRepository.Query();
+
+        // Act and Assert
+        var exception = Assert.Throws<RqlCollectionParserException>(() =>
+            _rql.Transform(testData, new RqlRequest { Filter = query }));
+
+        Assert.Equal("Collection expression must have at least 1 argument", exception.Message);
     }
 }
