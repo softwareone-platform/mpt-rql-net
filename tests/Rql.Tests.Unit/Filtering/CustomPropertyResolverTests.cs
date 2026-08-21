@@ -197,7 +197,7 @@ public class CustomPropertyResolverTests
         result.IsError.Should().BeTrue();
         var error = result.Errors.Single();
         error.Message.Should().Contain("Filtering is not permitted");
-        error.Code.Should().Contain("jsonProp.a.b.c");
+        error.Path.Should().Contain("jsonProp.a.b.c");
     }
 
     [Fact]

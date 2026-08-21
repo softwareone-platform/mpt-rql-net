@@ -108,7 +108,7 @@ internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBui
 
         Result<PathWalkState> CreateInvalidPathValidationError(string invalidPath)
         {
-            return Error.Validation("Invalid property path.", builderContext.GetFullPath(invalidPath));
+            return Error.Validation("Invalid property path.", path: builderContext.GetFullPath(invalidPath));
         }
     }
 

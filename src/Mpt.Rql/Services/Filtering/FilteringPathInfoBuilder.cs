@@ -18,7 +18,7 @@ internal class FilteringPathInfoBuilder(IActionValidator actionValidator, IMetad
     protected override Result<bool> ValidatePath(RqlPropertyInfo property, string path)
     {
         if (!_actionValidator.Validate(property, RqlActions.Filter))
-            return Error.Validation("Filtering is not permitted.", _builderContext.GetFullPath(path));
+            return Error.Validation("Filtering is not permitted.", path: _builderContext.GetFullPath(path));
         return true;
     }
 

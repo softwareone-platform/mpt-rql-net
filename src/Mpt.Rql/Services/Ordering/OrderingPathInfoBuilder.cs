@@ -18,7 +18,7 @@ internal class OrderingPathInfoBuilder(IActionValidator actionValidator, IMetada
     protected override Result<bool> ValidatePath(RqlPropertyInfo property, string path)
     {
         if (!_actionValidator.Validate(property, RqlActions.Order))
-            return Error.Validation("Ordering is not permitted.", _builderContext.GetFullPath(path));
+            return Error.Validation("Ordering is not permitted.", path: _builderContext.GetFullPath(path));
         return true;
     }
 
