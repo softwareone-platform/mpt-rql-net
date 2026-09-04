@@ -20,6 +20,12 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
+      - name: NuGet login (OIDC)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: service-user.mpt
+
       - name: Extract version from tag
         id: get_version
         run: echo "PACKAGE_VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
@@ -30,4 +36,4 @@ jobs:
         run: dotnet pack --configuration Release --no-build --output ./nupkgs /p:PackageVersion=${{ env.PACKAGE_VERSION }}
 
       - name: Push to NuGet
-        run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
