@@ -66,6 +66,37 @@ public class UserQueryBuilder(IRqlQueryable<User> rql)
 }
 ```
 
+### Ordering by a collection value with `first()`
+
+To sort by a value that lives inside a child collection — for example the `value` of the parameter whose `name` is `priority` — use the `first()` ordering function:
+
+```
+order=+first(<collection>, <predicate>, <path>)
+order=+first(<collection>, <path>)              # no predicate: the first element
+```
+
+- `<collection>` — a path to a collection property of the entity (dotted paths allowed).
+- `<predicate>` — any RQL filter expression, evaluated per element (`eq`, `ne`, `in`, `like`, `and`, `or`, `not`, quoted values). Element properties must permit filtering.
+- `<path>` — a path to a primitive property of the element, used as the sort key. Must permit ordering.
+
+Examples:
+
+```
+order=+first(parameters,eq(name,priority),value)
+order=-first(parameters,eq(externalId,sla),displayValue)
+order=+first(parameters,and(eq(name,priority),ne(value,null)),value),-id
+order=+first(orders,id)
+```
+
+The sort key is `collection.Where(e => predicate).Select(e => path).FirstOrDefault()`. Entities with no matching element (or an empty collection) get a `null` key.
+
+Caveats:
+
+- **"First" is provider-defined** when several elements match — SQL gives no ordering inside the subquery. Use a predicate that identifies one element (a key or externalId).
+- **Null placement follows the provider** (SQL Server and LINQ-to-Objects: nulls first ascending; PostgreSQL: nulls last).
+- **Cost**: the key is a correlated subquery in `ORDER BY`; it cannot use an index and paging forces a full sort of the filtered set. For very large tables prefer a denormalized sort column.
+- For **filtering** by a collection element use `any(collection, predicate)`, e.g. `any(parameters,and(eq(name,priority),eq(value,high)))`.
+
 ## Using RQL mapping
 In many projects, developers prefer to keep database entities separate from data transfer objects (DTOs), especially when their structures differ. To support this approach, Mpt.Rql includes built-in mapping functionality, which is enabled by default and relies on name-based matching. For more advanced scenarios, custom mappings can also be defined manually 
 
