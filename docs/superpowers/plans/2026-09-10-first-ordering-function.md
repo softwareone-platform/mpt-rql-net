@@ -684,7 +684,8 @@ public class FirstOrderingFunctionTests
 
         var result = function.Build(context);
 
-        result.Value.Should().BeOfType<MethodCallExpression>();
+        // Expression factories return internal subclasses (e.g. MethodCallExpression1), so assert assignability.
+        result.Value.Should().BeAssignableTo<MethodCallExpression>();
     }
 
     [Fact]
@@ -695,7 +696,7 @@ public class FirstOrderingFunctionTests
         var result = function.Build(context);
 
         result.IsError.Should().BeFalse();
-        result.Value.Should().BeOfType<ConditionalExpression>();
+        result.Value.Should().BeAssignableTo<ConditionalExpression>();
         var key = Compile<int?>(result.Value!, context);
         key(new Product { Items = null! }).Should().BeNull();
         key(new Product { Items = [new Item { Id = 3, Name = "x" }] }).Should().Be(3);
