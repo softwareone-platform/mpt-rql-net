@@ -8,6 +8,7 @@ using Mpt.Rql.Parsers.Linear.Services;
 using Mpt.Rql.Services.Context;
 using Mpt.Rql.Services.Filtering;
 using Mpt.Rql.Services.Ordering;
+using Mpt.Rql.Services.Ordering.Functions;
 using Mpt.Rql.Services.Projection;
 using Mpt.Rql.Settings;
 using Rql.Tests.Unit.Services.Models;
@@ -44,7 +45,7 @@ public class GraphBuilderTests
 
         _projectionBuilder = new ProjectionGraphBuilder<Product>(_queryContext, metadataProvider, actionValidatorMock.Object, builderContext, settings);
         _filteringBuilder = new FilteringGraphBuilder<Product>(metadataProvider, actionValidatorMock.Object, builderContext);
-        _orderingBuilder = new OrderingGraphBuilder<Product>(metadataProvider, actionValidatorMock.Object, builderContext);
+        _orderingBuilder = new OrderingGraphBuilder<Product>(metadataProvider, actionValidatorMock.Object, builderContext, _filteringBuilder, new OrderingFunctionRegistry([new FirstOrderingFunction()]));
     }
 
     [Fact]
