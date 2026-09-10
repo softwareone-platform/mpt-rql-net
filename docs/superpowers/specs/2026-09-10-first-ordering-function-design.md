@@ -103,10 +103,36 @@ order=+first(parameters,eq(name,'high priority'),value)
   deterministic aggregation.
 - *Null placement* follows the provider: LINQ-to-Objects and SQL Server sort nulls first
   ascending; PostgreSQL sorts them last. The library does not normalize this.
-- *Cost*: the key is a correlated scalar subquery in `ORDER BY`. It cannot use an index
-  on the sort and is evaluated per candidate row; paging forces a full sort of the
-  filtered set. This is intrinsic to sorting by a child-collection value; for large tables
-  a denormalized sort column is the schema-level answer.
+- *Cost*: see **Performance** below.
+
+**Performance**
+
+Compared with PR #27's `orderby()`, the database does the same work; the surrounding
+layers get cheaper or stop being wrong.
+
+| Layer | `orderby()` (PR #27) | `first()` | Verdict |
+|---|---|---|---|
+| SQL executed | correlated scalar subquery in `ORDER BY` | identical shape for the same predicate | parity |
+| Plan cache / query compilation | filter value inlined as `Expression.Constant` → distinct SQL text, EF compiled-query entry and DB plan **per distinct value**, driven by user input | predicate built by the filtering pipeline → `ConstantBuilder` emits a **parameter**; one SQL text, one plan | better (production-visible) |
+| Expression construction (.NET, per request) | `typeof(Enumerable).GetMethods()` scan per build, `Activator.CreateInstance` and delegate allocations per method lookup | closed `MethodInfo`s cached per `(TElement, TResult)`; predicate costs what any `filter=eq(...)` costs | parity / slightly better; microseconds either way |
+| Data fetched | arguments matching root properties leaked into the projection (extra columns / `Include`s); with mapping enabled the key was all-null (fast, wrong) | exactly the columns the key reads | better |
+| Safe navigation | none (threw in memory) | `CASE WHEN collection IS NULL` wrapper, only when `Ordering.Navigation = Safe` | trivial, opt-in |
+
+Intrinsic cost, identical in both designs: the subquery runs once per candidate row, the
+sort cannot use an index on that key, and `Skip/Take` forces a full sort of the filtered
+set first. With an index on the child table's `(ParentId, <key column>)` each probe is a
+seek, so cost is roughly O(N·log M) probes plus an O(N·log N) sort — fine at thousands of
+rows, painful at millions with paging. No expression shape avoids this; for large tables
+the answer is a denormalized sort column at the schema level.
+
+Richer predicates (`and`/`or`/`in`/`like`) make the subquery correspondingly heavier;
+that is the caller's choice and a simple key match costs exactly what it did before.
+
+Inherited behaviour (not a regression): because the predicate is a real filter it picks
+up the service's `Settings.Filter.*` — e.g. a configured `Strings.Comparison` yields the
+same `string.Equals(x, StringComparison)` shape, with the same EF translatability, as the
+service's `eq` filters already produce. `first()` is exactly as fast and as translatable
+as the consumer's filters, no more and no less.
 
 ## 4. Architecture
 
