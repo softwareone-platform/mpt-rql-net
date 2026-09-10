@@ -180,11 +180,11 @@ The `SupportCase` / `CaseParameter` test models from PR #27 are re-created and r
    for the new branch it takes).
 3. Normalize items: if the root node is an `RqlGenericGroup` with a non-empty name it is
    the single item; otherwise take the root's `Items` that are `RqlConstant` or
-   `RqlGenericGroup`. Empty → existing `order_no_props` error.
+   `RqlGenericGroup`. Empty → existing `order:no_props` error.
 4. For each item:
    - `RqlConstant` → existing path behaviour (unchanged).
    - `RqlGenericGroup` → `StringHelper.ExtractSign(group.Name)`; look the name up in
-     `OrderingFunctionRegistry` (case-insensitive). Unknown → `order_unknown_func`
+     `OrderingFunctionRegistry` (case-insensitive). Unknown → `order:unknown_func`
      validation error, continue. Otherwise call `function.Build(context)` where the
      context carries the root `ParameterExpression`, the group's `Items`, and the
      services in 5.2. Errors → `_context.AddErrors`, continue. Success → key expression.
@@ -199,13 +199,13 @@ Inputs via `OrderingFunctionContext`: root parameter, `IReadOnlyList<RqlExpressi
 `IOrderingPathInfoBuilder`, filtering `IExpressionBuilder`, `IBuilderContext`,
 `IRqlSettings`.
 
-1. **Arity.** `args.Count` must be 2 or 3 → else `order_func_args`:
+1. **Arity.** `args.Count` must be 2 or 3 → else `order:func_args`:
    `"'first' requires 2 or 3 arguments: (collection, [predicate,] path). Got N."`
-2. **Collection.** `args[0]` must be `RqlConstant` → else `order_func_args`
+2. **Collection.** `args[0]` must be `RqlConstant` → else `order:func_args`
    `"'first': collection argument must be a property path."`.
    `pathBuilder.Build(root, path)`; errors propagate (they already carry full paths and
    Order-permission checks). `PropertyInfo.Type` must be `Collection` and `ElementType`
-   non-null → else validation error `order_not_collection`
+   non-null → else validation error `order:not_collection`
    `"'<path>' is not a collection property."`, path = `builderContext.GetFullPath(<path>)`.
 3. **Scope.** Descend the builder context along the collection path **segment by
    segment** using a new internal overload `IBuilderContext.TryGoToChild(string name)`
@@ -219,11 +219,11 @@ Inputs via `OrderingFunctionContext`: root parameter, `IReadOnlyList<RqlExpressi
    propagate (paths are prefixed by the current builder-context node, so they read
    `parameters.value`, not `value`). Result is a `bool` expression.
 5. **Selector.** The last argument (`args[1]` in the two-argument form, `args[2]` in the
-   three-argument form) must be `RqlConstant` → else `order_func_args`
+   three-argument form) must be `RqlConstant` → else `order:func_args`
    `"'first': path argument must be a property path."`.
    `pathBuilder.Build(elementParam, path)`; errors propagate. Effective type
    (`TypeOverride ?? Type`) must be `Primitive` → else validation error
-   `order_not_primitive` `"'first': path must resolve to a primitive property."` with the
+   `order:not_primitive` `"'first': path must resolve to a primitive property."` with the
    full path.
 6. `builderContext.GoToRoot()` (also on every early return after step 3 — use
    try/finally).
@@ -251,8 +251,12 @@ protected virtual bool TryTraverseFunctionGroup(RqlNode target, RqlGenericGroup 
 ```
 
 `OrderingGraphBuilder` overrides it (the `ProcessNode` overloads it needs become
-`protected` on the base). When the sign-stripped, case-insensitive name is a registered
-ordering function name (`first`):
+`protected` on the base). In an order string every generic group with a non-empty name
+is a function call, so the override claims **every** named group (returns `true`). For a
+name that is not registered it performs no graph mutation and leaves the
+`order:unknown_func` error to the expression stage — the base fallback, which would treat
+the arguments as root-level property names, never runs for named groups in the ordering
+builder. When the sign-stripped, case-insensitive name is registered (`first`):
 
 1. `collectionNode = ProcessNode(target, args[0], hierarchyOnly: true)` — includes the
    collection path as `Hierarchy` (same call the `RqlCollection` case uses). If it returns
@@ -310,15 +314,15 @@ All conditions produce collected validation errors; no exceptions escape to the 
 
 | Condition | Code | Message | Path |
 |---|---|---|---|
-| Unknown function name | `order_unknown_func` | `Unknown ordering function 'x'.` | — |
-| Arity not 2 or 3 | `order_func_args` | `'first' requires 2 or 3 arguments: (collection, [predicate,] path). Got N.` | — |
-| Collection/path argument not a constant | `order_func_args` | `'first': <collection or path> argument must be a property path.` | — |
+| Unknown function name | `order:unknown_func` | `Unknown ordering function 'x'.` | — |
+| Arity not 2 or 3 | `order:func_args` | `'first' requires 2 or 3 arguments: (collection, [predicate,] path). Got N.` | — |
+| Collection/path argument not a constant | `order:func_args` | `'first': <collection or path> argument must be a property path.` | — |
 | Collection path invalid / not permitted | (from path builder) | `Invalid property path.` / `Ordering is not permitted.` | full path |
-| Collection path not a collection or element type unknown | `order_not_collection` | `'<p>' is not a collection property.` | full path |
+| Collection path not a collection or element type unknown | `order:not_collection` | `'<p>' is not a collection property.` | full path |
 | Predicate errors (unknown property, bad value, operator not allowed, filter not permitted) | (from filter builder) | existing messages | `parameters.<prop>` |
 | Selector path invalid / not permitted | (from path builder) | existing messages | `parameters.<prop>` |
-| Selector not primitive | `order_not_primitive` | `'first': path must resolve to a primitive property.` | `parameters.<prop>` |
-| No valid order items at all | `order_no_props` (existing) | existing | — |
+| Selector not primitive | `order:not_primitive` | `'first': path must resolve to a primitive property.` | `parameters.<prop>` |
+| No valid order items at all | `order:no_props` (existing) | existing | — |
 
 ## 7. Settings interaction
 
@@ -336,10 +340,11 @@ All conditions produce collected validation errors; no exceptions escape to the 
 ### Unit (`tests/Rql.Tests.Unit`)
 
 - `FirstOrderingFunctionTests`: 2- and 3-arg happy paths (compile and evaluate the key
-  against in-memory objects); every row of the error table; nullable lifting for `int`,
-  `DateTime`, and already-nullable types; safe-navigation wrap present iff `Safe`; Guid
-  and enum predicate values (proves reuse of the filter pipeline); dotted collection and
-  selector paths; `GoToRoot` called on error paths.
+  against in-memory objects); every row of the error table; nullable lifting for `int`
+  and already-nullable types; safe-navigation wrap present iff `Safe`; dotted collection
+  paths; `GoToRoot` called on error paths. The filtering `IExpressionBuilder` is mocked
+  here; Guid and enum predicate values are covered by the integration tests, which run
+  the real filtering pipeline.
 - `OrderingGraphBuilderTests`: graph contains collection (Hierarchy), predicate properties
   and selector (Order) under the collection node; **no** root-level node for any argument;
   2-arg form; unknown collection produces no graph mutation.

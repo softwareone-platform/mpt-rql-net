@@ -20,6 +20,15 @@ internal class BuilderContext : IBuilderContext
         return true;
     }
 
+    public bool TryGoToChild(string name)
+    {
+        if (CurrentNode?.TryGetChild(name, out var child) != true)
+            return false;
+
+        CurrentNode = child as RqlNode;
+        return true;
+    }
+
     public void GoToRoot()
     {
         while (CurrentNode?.Parent is not null)

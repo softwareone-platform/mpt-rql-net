@@ -73,7 +73,8 @@ public class BuilderContextTests
 {
     private static (BuilderContext context, RqlNode root) MakeGraph()
     {
-        var metadata = new MetadataProvider(new PropertyNameProvider(), new MetadataFactory(new GlobalRqlSettings()));
+        // TryGetPropertyByDisplayName is an explicit interface implementation — declare as IMetadataProvider.
+        IMetadataProvider metadata = new MetadataProvider(new PropertyNameProvider(), new MetadataFactory(new GlobalRqlSettings()));
         var root = RqlNode.MakeRoot();
         metadata.TryGetPropertyByDisplayName(typeof(Product), "category", out var category);
         metadata.TryGetPropertyByDisplayName(typeof(Category), "products", out var products);
@@ -602,7 +603,7 @@ public class FirstOrderingFunctionTests
         var validator = new Mock<IActionValidator>();
         validator.Setup(v => v.Validate(It.IsAny<RqlPropertyInfo>(), It.IsAny<RqlActions>())).Returns(true);
 
-        var metadata = new MetadataProvider(new PropertyNameProvider(), new MetadataFactory(new GlobalRqlSettings()));
+        IMetadataProvider metadata = new MetadataProvider(new PropertyNameProvider(), new MetadataFactory(new GlobalRqlSettings()));
 
         var root = RqlNode.MakeRoot();
         metadata.TryGetPropertyByDisplayName(typeof(Product), "items", out var items);
