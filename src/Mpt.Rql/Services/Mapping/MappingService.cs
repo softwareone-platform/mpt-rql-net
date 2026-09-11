@@ -2,6 +2,7 @@ using Mpt.Rql.Abstractions.Configuration;
 using Mpt.Rql.Core.Metadata;
 using Mpt.Rql.Services.Context;
 using System.Collections;
+using Mpt.Rql.Core.Expressions;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -248,23 +249,10 @@ internal class MappingService<TStorage, TView>(IQueryContext<TView> queryContext
 
         var currentAccess = memberAccess[index];
         var nextAccess = BuildConditionalExpression(memberAccess, index + 1);
-        var nextAccessType = nextAccess.Type;
 
         // Skip null check for value types that aren't nullable
         if (!currentAccess.Type.IsValueType || Nullable.GetUnderlyingType(currentAccess.Type) != null)
-        {
-            if (nextAccessType.IsValueType && Nullable.GetUnderlyingType(nextAccessType) == null)
-            {
-                // This is a non-nullable value type, make it nullable for the comparison
-                nextAccessType = typeof(Nullable<>).MakeGenericType(nextAccessType);
-                nextAccess = Expression.Convert(nextAccess, nextAccessType);
-            }
-
-            return Expression.Condition(
-                Expression.Equal(currentAccess, Expression.Constant(null, currentAccess.Type)),
-                Expression.Constant(null, nextAccessType),
-                nextAccess);
-        }
+            return NullableExpressionHelper.NullGuard(currentAccess, nextAccess);
 
         return nextAccess;
     }

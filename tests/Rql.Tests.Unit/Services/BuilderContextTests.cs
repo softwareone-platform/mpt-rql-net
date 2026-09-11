@@ -46,6 +46,17 @@ public class BuilderContextTests
     }
 
     [Fact]
+    public void TryGoToChild_ByName_IsCaseInsensitiveLikeMetadata()
+    {
+        var (context, _) = MakeGraph();
+
+        context.TryGoToChild("Category").Should().BeTrue();
+        context.TryGoToChild("PRODUCTS").Should().BeTrue();
+
+        context.GetFullPath("id").Should().Be("category.products.id");
+    }
+
+    [Fact]
     public void TryGoToChild_ByName_WithoutCurrentNode_ReturnsFalse()
     {
         var context = new BuilderContext();

@@ -86,11 +86,17 @@ public class FirstParameterValueTests
         => Assert.Equal([6, 5, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "+first(parameters,eq(name,priority),value),-id" })));
 
     [Fact]
-    public void NullBag_SafeNavigation_YieldsNullKey()
+    public void MappingEnabled_PredicateComparingTwoElementProperties_ProjectsBothColumns()
     {
-        var data = new List<SupportCase> { new() { Id = 9, Title = "Z", Parameters = null! } }.Concat(Data()).AsQueryable();
+        // eq(name,value) compares two element properties; the right-hand column must reach the projection too.
+        var data = new List<SupportCase>
+        {
+            new() { Id = 1, Title = "A", Parameters = [new CaseParameter { Name = "x", Value = "x", Rank = 1 }] },
+            new() { Id = 2, Title = "B", Parameters = [new CaseParameter { Name = "x", Value = "y", Rank = 2 }] },
+        }.AsQueryable();
 
-        Assert.Equal([9, 5, 6, 1, 2, 3, 4], Ids(MakeTransparent(NavigationStrategy.Safe).Transform(data, new RqlRequest { Order = "+first(parameters,eq(name,priority),value)" })));
+        // only case 1 matches → case 2 has a null key and sorts first
+        Assert.Equal([2, 1], Ids(MakeMapped().Transform(data, new RqlRequest { Order = "+first(parameters,eq(name,value),rank)" })));
     }
 
     // ── Mapping enabled: the graph must carry parameters.name and parameters.value into the projection ──

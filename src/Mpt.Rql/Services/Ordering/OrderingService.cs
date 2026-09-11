@@ -1,6 +1,7 @@
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Argument;
 using Mpt.Rql.Abstractions.Configuration;
+using Mpt.Rql.Abstractions.Exception;
 using Mpt.Rql.Abstractions.Group;
 using Mpt.Rql.Abstractions.Result;
 using Mpt.Rql.Core;
@@ -50,15 +51,26 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
         if (string.IsNullOrEmpty(order))
             return;
 
-        var node = _parser.Parse(order);
+        RqlGroup node;
+        try
+        {
+            node = _parser.Parse(order);
+        }
+        catch (System.Exception ex) when (IsParserException(ex))
+        {
+            // Order strings may embed function/predicate syntax; malformed input is a validation error, not a crash.
+            _context.AddError(Error.Validation($"Malformed order expression: {ex.Message}", MakeErrorCode("malformed")));
+            return;
+        }
 
         _graphBuilder.TraverseRqlExpression(_context.Graph, node);
 
         // A single function call (e.g. "+first(...)") parses to a named RqlGenericGroup at the root;
-        // anything else parses to a group whose items are the individual order terms.
-        List<RqlExpression> orderItems = node is RqlGenericGroup { Name.Length: > 0 }
+        // anything else parses to a group whose items are the individual order terms. Anonymous and
+        // sign-only groups ("+(id,name)") are plain lists, not function calls.
+        List<RqlExpression> orderItems = IsFunctionCall(node)
             ? [node]
-            : node.Items!.Where(item => item is RqlConstant or RqlGenericGroup).ToList();
+            : node.Items!.Where(item => item is RqlConstant || IsFunctionCall(item)).ToList();
 
         if (orderItems.Count == 0)
         {
@@ -90,6 +102,17 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
             isFirst = false;
         }
     }
+
+    private static bool IsFunctionCall(RqlExpression expression)
+        => expression is RqlGenericGroup { Name: { Length: > 0 } name } && StringHelper.ExtractSign(name).value.Length > 0;
+
+    private static bool IsParserException(System.Exception ex)
+        => ex is RqlParserException
+            or RqlBinaryParserException
+            or RqlCollectionParserException
+            or RqlUnaryParserException
+            or RqlArgumentParserException
+            or RqlPointerParserException;
 
     private (Expression KeyExpression, bool IsAsc)? ResolveConstantOrder(RqlConstant constant, ParameterExpression param)
     {

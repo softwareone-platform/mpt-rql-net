@@ -129,4 +129,25 @@ public class OrderingGraphBuilderFunctionTests
         Child(root, "name").IncludeReason.Should().HaveFlag(IncludeReasons.Order);
         Child(root, "id").IncludeReason.Should().HaveFlag(IncludeReasons.Order);
     }
+
+    [Fact]
+    public void SignOnlyGroup_IsTreatedAsPlainOrderItems()
+    {
+        var root = Traverse("+(name,id)");
+
+        Child(root, "name").IncludeReason.Should().HaveFlag(IncludeReasons.Order);
+        Child(root, "id").IncludeReason.Should().HaveFlag(IncludeReasons.Order);
+    }
+
+    [Fact]
+    public void PredicateRightHandProperty_IsIncludedUnderTheCollection()
+    {
+        // eq(name,description) compares two element properties; both columns must be projected
+        var root = Traverse("+first(items,eq(name,description),id)");
+
+        var items = Child(root, "items");
+        Child(items, "name").IncludeReason.Should().HaveFlag(IncludeReasons.Filter);
+        Child(items, "description").IncludeReason.Should().HaveFlag(IncludeReasons.Filter);
+        Child(items, "id").IncludeReason.Should().HaveFlag(IncludeReasons.Order);
+    }
 }

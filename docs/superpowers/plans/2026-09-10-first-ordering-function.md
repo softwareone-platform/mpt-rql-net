@@ -2100,8 +2100,8 @@ Insert the following block immediately before `## Using RQL mapping` in `README.
 To sort by a value that lives inside a child collection — for example the `value` of the parameter whose `name` is `priority` — use the `first()` ordering function:
 
 ```
-order=+first(<collection>, <predicate>, <path>)
-order=+first(<collection>, <path>)              # no predicate: the first element
+order=+first(<collection>,<predicate>,<path>)
+order=+first(<collection>,<path>)              # no predicate: the first element
 ```
 
 - `<collection>` — a path to a collection property of the entity (dotted paths allowed).

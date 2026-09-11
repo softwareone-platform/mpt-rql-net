@@ -101,19 +101,10 @@ internal static class ExpressionExtensions
         if (settings.Filter.Navigation != NavigationStrategy.Safe)
             return expression;
 
-        var accessorType = accessor.Type;
-
-        if (accessorType.IsValueType && Nullable.GetUnderlyingType(accessorType) == null)
-        {
-            // This is a non-nullable value type, make it nullable for the comparison
-            accessorType = typeof(Nullable<>).MakeGenericType(accessorType);
-            accessor = Expression.Convert(accessor, accessorType);
-        }
-
-        var nullConstant = Expression.Constant(null, accessorType);
+        var nullableAccessor = NullableExpressionHelper.LiftToNullable(accessor);
 
         return Expression.AndAlso(
-            Expression.NotEqual(accessor, nullConstant),
+            Expression.NotEqual(nullableAccessor, Expression.Constant(null, nullableAccessor.Type)),
             expression
         );
     }

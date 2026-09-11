@@ -65,6 +65,14 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
             case RqlBinary binary:
                 {
                     TraverseRqlExpression(target, binary.Left);
+
+                    // The expression stage resolves an unquoted right-hand constant as a property path when one
+                    // matches (property-to-property comparison); include that column too so mapping projects it.
+                    // A literal that is not a property adds nothing. Wildcards are never a comparison operand.
+                    if (binary.Right is RqlConstant { IsQuoted: false } rightConstant && rightConstant.Value != "*")
+                        ProcessNode(target, rightConstant);
+                    else if (binary.Right is RqlPointer rightPointer)
+                        TraverseRqlExpression(target, rightPointer);
                 }
                 break;
             case RqlConstant constant:

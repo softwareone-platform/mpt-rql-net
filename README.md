@@ -71,12 +71,14 @@ public class UserQueryBuilder(IRqlQueryable<User> rql)
 To sort by a value that lives inside a child collection — for example the `value` of the parameter whose `name` is `priority` — use the `first()` ordering function:
 
 ```
-order=+first(<collection>, <predicate>, <path>)
-order=+first(<collection>, <path>)              # no predicate: the first element
+order=+first(<collection>,<predicate>,<path>)
+order=+first(<collection>,<path>)              # no predicate: the first element
 ```
 
-- `<collection>` — a path to a collection property of the entity (dotted paths allowed).
-- `<predicate>` — any RQL filter expression, evaluated per element (`eq`, `ne`, `in`, `like`, `and`, `or`, `not`, quoted values). Element properties must permit filtering.
+RQL does not allow whitespace between arguments.
+
+- `<collection>` — a path to a collection property of the entity (dotted paths allowed). Must permit ordering. With mapping enabled the property must be a `List<T>`.
+- `<predicate>` — any RQL filter expression, evaluated per element (`eq`, `ne`, `in`, `like`, `and`, `or`, `not`, quoted values). Element properties must permit filtering. An unquoted value that matches an element property name is compared as a **property** (`eq(name,value)` means `name == value`); quote it (`eq(name,'value')`) to compare with the literal.
 - `<path>` — a path to a primitive property of the element, used as the sort key. Must permit ordering.
 
 Examples:
@@ -94,6 +96,7 @@ Caveats:
 
 - **"First" is provider-defined** when several elements match — SQL gives no ordering inside the subquery. Use a predicate that identifies one element (a key or externalId).
 - **Null placement follows the provider** (SQL Server and LINQ-to-Objects: nulls first ascending; PostgreSQL: nulls last).
+- **Null collections**: no null check is emitted around the collection itself — EF Core cannot translate one for collection navigations (they are never null in SQL). Under LINQ-to-Objects a `null` collection throws, exactly as `any()` does; initialize collections to empty lists. With `Ordering.Navigation = Safe`, dotted prefixes (`reference.orders`), the selector path and the whole predicate are null-guarded — the predicate is part of the ordering key, so it follows the ordering strategy rather than `Filter.Navigation`.
 - **Cost**: the key is a correlated subquery in `ORDER BY`; it cannot use an index and paging forces a full sort of the filtered set. For very large tables prefer a denormalized sort column.
 - For **filtering** by a collection element use `any(collection, predicate)`, e.g. `any(parameters,and(eq(name,priority),eq(value,high)))`.
 

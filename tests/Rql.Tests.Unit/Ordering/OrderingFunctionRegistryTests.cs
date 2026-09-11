@@ -1,4 +1,6 @@
 using FluentAssertions;
+using Mpt.Rql;
+using Mpt.Rql.Abstractions;
 using Mpt.Rql.Core;
 using Mpt.Rql.Services.Ordering.Functions;
 using System.Linq.Expressions;
@@ -11,6 +13,7 @@ public class OrderingFunctionRegistryTests
     private sealed class StubFunction(string name) : IOrderingFunction
     {
         public string Name => name;
+        public void IncludeInGraph(IOrderingFunctionGraph graph, RqlNode target, IReadOnlyList<RqlExpression> arguments) => throw new NotSupportedException();
         public Result<Expression> Build(OrderingFunctionContext context) => throw new NotSupportedException();
     }
 

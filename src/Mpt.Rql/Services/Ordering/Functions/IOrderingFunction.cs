@@ -1,3 +1,4 @@
+using Mpt.Rql.Abstractions;
 using Mpt.Rql.Core;
 using System.Linq.Expressions;
 
@@ -12,6 +13,13 @@ internal interface IOrderingFunction
 {
     /// <summary>Function name as written in the order string (matched case-insensitively).</summary>
     string Name { get; }
+
+    /// <summary>
+    /// Adds to the projection graph every node the key will read, so mapping projects those columns.
+    /// Runs before <see cref="Build"/>; malformed arguments should simply add nothing — <see cref="Build"/>
+    /// reports the error.
+    /// </summary>
+    void IncludeInGraph(IOrderingFunctionGraph graph, RqlNode target, IReadOnlyList<RqlExpression> arguments);
 
     /// <summary>
     /// Builds the sort-key expression for one root entity. Any problem with the arguments must be

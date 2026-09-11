@@ -35,7 +35,7 @@ which does not meet the requirement above, so it was rejected. Building on
 **Goals**
 
 - RQL-expressible: collection, matching predicate, and value path are all in the request.
-- Consistent with existing RQL vocabulary: `first(<collection>, <predicate>, <path>)` is
+- Consistent with existing RQL vocabulary: `first(<collection>,<predicate>,<path>)` is
   the value-returning sibling of `any(<collection>, <predicate>)` / `all(...)`.
 - Structurally correct: graph inclusion, error paths, permissions, safe navigation,
   constant conversion and SQL parameterization all come from existing machinery.
@@ -59,8 +59,8 @@ which does not meet the requirement above, so it was rejected. Building on
 ## 3. Syntax and semantics
 
 ```
-order=+first(<collection>, <predicate>, <path>)
-order=+first(<collection>, <path>)
+order=+first(<collection>,<predicate>,<path>)
+order=+first(<collection>,<path>)
 ```
 
 | Part | Kind | Rules |
@@ -116,7 +116,7 @@ layers get cheaper or stop being wrong.
 | Plan cache / query compilation | filter value inlined as `Expression.Constant` → distinct SQL text, EF compiled-query entry and DB plan **per distinct value**, driven by user input | predicate built by the filtering pipeline → `ConstantBuilder` emits a **parameter**; one SQL text, one plan | better (production-visible) |
 | Expression construction (.NET, per request) | `typeof(Enumerable).GetMethods()` scan per build, `Activator.CreateInstance` and delegate allocations per method lookup | closed `MethodInfo`s cached per `(TElement, TResult)`; predicate costs what any `filter=eq(...)` costs | parity / slightly better; microseconds either way |
 | Data fetched | arguments matching root properties leaked into the projection (extra columns / `Include`s); with mapping enabled the key was all-null (fast, wrong) | exactly the columns the key reads | better |
-| Safe navigation | none (threw in memory) | `CASE WHEN collection IS NULL` wrapper, only when `Ordering.Navigation = Safe` | trivial, opt-in |
+| Safe navigation | none (threw in memory) | no guard on the collection itself (EF Core cannot translate one); dotted prefixes and predicate paths guarded when `Ordering.Navigation = Safe` | parity for the collection, better for nested paths |
 
 Intrinsic cost, identical in both designs: the subquery runs once per candidate row, the
 sort cannot use an index on that key, and `Skip/Take` forces a full sort of the filtered
@@ -232,9 +232,15 @@ Inputs via `OrderingFunctionContext`: root parameter, `IReadOnlyList<RqlExpressi
 8. **Chain.** Using `CollectionValueMethods.For(elementType, resultType)`:
    `source = collectionExpr`; if predicate: `source = Where(source, Lambda(pred, e))`;
    `selected = Select(source, Lambda(selector, e))`; `key = FirstOrDefault(selected)`.
-9. **Safe navigation.** If `settings.Ordering.Navigation == Safe`:
-   `key = collectionExpr == null ? (resultType)null : key`. (`collectionExpr` may already
-   be a conditional chain for a dotted prefix; it is used as-is.)
+9. **No outer null guard** (revised after review). EF Core cannot translate
+   `collection == null ? … : …` for collection navigations (verified against EF Core 8 /
+   Sqlite: the query fails at enumeration after `IsSuccess = true`), so no guard is emitted;
+   a `null` collection under LINQ-to-Objects throws exactly as `any()` does. Dotted prefixes
+   are still guarded by the path builder when `Ordering.Navigation == Safe`, and the
+   predicate is built under the ordering strategy: the function applies it to the request-scoped
+   `Settings.Filter.Navigation` for the duration of the predicate build (restored in `finally`),
+   which also covers operator-level null-safety. Prefix guards the path builder emits for a dotted
+   collection path are moved from the source onto the finished key (`prefix == null ? null : key`).
 10. Return `key`.
 
 Constant handling inside the predicate is entirely the filtering pipeline's
@@ -251,8 +257,12 @@ protected virtual bool TryTraverseFunctionGroup(RqlNode target, RqlGenericGroup 
 ```
 
 `OrderingGraphBuilder` overrides it (the `ProcessNode` overloads it needs become
-`protected` on the base). In an order string every generic group with a non-empty name
-is a function call, so the override claims **every** named group (returns `true`). For a
+`protected` on the base). Revised after review: the traversal steps below are performed by
+the function itself through `IOrderingFunction.IncludeInGraph(IOrderingFunctionGraph, RqlNode, args)`,
+so each function owns its own argument shape; the builder only strips the sign, claims
+named groups and dispatches. In an order string every generic group whose name is
+non-empty **after stripping the sign** is a function call (sign-only groups such as
+`+(id,name)` are plain lists), so the override claims **every** such group (returns `true`). For a
 name that is not registered it performs no graph mutation and leaves the
 `order:unknown_func` error to the expression stage — the base fallback, which would treat
 the arguments as root-level property names, never runs for named groups in the ordering
@@ -326,9 +336,10 @@ All conditions produce collected validation errors; no exceptions escape to the 
 
 ## 7. Settings interaction
 
-- `Settings.Ordering.Navigation`: `Safe` wraps the key in a null check on the collection
-  (and the path builder already guards dotted prefixes). `Default` emits no guard —
-  consistent with the rest of the library ("provider decides").
+- `Settings.Ordering.Navigation`: `Safe` null-guards dotted prefixes of the collection path,
+  the selector path and the whole predicate (built under the ordering strategy); the
+  collection itself is never guarded because EF Core cannot translate it. `Default` emits no
+  guard — consistent with the rest of the library ("provider decides").
 - `Settings.Filter.*` (`Navigation`, `Strings.Comparison`, allowed operators) apply to the
   predicate because it is built by the filtering pipeline.
 - `Settings.Select.*` / `Mapping.Transparent`: the graph branch (5.3) includes the columns

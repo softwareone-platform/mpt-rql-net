@@ -136,4 +136,19 @@ public class OrderingServiceFunctionTests
     [Fact]
     public void PlainOrderString_StillWorks()
         => Run("-id").Should().Equal(4, 3, 2, 1);
+
+    [Fact]
+    public void SignOnlyGroup_SortsByItsItems()
+        // "-(id)" is a plain list of order terms (the group sign is ignored, as before this feature), not a function call
+        => Run("-(id)").Should().Equal(1, 2, 3, 4);
+
+    [Fact]
+    public void MalformedOrder_ReportsValidationErrorInsteadOfThrowing()
+    {
+        _service.Process("+first(items,eq(name),id)");
+
+        var error = _queryContext.GetErrors().Single();
+        error.Code.Should().Be("order:malformed");
+        error.Message.Should().StartWith("Malformed order expression:");
+    }
 }

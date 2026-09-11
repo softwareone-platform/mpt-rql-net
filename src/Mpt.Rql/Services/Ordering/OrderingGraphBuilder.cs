@@ -1,3 +1,4 @@
+using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Group;
 using Mpt.Rql.Core;
 using Mpt.Rql.Core.Metadata;
@@ -10,7 +11,7 @@ namespace Mpt.Rql.Services.Ordering;
 
 internal interface IOrderingGraphBuilder<TView> : IGraphBuilder<TView> { }
 
-internal class OrderingGraphBuilder<TView> : GraphBuilder<TView>, IOrderingGraphBuilder<TView>
+internal class OrderingGraphBuilder<TView> : GraphBuilder<TView>, IOrderingGraphBuilder<TView>, IOrderingFunctionGraph
 {
     private readonly IFilteringGraphBuilder<TView> _filteringGraphBuilder;
     private readonly OrderingFunctionRegistry _functions;
@@ -33,34 +34,33 @@ internal class OrderingGraphBuilder<TView> : GraphBuilder<TView>, IOrderingGraph
         => parentNode.IncludeChild(rqlProperty, IncludeReasons.Order);
 
     /// <summary>
-    /// In an order string every named group is a function call. Registered functions have the
-    /// shape <c>name(collection, [predicate,] path)</c>: the collection path is included as
-    /// hierarchy, the predicate is traversed by the filtering builder under the collection node
-    /// (exactly like <c>any()</c>), and the selector is included under it with the Order reason.
+    /// In an order string every group with a name (after stripping the sign) is a function call: the
+    /// function declares the nodes its key reads via <see cref="IOrderingFunction.IncludeInGraph"/>.
     /// Unknown names are claimed too (no graph mutation) so that arguments are never resolved as
-    /// root-level properties; the expression stage reports the unknown function.
+    /// root-level properties; the expression stage reports the unknown function. Anonymous and
+    /// sign-only groups (<c>+(id,name)</c>) are plain lists of order terms and take the base path.
     /// </summary>
     protected override bool TryTraverseFunctionGroup(RqlNode target, RqlGenericGroup group)
     {
-        if (group.Name.Length == 0)
+        if (string.IsNullOrEmpty(group.Name))
             return false;
 
         var (name, _) = StringHelper.ExtractSign(group.Name);
-        if (!_functions.Contains(name.ToString()))
-            return true;
+        if (name.Length == 0)
+            return false;
 
-        var args = group.Items ?? [];
-        if (args.Count is not (2 or 3))
-            return true;
+        if (_functions.TryGet(name.ToString(), out var function))
+            function.IncludeInGraph(this, target, group.Items ?? []);
 
-        var collectionNode = ProcessNode(target, args[0], hierarchyOnly: true);
-        if (collectionNode is null)
-            return true;
-
-        if (args.Count == 3)
-            _filteringGraphBuilder.TraverseRqlExpression(collectionNode, args[1]);
-
-        ProcessNode(collectionNode, args[^1]);
         return true;
     }
+
+    RqlNode? IOrderingFunctionGraph.IncludeHierarchy(RqlNode target, RqlExpression path)
+        => ProcessNode(target, path, hierarchyOnly: true);
+
+    void IOrderingFunctionGraph.TraversePredicate(RqlNode target, RqlExpression predicate)
+        => _filteringGraphBuilder.TraverseRqlExpression(target, predicate);
+
+    void IOrderingFunctionGraph.IncludeOrderPath(RqlNode target, RqlExpression path)
+        => ProcessNode(target, path);
 }

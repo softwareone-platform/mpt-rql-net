@@ -10,12 +10,15 @@ namespace Rql.Tests.Integration.Tests.Functionality;
 /// </summary>
 public class FirstOrderTests
 {
-    private static IRqlQueryable<Product, Product> Make(NavigationStrategy navigation = NavigationStrategy.Default) =>
+    private static IRqlQueryable<Product, Product> Make(
+        NavigationStrategy orderingNavigation = NavigationStrategy.Default,
+        NavigationStrategy filterNavigation = NavigationStrategy.Default) =>
         RqlFactory.Make<Product>(services => { }, rql =>
         {
             // Transparent mapping skips the projection step, so inline data needs no unrelated navigations.
             rql.Settings.Mapping.Transparent = true;
-            rql.Settings.Ordering.Navigation = navigation;
+            rql.Settings.Ordering.Navigation = orderingNavigation;
+            rql.Settings.Filter.Navigation = filterNavigation;
             rql.Settings.Select.Implicit = RqlSelectModes.Core | RqlSelectModes.Primitive;
             rql.Settings.Select.Explicit = RqlSelectModes.All;
             rql.Settings.Select.MaxDepth = 10;
@@ -33,6 +36,9 @@ public class FirstOrderTests
         new() { Id = 4, Name = "D", Category = "X", Orders = [new ProductOrder { Id = 99, ClientName = "Tony" }] },
         new() { Id = 5, Name = "E", Category = "X", Orders = [] },
     }.AsQueryable();
+
+    private static Product Michael(int productId, int orderId) =>
+        new() { Id = productId, Name = "R", Category = "X", Orders = [new ProductOrder { Id = orderId, ClientName = "Michael" }] };
 
     private static List<int> Ids(RqlResponse<Product> result)
     {
@@ -102,16 +108,54 @@ public class FirstOrderTests
     }
 
     [Fact]
-    public void NullCollection_SafeNavigation_YieldsNullKey()
+    public void SafeNavigation_NullReferenceOnDottedCollectionPath_YieldsNullKey()
     {
-        var data = new List<Product> { new() { Id = 9, Name = "Z", Category = "X", Orders = null! } }.Concat(Data()).AsQueryable();
+        // The dotted prefix (reference) is guarded by the path builder under Safe navigation; the collection itself is not
+        // (EF Core cannot translate a null check on a collection navigation).
+        var data = new List<Product>
+        {
+            new() { Id = 1, Name = "A", Category = "X", Reference = Michael(10, 30) },
+            new() { Id = 2, Name = "B", Category = "X", Reference = null! },
+            new() { Id = 3, Name = "C", Category = "X", Reference = Michael(11, 10) },
+        }.AsQueryable();
 
-        var result = Make(NavigationStrategy.Safe).Transform(data, new RqlRequest { Order = "+first(orders,eq(clientName,Michael),id)" });
+        var result = Make(NavigationStrategy.Safe).Transform(data, new RqlRequest { Order = "+first(reference.orders,eq(clientName,Michael),id)" });
 
-        Assert.Equal([9, 4, 5, 2, 3, 1], Ids(result));
+        Assert.Equal([2, 3, 1], Ids(result));
     }
 
-    // ── Errors ────────────────────────────────────────────────────────────────
+    [Fact]
+    public void PredicateNavigation_FollowsTheOrderingSetting()
+    {
+        // Ordering=Safe, Filter=Default: the predicate's dotted path (reference.name) must still be null-safe,
+        // because it is part of the ordering key.
+        var data = new List<Product>
+        {
+            new() { Id = 1, Name = "A", Category = "X", Collection = [new Product { Id = 10, Name = "n", Category = "X", Reference = null! }] },
+            new() { Id = 2, Name = "B", Category = "X", Collection = [new Product { Id = 20, Name = "n", Category = "X", Reference = new Product { Id = 99, Name = "x", Category = "X" } }] },
+        }.AsQueryable();
+
+        var result = Make(NavigationStrategy.Safe, NavigationStrategy.Default)
+            .Transform(data, new RqlRequest { Order = "+first(collection,eq(reference.name,x),id)" });
+
+        Assert.Equal([1, 2], Ids(result)); // product 1 has no match → null key first; no NullReferenceException
+    }
+
+    [Fact]
+    public void SignOnlyGroup_SortsByItsItems()
+        // "+(id,name)" is a plain list of order terms, not a function call
+        => Assert.Equal([1, 2, 3, 4, 5], Ids(Make().Transform(Data(), new RqlRequest { Order = "+(id,name)" })));
+
+    [Fact]
+    public void UnquotedLiteralMatchingIncompatibleProperty_FallsBackToTheLiteral()
+    {
+        // `id` is also an element property (int); it cannot be coerced to clientName (string), so it is the literal "id".
+        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(clientName,id),id)" });
+
+        Assert.Equal([1, 2, 3, 4, 5], Ids(result)); // nothing matches → all keys null → original order
+    }
+
+    // ── Error paths ────────────────────────────────────────────────────────────
 
     [Fact]
     public void UnknownFunction_IsAValidationError()
@@ -141,6 +185,15 @@ public class FirstOrderTests
     }
 
     [Fact]
+    public void MalformedPredicate_IsAValidationError()
+    {
+        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(clientName),id)" });
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains(result.Errors, e => e.Code == "order:malformed");
+    }
+
+    [Fact]
     public void UnknownPredicateProperty_ReportsPrefixedPath()
     {
         var result = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(nonExistent,x),id)" });
@@ -156,6 +209,28 @@ public class FirstOrderTests
 
         Assert.False(result.IsSuccess);
         Assert.Contains(result.Errors, e => e.Message == "Invalid property path." && e.Path == "orders.nonExistent");
+    }
+
+    [Fact]
+    public void UnknownSelector_MixedCaseDottedCollection_ReportsPrefixedPath()
+    {
+        var data = new List<Product> { new() { Id = 1, Name = "A", Category = "X", Reference = Michael(10, 30) } }.AsQueryable();
+
+        var result = Make().Transform(data, new RqlRequest { Order = "+first(Reference.Orders,eq(clientName,Michael),nonExistent)" });
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains(result.Errors, e => e.Message == "Invalid property path." && e.Path == "reference.orders.nonExistent");
+    }
+
+    [Fact]
+    public void UnknownSelector_AfterNestedAnyPredicate_ReportsPrefixedPath()
+    {
+        var data = new List<Product> { new() { Id = 1, Name = "A", Category = "X", Collection = [Michael(10, 30)] } }.AsQueryable();
+
+        var result = Make().Transform(data, new RqlRequest { Order = "+first(collection,any(orders,eq(clientName,Michael)),nonExistent)" });
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains(result.Errors, e => e.Message == "Invalid property path." && e.Path == "collection.nonExistent");
     }
 
     [Fact]
