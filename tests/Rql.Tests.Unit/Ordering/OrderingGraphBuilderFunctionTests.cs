@@ -53,7 +53,7 @@ public class OrderingGraphBuilderFunctionTests
     [Fact]
     public void First_WithPredicate_IncludesCollectionPredicateAndSelector_UnderTheCollection()
     {
-        var root = Traverse("+first(items,eq(name,x),description)");
+        var root = Traverse("+first(items,description,eq(name,x))");
 
         var items = Child(root, "items");
         items.IncludeReason.Should().HaveFlag(IncludeReasons.Hierarchy);
@@ -65,7 +65,7 @@ public class OrderingGraphBuilderFunctionTests
     [Fact]
     public void First_DoesNotResolveArgumentsAgainstTheRoot()
     {
-        var root = Traverse("+first(items,eq(name,x),description)");
+        var root = Traverse("+first(items,description,eq(name,x))");
 
         root.TryGetChild("name", out _).Should().BeFalse();
         root.TryGetChild("description", out _).Should().BeFalse();
@@ -86,7 +86,7 @@ public class OrderingGraphBuilderFunctionTests
     [Fact]
     public void First_DottedCollectionPath_IncludesEverySegmentAsHierarchy()
     {
-        var root = Traverse("+first(category.products,eq(name,x),description)");
+        var root = Traverse("+first(category.products,description,eq(name,x))");
 
         var category = Child(root, "category");
         category.IncludeReason.Should().HaveFlag(IncludeReasons.Hierarchy);
@@ -99,7 +99,7 @@ public class OrderingGraphBuilderFunctionTests
     [Fact]
     public void First_CombinedWithScalarItem_IncludesBoth()
     {
-        var root = Traverse("+first(items,eq(name,x),description),-id");
+        var root = Traverse("+first(items,description,eq(name,x)),-id");
 
         Child(root, "id").IncludeReason.Should().HaveFlag(IncludeReasons.Order);
         Child(Child(root, "items"), "description").IncludeReason.Should().HaveFlag(IncludeReasons.Order);
@@ -116,7 +116,7 @@ public class OrderingGraphBuilderFunctionTests
     [Fact]
     public void First_UnknownCollection_DoesNotMutateTheGraph()
     {
-        var root = Traverse("+first(nope,eq(name,x),description)");
+        var root = Traverse("+first(nope,description,eq(name,x))");
 
         root.Count.Should().Be(0);
     }
@@ -143,7 +143,7 @@ public class OrderingGraphBuilderFunctionTests
     public void PredicateRightHandProperty_IsIncludedUnderTheCollection()
     {
         // eq(name,description) compares two element properties; both columns must be projected
-        var root = Traverse("+first(items,eq(name,description),id)");
+        var root = Traverse("+first(items,id,eq(name,description))");
 
         var items = Child(root, "items");
         Child(items, "name").IncludeReason.Should().HaveFlag(IncludeReasons.Filter);

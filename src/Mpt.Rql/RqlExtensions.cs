@@ -62,8 +62,9 @@ public static class RqlExtensions
         services.AddScoped(typeof(IOrderingService<>), typeof(OrderingService<>));
         services.AddScoped<IOrderingPathInfoBuilder, OrderingPathInfoBuilder>();
         services.AddScoped(typeof(IOrderingGraphBuilder<>), typeof(OrderingGraphBuilder<>));
-        services.AddScoped<IOrderingFunction, FirstOrderingFunction>();
-        services.AddScoped<OrderingFunctionRegistry>();
+        // Stateless: one instance serves every request scope (see IOrderingFunction remarks).
+        services.AddSingleton<IOrderingFunction, FirstOrderingFunction>();
+        services.AddSingleton<OrderingFunctionRegistry>();
 
         services.AddScoped(typeof(IProjectionService<>), typeof(ProjectionService<>));
         services.AddScoped(typeof(IProjectionGraphBuilder<>), typeof(ProjectionGraphBuilder<>));

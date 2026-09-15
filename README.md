@@ -71,22 +71,22 @@ public class UserQueryBuilder(IRqlQueryable<User> rql)
 To sort by a value that lives inside a child collection — for example the `value` of the parameter whose `name` is `priority` — use the `first()` ordering function:
 
 ```
-order=+first(<collection>,<predicate>,<path>)
+order=+first(<collection>,<path>,<predicate>)
 order=+first(<collection>,<path>)              # no predicate: the first element
 ```
 
 RQL does not allow whitespace between arguments.
 
 - `<collection>` — a path to a collection property of the entity (dotted paths allowed). Must permit ordering. With mapping enabled the property must be a list type (`List<T>`, `IList`, arrays).
-- `<predicate>` — any RQL filter expression, evaluated per element (`eq`, `ne`, `in`, `like`, `and`, `or`, `not`, quoted values). Element properties must permit filtering. An unquoted value that matches an element property name **of a compatible type** is compared as a property (`eq(name,value)` means `name == value`; `eq(clientName,id)` falls back to the literal `"id"` because `int` cannot be compared to a string); quote it (`eq(name,'value')`) to force the literal.
 - `<path>` — a path to a primitive property of the element, used as the sort key. Must permit ordering.
+- `<predicate>` — optional; any RQL filter expression, evaluated per element (`eq`, `ne`, `in`, `like`, `and`, `or`, `not`, quoted values). Element properties must permit filtering. An unquoted value that matches an element property name **of a compatible type** is compared as a property (`eq(name,value)` means `name == value`; `eq(clientName,id)` falls back to the literal `"id"` because `int` cannot be compared to a string); quote it (`eq(name,'value')`) to force the literal.
 
 Examples:
 
 ```
-order=+first(parameters,eq(name,priority),value)
-order=-first(parameters,eq(externalId,sla),displayValue)
-order=+first(parameters,and(eq(name,priority),ne(value,null)),value),-id
+order=+first(parameters,value,eq(name,priority))
+order=-first(parameters,displayValue,eq(externalId,sla))
+order=+first(parameters,value,and(eq(name,priority),ne(value,null))),-id
 order=+first(orders,id)
 ```
 

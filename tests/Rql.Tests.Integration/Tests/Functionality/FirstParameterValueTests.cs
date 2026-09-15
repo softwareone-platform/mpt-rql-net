@@ -6,7 +6,7 @@ using Xunit;
 namespace Rql.Tests.Integration.Tests.Functionality;
 
 /// <summary>
-/// The primary use case: <c>+first(parameters,eq(name,priority),value)</c> over a keyed parameter bag.
+/// The primary use case: <c>+first(parameters,value,eq(name,priority))</c> over a keyed parameter bag.
 /// Values sort lexicographically ("critical" &lt; "high" &lt; "low" &lt; "medium").
 /// </summary>
 public class FirstParameterValueTests
@@ -60,30 +60,30 @@ public class FirstParameterValueTests
 
     [Fact]
     public void ByName_Ascending()
-        => Assert.Equal([5, 6, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "+first(parameters,eq(name,priority),value)" })));
+        => Assert.Equal([5, 6, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "+first(parameters,value,eq(name,priority))" })));
 
     [Fact]
     public void ByName_Descending()
-        => Assert.Equal([4, 3, 2, 1, 5, 6], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "-first(parameters,eq(name,priority),value)" })));
+        => Assert.Equal([4, 3, 2, 1, 5, 6], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "-first(parameters,value,eq(name,priority))" })));
 
     [Fact]
     public void GuidPredicateValue_UsesTheFilterPipelineConverter()
-        => Assert.Equal([5, 6, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = $"+first(parameters,eq(key,{PriorityKey}),value)" })));
+        => Assert.Equal([5, 6, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = $"+first(parameters,value,eq(key,{PriorityKey}))" })));
 
     [Fact]
     public void EnumPredicateValue_UsesTheFilterPipelineConverter()
-        => Assert.Equal([5, 6, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "+first(parameters,eq(kind,Choice),value)" })));
+        => Assert.Equal([5, 6, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "+first(parameters,value,eq(kind,Choice))" })));
 
     [Fact]
     public void ValueTypeSelector_MissingElementSortsAsNull_NotZero()
         // rank: 1→-2, 2→-1, 3→1, 4→2, 5→null, 6→null.
         // Lifted:   null, null, -2, -1, 1, 2  → [5, 6, 1, 2, 3, 4]
         // Unlifted: -2, -1, 0, 0, 1, 2        → [1, 2, 5, 6, 3, 4]  (the bug this guards against)
-        => Assert.Equal([5, 6, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "+first(parameters,eq(name,priority),rank)" })));
+        => Assert.Equal([5, 6, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "+first(parameters,rank,eq(name,priority))" })));
 
     [Fact]
     public void CombinedWithScalar_TieBreaksNullKeys()
-        => Assert.Equal([6, 5, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "+first(parameters,eq(name,priority),value),-id" })));
+        => Assert.Equal([6, 5, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "+first(parameters,value,eq(name,priority)),-id" })));
 
     [Fact]
     public void MappingEnabled_PredicateComparingTwoElementProperties_ProjectsBothColumns()
@@ -96,7 +96,7 @@ public class FirstParameterValueTests
         }.AsQueryable();
 
         // only case 1 matches → case 2 has a null key and sorts first
-        Assert.Equal([2, 1], Ids(MakeMapped().Transform(data, new RqlRequest { Order = "+first(parameters,eq(name,value),rank)" })));
+        Assert.Equal([2, 1], Ids(MakeMapped().Transform(data, new RqlRequest { Order = "+first(parameters,rank,eq(name,value))" })));
     }
 
     // ── Mapping enabled: the graph must carry parameters.name and parameters.value into the projection ──
@@ -104,7 +104,7 @@ public class FirstParameterValueTests
     [Fact]
     public void MappingEnabled_CoreOnlySelection_StillSortsCorrectly()
     {
-        var result = MakeMapped().Transform(Data(), new RqlRequest { Order = "+first(parameters,eq(name,priority),value)" });
+        var result = MakeMapped().Transform(Data(), new RqlRequest { Order = "+first(parameters,value,eq(name,priority))" });
 
         Assert.Equal([5, 6, 1, 2, 3, 4], Ids(result));
     }
@@ -112,7 +112,7 @@ public class FirstParameterValueTests
     [Fact]
     public void MappingEnabled_ProjectsExactlyTheColumnsTheKeyReads()
     {
-        var cases = MakeMapped().Transform(Data(), new RqlRequest { Order = "+first(parameters,eq(name,priority),value)" }).Query.ToList();
+        var cases = MakeMapped().Transform(Data(), new RqlRequest { Order = "+first(parameters,value,eq(name,priority))" }).Query.ToList();
 
         var critical = cases.Single(c => c.Id == 1).Parameters.Single();
         Assert.Equal("priority", critical.Name);      // predicate column
@@ -126,7 +126,7 @@ public class FirstParameterValueTests
     {
         // 'value' and 'name' are also plausible root-level names; with the old design they would have been
         // pulled into the root projection. Here only Id/Title (core) and parameters (hierarchy) are projected.
-        var result = MakeMapped().Transform(Data(), new RqlRequest { Order = "+first(parameters,eq(name,priority),value)" });
+        var result = MakeMapped().Transform(Data(), new RqlRequest { Order = "+first(parameters,value,eq(name,priority))" });
 
         Assert.True(result.IsSuccess);
         Assert.False(result.Graph.TryGetChild("value", out _));

@@ -10,12 +10,13 @@ using System.Linq.Expressions;
 namespace Mpt.Rql.Services.Ordering.Functions;
 
 /// <summary>
-/// Built-in ordering function: <c>first(&lt;collection&gt;, [&lt;predicate&gt;,] &lt;path&gt;)</c>.
+/// Built-in ordering function: <c>first(&lt;collection&gt;, &lt;path&gt;[, &lt;predicate&gt;])</c>.
 /// </summary>
 /// <remarks>
 /// <para>
 /// Sort key = <c>collection.Where(e =&gt; predicate).Select(e =&gt; path).FirstOrDefault()</c>; the
-/// <c>Where</c> is omitted in the two-argument form. Value-type selectors are lifted to
+/// <c>Where</c> is omitted in the two-argument form (required arguments first, the optional predicate
+/// last). Value-type selectors are lifted to
 /// <see cref="Nullable{T}"/> so "no matching element" and "empty collection" both yield <c>null</c>.
 /// </para>
 /// <para>
@@ -40,6 +41,7 @@ namespace Mpt.Rql.Services.Ordering.Functions;
 /// </remarks>
 internal sealed class FirstOrderingFunction : IOrderingFunction
 {
+    // Stateless by design: registered as a singleton, everything per-request arrives via the context.
     public const string FunctionName = "first";
 
     public string Name => FunctionName;
@@ -54,10 +56,10 @@ internal sealed class FirstOrderingFunction : IOrderingFunction
         if (collectionNode is null)
             return;
 
-        if (arguments.Count == 3)
-            graph.TraversePredicate(collectionNode, arguments[1]);
+        graph.IncludeOrderPath(collectionNode, arguments[1]);
 
-        graph.IncludeOrderPath(collectionNode, arguments[^1]);
+        if (arguments.Count == 3)
+            graph.TraversePredicate(collectionNode, arguments[2]);
     }
 
     public Result<Expression> Build(OrderingFunctionContext context)
@@ -66,16 +68,16 @@ internal sealed class FirstOrderingFunction : IOrderingFunction
 
         if (args.Count is not (2 or 3))
             return Error.Validation(
-                $"'{FunctionName}' requires 2 or 3 arguments: (collection, [predicate,] path). Got {args.Count}.",
+                $"'{FunctionName}' requires 2 or 3 arguments: (collection, path[, predicate]). Got {args.Count}.",
                 OrderingErrorCodes.FunctionArguments);
 
         if (args[0] is not RqlConstant collectionArg)
             return Error.Validation($"'{FunctionName}': collection argument must be a property path.", OrderingErrorCodes.FunctionArguments);
 
-        if (args[^1] is not RqlConstant pathArg)
+        if (args[1] is not RqlConstant pathArg)
             return Error.Validation($"'{FunctionName}': path argument must be a property path.", OrderingErrorCodes.FunctionArguments);
 
-        var predicateArg = args.Count == 3 ? args[1] : null;
+        var predicateArg = args.Count == 3 ? args[2] : null;
 
         var collection = context.PathBuilder.Build(context.Root, collectionArg.Value);
         if (collection.IsError)

@@ -76,20 +76,20 @@ public class OrderingServiceFunctionTests
     [Fact]
     public void FunctionThenScalar_OrdersByKeyAscThenTieBreaks()
         // null keys first (P3, P4 ordered by -id => 4, 3), then key 10 (P2), key 30 (P1)
-        => Run("+first(items,eq(name,x),id),-id").Should().Equal(4, 3, 2, 1);
+        => Run("+first(items,id,eq(name,x)),-id").Should().Equal(4, 3, 2, 1);
 
     [Fact]
     public void FunctionDescending_PutsNullKeysLast()
-        => Run("-first(items,eq(name,x),id)").Should().Equal(1, 2, 3, 4);
+        => Run("-first(items,id,eq(name,x))").Should().Equal(1, 2, 3, 4);
 
     [Fact]
     public void NoSign_MeansAscending()
-        => Run("first(items,eq(name,x),id)").Should().Equal(3, 4, 2, 1);
+        => Run("first(items,id,eq(name,x))").Should().Equal(3, 4, 2, 1);
 
     [Fact]
     public void ScalarThenFunction_UsesThenBy()
         // all ids distinct, so the scalar decides; the function must still build (ThenBy path)
-        => Run("-id,+first(items,eq(name,x),id)").Should().Equal(4, 3, 2, 1);
+        => Run("-id,+first(items,id,eq(name,x))").Should().Equal(4, 3, 2, 1);
 
     [Fact]
     public void TwoArgumentForm_Works()
@@ -117,7 +117,7 @@ public class OrderingServiceFunctionTests
     [Fact]
     public void UnknownSelector_ReportsFullPath()
     {
-        _service.Process("+first(items,eq(name,x),nope)");
+        _service.Process("+first(items,nope,eq(name,x))");
 
         var error = _queryContext.GetErrors().Single();
         error.Message.Should().Be("Invalid property path.");
@@ -145,7 +145,7 @@ public class OrderingServiceFunctionTests
     [Fact]
     public void MalformedOrder_ReportsValidationErrorInsteadOfThrowing()
     {
-        _service.Process("+first(items,eq(name),id)");
+        _service.Process("+first(items,id,eq(name))");
 
         var error = _queryContext.GetErrors().Single();
         error.Code.Should().Be("order:malformed");

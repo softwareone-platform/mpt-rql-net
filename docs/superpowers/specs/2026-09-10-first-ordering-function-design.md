@@ -35,7 +35,7 @@ which does not meet the requirement above, so it was rejected. Building on
 **Goals**
 
 - RQL-expressible: collection, matching predicate, and value path are all in the request.
-- Consistent with existing RQL vocabulary: `first(<collection>,<predicate>,<path>)` is
+- Consistent with existing RQL vocabulary: `first(<collection>,<path>,<predicate>)` is
   the value-returning sibling of `any(<collection>, <predicate>)` / `all(...)`.
 - Structurally correct: graph inclusion, error paths, permissions, safe navigation,
   constant conversion and SQL parameterization all come from existing machinery.
@@ -59,7 +59,7 @@ which does not meet the requirement above, so it was rejected. Building on
 ## 3. Syntax and semantics
 
 ```
-order=+first(<collection>,<predicate>,<path>)
+order=+first(<collection>,<path>,<predicate>)
 order=+first(<collection>,<path>)
 ```
 
@@ -67,11 +67,11 @@ order=+first(<collection>,<path>)
 |---|---|---|
 | sign | `+` / `-` / none | On the function name, as for any order item. Default ascending. |
 | `<collection>` | RQL path (constant) | Resolved from the root entity with the **ordering** path builder. Dotted paths through references are allowed (`customer.parameters`). Must resolve to a `Collection` property with a known element type and must permit `Order`. |
-| `<predicate>` | RQL filter expression | Optional (3-argument form only). Built with the **filtering** expression builder against an element-scope parameter. Element properties it references must permit `Filter`. |
 | `<path>` | RQL path (constant) | Resolved from the element type with the ordering path builder. Dotted paths allowed. Must resolve to a `Primitive` property and permit `Order`. |
+| `<predicate>` | RQL filter expression | Optional (3-argument form only). Built with the **filtering** expression builder against an element-scope parameter. Element properties it references must permit `Filter`. |
 
-The parser already produces the required tree with no changes: `+first(a,eq(b,c),d)`
-parses to `RqlGenericGroup { Name = "+first", Items = [Constant a, RqlEqual(b,c), Constant d] }`,
+The parser already produces the required tree with no changes: `+first(a,d,eq(b,c))`
+parses to `RqlGenericGroup { Name = "+first", Items = [Constant a, Constant d, RqlEqual(b,c)] }`,
 and `+first(a,d)` to a two-item group. Combined order strings (`+first(...),-id`) parse
 to an `RqlAnd` of items. (Verified against master.)
 
@@ -88,11 +88,11 @@ collection" both yield `null` rather than `default(T)`.
 **Examples**
 
 ```
-order=+first(parameters,eq(name,priority),value)
-order=-first(parameters,eq(externalId,sla),displayValue)
-order=+first(parameters,and(eq(name,priority),ne(value,null)),value),-audit.created.at
+order=+first(parameters,value,eq(name,priority))
+order=-first(parameters,displayValue,eq(externalId,sla))
+order=+first(parameters,value,and(eq(name,priority),ne(value,null))),-audit.created.at
 order=+first(orders,id)                          # first order's id, no predicate
-order=+first(parameters,eq(name,'high priority'),value)
+order=+first(parameters,value,eq(name,'high priority'))
 ```
 
 **Documented caveats**
@@ -200,7 +200,7 @@ Inputs via `OrderingFunctionContext`: root parameter, `IReadOnlyList<RqlExpressi
 `IRqlSettings`.
 
 1. **Arity.** `args.Count` must be 2 or 3 → else `order:func_args`:
-   `"'first' requires 2 or 3 arguments: (collection, [predicate,] path). Got N."`
+   `"'first' requires 2 or 3 arguments: (collection, path[, predicate]). Got N."`
 2. **Collection.** `args[0]` must be `RqlConstant` → else `order:func_args`
    `"'first': collection argument must be a property path."`.
    `pathBuilder.Build(root, path)`; errors propagate (they already carry full paths and
@@ -215,11 +215,11 @@ Inputs via `OrderingFunctionContext`: root parameter, `IReadOnlyList<RqlExpressi
    predicate) restores the caller's node afterwards instead of jumping to root (revised after review). If a step fails (e.g. the graph stage rejected the path) the
    walk stops and later error paths simply lack the prefix — never an exception.
    Create `elementParam = Expression.Parameter(elementType)`.
-4. **Predicate** (3-arg form). `filterBuilder.Build(elementParam, args[1])`. Errors
+4. **Predicate** (3-arg form). `filterBuilder.Build(elementParam, args[2])`. Errors
    propagate (paths are prefixed by the current builder-context node, so they read
    `parameters.value`, not `value`). Result is a `bool` expression.
-5. **Selector.** The last argument (`args[1]` in the two-argument form, `args[2]` in the
-   three-argument form) must be `RqlConstant` → else `order:func_args`
+5. **Selector.** The path argument `args[1]` (always second; the optional predicate is
+   `args[2]`, revised after review to keep required arguments first) must be `RqlConstant` → else `order:func_args`
    `"'first': path argument must be a property path."`.
    `pathBuilder.Build(elementParam, path)`; errors propagate. Effective type
    (`TypeOverride ?? Type`) must be `Primitive` → else validation error
@@ -272,14 +272,14 @@ builder. When the sign-stripped, case-insensitive name is registered (`first`):
    collection path as `Hierarchy` (same call the `RqlCollection` case uses). If it returns
    `null` (unknown/ignored/unpermitted), return `true` (handled; the expression stage
    will report the error).
-2. If 3 arguments: `_filteringGraphBuilder.TraverseRqlExpression(collectionNode, args[1])`
+2. If 3 arguments: `_filteringGraphBuilder.TraverseRqlExpression(collectionNode, args[2])`
    — the predicate is traversed by the **filtering** graph builder, so its properties are
    included with the `Filter` reason and validated against the `Filter` action, exactly
    as `any()` does and exactly as the expression stage (5.2 step 4) will validate them.
    Using the ordering builder here would validate `Order` instead and could silently drop
    a filterable-but-not-orderable property from the graph, yielding a null column and a
    wrong sort with no error.
-3. `ProcessNode(collectionNode, lastArg)` — includes the selector path under the
+3. `ProcessNode(collectionNode, args[1])` — includes the selector path under the
    collection node with the `Order` reason.
 4. Return `true` so the base class does **not** process the arguments as root-level
    property names.
@@ -308,8 +308,8 @@ and is instantiated per call with `Activator.CreateInstance`, exactly like `Mapp
 ### 5.6 DI (`RqlExtensions.AddRql`)
 
 ```csharp
-services.AddScoped<IOrderingFunction, FirstOrderingFunction>();
-services.AddScoped<OrderingFunctionRegistry>();
+services.AddSingleton<IOrderingFunction, FirstOrderingFunction>();  // stateless (revised after review)
+services.AddSingleton<OrderingFunctionRegistry>();
 ```
 
 `OrderingService` and `OrderingGraphBuilder` take `OrderingFunctionRegistry`;
@@ -325,7 +325,7 @@ All conditions produce collected validation errors; no exceptions escape to the 
 | Condition | Code | Message | Path |
 |---|---|---|---|
 | Unknown function name | `order:unknown_func` | `Unknown ordering function 'x'.` | — |
-| Arity not 2 or 3 | `order:func_args` | `'first' requires 2 or 3 arguments: (collection, [predicate,] path). Got N.` | — |
+| Arity not 2 or 3 | `order:func_args` | `'first' requires 2 or 3 arguments: (collection, path[, predicate]). Got N.` | — |
 | Collection/path argument not a constant | `order:func_args` | `'first': <collection or path> argument must be a property path.` | — |
 | Collection path invalid / not permitted | (from path builder) | `Invalid property path.` / `Ordering is not permitted.` | full path |
 | Collection path not a collection or element type unknown | `order:not_collection` | `'<p>' is not a collection property.` | full path |

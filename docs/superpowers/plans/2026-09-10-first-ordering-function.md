@@ -1,8 +1,14 @@
 # `first()` Ordering Function Implementation Plan
 
+> **Historical record.** This plan was executed as written; two review rounds afterwards changed the
+> result: the argument order became `first(<collection>,<path>[,<predicate>])` (optional argument last),
+> `IOrderingFunction`/`OrderingFunctionRegistry` are singletons, `CollectionValueMethods` was replaced by
+> `ProjectionFunctions.GetWhere()`, and the collection is no longer null-guarded. The spec is the design of
+> record; code blocks below show the pre-review state.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add an RQL ordering function `first(<collection>, [<predicate>,] <path>)` that sorts entities by a value read from the first matching element of a child collection, built entirely on the library's existing filtering, path-building and graph machinery.
+**Goal:** Add an RQL ordering function `first(<collection>, <path>[, <predicate>])` that sorts entities by a value read from the first matching element of a child collection, built entirely on the library's existing filtering, path-building and graph machinery.
 
 **Architecture:** `OrderingService` dispatches `RqlGenericGroup` order items to an internal `OrderingFunctionRegistry`; the built-in `FirstOrderingFunction` resolves the collection with the ordering path builder, builds the predicate with the **filtering** `IExpressionBuilder` in element scope (so constants, operators and permissions are reused), and emits `Where().Select().FirstOrDefault()`. `OrderingGraphBuilder` gains a hook so the projection graph includes exactly the columns the key reads (collection → predicate props → selector). No parser or Abstractions changes.
 
@@ -642,7 +648,7 @@ public class FirstOrderingFunctionTests
     [Fact]
     public void Build_ThreeArguments_ReturnsSelectorOfFirstMatchingElement()
     {
-        var (function, context, _) = Make("+first(items,eq(name,x),id)");
+        var (function, context, _) = Make("+first(items,id,eq(name,x))");
 
         var result = function.Build(context);
 
@@ -670,7 +676,7 @@ public class FirstOrderingFunctionTests
     [Fact]
     public void Build_ValueTypeSelector_IsLiftedToNullable()
     {
-        var (function, context, _) = Make("+first(items,eq(name,x),id)");
+        var (function, context, _) = Make("+first(items,id,eq(name,x))");
 
         var result = function.Build(context);
 
@@ -680,7 +686,7 @@ public class FirstOrderingFunctionTests
     [Fact]
     public void Build_DefaultNavigation_DoesNotWrapInNullCheck()
     {
-        var (function, context, _) = Make("+first(items,eq(name,x),id)");
+        var (function, context, _) = Make("+first(items,id,eq(name,x))");
 
         var result = function.Build(context);
 
@@ -691,7 +697,7 @@ public class FirstOrderingFunctionTests
     [Fact]
     public void Build_SafeNavigation_ReturnsNullForNullCollection()
     {
-        var (function, context, _) = Make("+first(items,eq(name,x),id)", NavigationStrategy.Safe);
+        var (function, context, _) = Make("+first(items,id,eq(name,x))", NavigationStrategy.Safe);
 
         var result = function.Build(context);
 
@@ -714,7 +720,7 @@ public class FirstOrderingFunctionTests
         result.IsError.Should().BeTrue();
         var error = result.Errors.Single();
         error.Code.Should().Be(OrderingErrorCodes.FunctionArguments);
-        error.Message.Should().Be($"'first' requires 2 or 3 arguments: (collection, [predicate,] path). Got {count}.");
+        error.Message.Should().Be($"'first' requires 2 or 3 arguments: (collection, path[, predicate]). Got {count}.");
     }
 
     [Fact]
@@ -742,7 +748,7 @@ public class FirstOrderingFunctionTests
     [Fact]
     public void Build_CollectionIsNotACollection_ReturnsNotCollectionError()
     {
-        var (function, context, _) = Make("+first(name,eq(name,x),id)");
+        var (function, context, _) = Make("+first(name,id,eq(name,x))");
 
         var result = function.Build(context);
 
@@ -755,7 +761,7 @@ public class FirstOrderingFunctionTests
     [Fact]
     public void Build_UnknownCollection_PropagatesPathBuilderError()
     {
-        var (function, context, _) = Make("+first(nope,eq(name,x),id)");
+        var (function, context, _) = Make("+first(nope,id,eq(name,x))");
 
         var result = function.Build(context);
 
@@ -766,7 +772,7 @@ public class FirstOrderingFunctionTests
     [Fact]
     public void Build_UnknownSelector_PropagatesPathBuilderErrorWithCollectionPrefix()
     {
-        var (function, context, _) = Make("+first(items,eq(name,x),nope)");
+        var (function, context, _) = Make("+first(items,nope,eq(name,x))");
 
         var result = function.Build(context);
 
@@ -775,8 +781,8 @@ public class FirstOrderingFunctionTests
     }
 
     [Theory]
-    [InlineData("+first(category.products,eq(name,x),coreCategory)")] // reference
-    [InlineData("+first(category.products,eq(name,x),items)")]        // collection
+    [InlineData("+first(category.products,coreCategory,eq(name,x))")] // reference
+    [InlineData("+first(category.products,items,eq(name,x))")]        // collection
     public void Build_SelectorNotPrimitive_ReturnsNotPrimitiveError(string order)
     {
         var (function, context, _) = Make(order);
@@ -791,7 +797,7 @@ public class FirstOrderingFunctionTests
     [Fact]
     public void Build_DottedCollectionPath_Works()
     {
-        var (function, context, _) = Make("+first(category.products,eq(name,x),description)");
+        var (function, context, _) = Make("+first(category.products,description,eq(name,x))");
 
         var result = function.Build(context);
 
@@ -805,9 +811,9 @@ public class FirstOrderingFunctionTests
     }
 
     [Theory]
-    [InlineData("+first(items,eq(name,x),id)")]
-    [InlineData("+first(items,eq(name,x),nope)")]
-    [InlineData("+first(name,eq(name,x),id)")]
+    [InlineData("+first(items,id,eq(name,x))")]
+    [InlineData("+first(items,nope,eq(name,x))")]
+    [InlineData("+first(name,id,eq(name,x))")]
     public void Build_AlwaysReturnsBuilderContextToRoot(string order)
     {
         var (function, context, builderContext) = Make(order);
@@ -872,7 +878,7 @@ internal sealed class FirstOrderingFunction : IOrderingFunction
 
         if (args.Count is not (2 or 3))
             return Error.Validation(
-                $"'{FunctionName}' requires 2 or 3 arguments: (collection, [predicate,] path). Got {args.Count}.",
+                $"'{FunctionName}' requires 2 or 3 arguments: (collection, path[, predicate]). Got {args.Count}.",
                 OrderingErrorCodes.FunctionArguments);
 
         if (args[0] is not RqlConstant collectionArg)
@@ -996,7 +1002,7 @@ If `Build_UnknownSelector_PropagatesPathBuilderErrorWithCollectionPrefix` fails 
 
 ```bash
 git add src/Mpt.Rql/Services/Ordering/Functions/FirstOrderingFunction.cs tests/Rql.Tests.Unit/Ordering/FirstOrderingFunctionTests.cs
-git commit -m "Add FirstOrderingFunction: first(collection, [predicate,] path) sort key
+git commit -m "Add FirstOrderingFunction: first(collection, path[, predicate]) sort key
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 ```
@@ -1077,7 +1083,7 @@ public class OrderingGraphBuilderFunctionTests
     [Fact]
     public void First_WithPredicate_IncludesCollectionPredicateAndSelector_UnderTheCollection()
     {
-        var root = Traverse("+first(items,eq(name,x),description)");
+        var root = Traverse("+first(items,description,eq(name,x))");
 
         var items = Child(root, "items");
         items.IncludeReason.Should().HaveFlag(IncludeReasons.Hierarchy);
@@ -1089,7 +1095,7 @@ public class OrderingGraphBuilderFunctionTests
     [Fact]
     public void First_DoesNotResolveArgumentsAgainstTheRoot()
     {
-        var root = Traverse("+first(items,eq(name,x),description)");
+        var root = Traverse("+first(items,description,eq(name,x))");
 
         root.TryGetChild("name", out _).Should().BeFalse();
         root.TryGetChild("description", out _).Should().BeFalse();
@@ -1110,7 +1116,7 @@ public class OrderingGraphBuilderFunctionTests
     [Fact]
     public void First_DottedCollectionPath_IncludesEverySegmentAsHierarchy()
     {
-        var root = Traverse("+first(category.products,eq(name,x),description)");
+        var root = Traverse("+first(category.products,description,eq(name,x))");
 
         var category = Child(root, "category");
         category.IncludeReason.Should().HaveFlag(IncludeReasons.Hierarchy);
@@ -1123,7 +1129,7 @@ public class OrderingGraphBuilderFunctionTests
     [Fact]
     public void First_CombinedWithScalarItem_IncludesBoth()
     {
-        var root = Traverse("+first(items,eq(name,x),description),-id");
+        var root = Traverse("+first(items,description,eq(name,x)),-id");
 
         Child(root, "id").IncludeReason.Should().HaveFlag(IncludeReasons.Order);
         Child(Child(root, "items"), "description").IncludeReason.Should().HaveFlag(IncludeReasons.Order);
@@ -1140,7 +1146,7 @@ public class OrderingGraphBuilderFunctionTests
     [Fact]
     public void First_UnknownCollection_DoesNotMutateTheGraph()
     {
-        var root = Traverse("+first(nope,eq(name,x),description)");
+        var root = Traverse("+first(nope,description,eq(name,x))");
 
         root.Count.Should().Be(0);
     }
@@ -1246,7 +1252,7 @@ internal class OrderingGraphBuilder<TView> : GraphBuilder<TView>, IOrderingGraph
 
     /// <summary>
     /// In an order string every named group is a function call. Registered functions have the
-    /// shape <c>name(collection, [predicate,] path)</c>: the collection path is included as
+    /// shape <c>name(collection, path[, predicate])</c>: the collection path is included as
     /// hierarchy, the predicate is traversed by the filtering builder under the collection node
     /// (exactly like <c>any()</c>), and the selector is included under it with the Order reason.
     /// Unknown names are claimed too (no graph mutation) so that arguments are never resolved as
@@ -1417,20 +1423,20 @@ public class OrderingServiceFunctionTests
     [Fact]
     public void FunctionThenScalar_OrdersByKeyAscThenTieBreaks()
         // null keys first (P3, P4 ordered by -id => 4, 3), then key 10 (P2), key 30 (P1)
-        => Run("+first(items,eq(name,x),id),-id").Should().Equal(4, 3, 2, 1);
+        => Run("+first(items,id,eq(name,x)),-id").Should().Equal(4, 3, 2, 1);
 
     [Fact]
     public void FunctionDescending_PutsNullKeysLast()
-        => Run("-first(items,eq(name,x),id)").Should().Equal(1, 2, 3, 4);
+        => Run("-first(items,id,eq(name,x))").Should().Equal(1, 2, 3, 4);
 
     [Fact]
     public void NoSign_MeansAscending()
-        => Run("first(items,eq(name,x),id)").Should().Equal(3, 4, 2, 1);
+        => Run("first(items,id,eq(name,x))").Should().Equal(3, 4, 2, 1);
 
     [Fact]
     public void ScalarThenFunction_UsesThenBy()
         // all ids distinct, so the scalar decides; the function must still build (ThenBy path)
-        => Run("-id,+first(items,eq(name,x),id)").Should().Equal(4, 3, 2, 1);
+        => Run("-id,+first(items,id,eq(name,x))").Should().Equal(4, 3, 2, 1);
 
     [Fact]
     public void TwoArgumentForm_Works()
@@ -1458,7 +1464,7 @@ public class OrderingServiceFunctionTests
     [Fact]
     public void UnknownSelector_ReportsFullPath()
     {
-        _service.Process("+first(items,eq(name,x),nope)");
+        _service.Process("+first(items,nope,eq(name,x))");
 
         var error = _queryContext.GetErrors().Single();
         error.Message.Should().Be("Invalid property path.");
@@ -1772,19 +1778,19 @@ public class FirstOrderTests
 
     [Fact]
     public void Ascending_NullKeysFirst_ThenByMatchedValue()
-        => Assert.Equal([4, 5, 2, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(clientName,Michael),id)" })));
+        => Assert.Equal([4, 5, 2, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,id,eq(clientName,Michael))" })));
 
     [Fact]
     public void Descending_NullKeysLast()
-        => Assert.Equal([1, 3, 2, 4, 5], Ids(Make().Transform(Data(), new RqlRequest { Order = "-first(orders,eq(clientName,Michael),id)" })));
+        => Assert.Equal([1, 3, 2, 4, 5], Ids(Make().Transform(Data(), new RqlRequest { Order = "-first(orders,id,eq(clientName,Michael))" })));
 
     [Fact]
     public void NoSign_IsAscending()
-        => Assert.Equal([4, 5, 2, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "first(orders,eq(clientName,Michael),id)" })));
+        => Assert.Equal([4, 5, 2, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "first(orders,id,eq(clientName,Michael))" })));
 
     [Fact]
     public void QuotedPredicateValue_Works()
-        => Assert.Equal([4, 5, 2, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(clientName,'Michael'),id)" })));
+        => Assert.Equal([4, 5, 2, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,id,eq(clientName,'Michael'))" })));
 
     [Fact]
     public void TwoArguments_UsesFirstElement()
@@ -1794,17 +1800,17 @@ public class FirstOrderTests
     [Fact]
     public void CompoundPredicate_Works()
         // Michael AND id>15: 1→30, 2→null, 3→20, 4→null, 5→null
-        => Assert.Equal([2, 4, 5, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,and(eq(clientName,Michael),gt(id,15)),id)" })));
+        => Assert.Equal([2, 4, 5, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,id,and(eq(clientName,Michael),gt(id,15)))" })));
 
     [Fact]
     public void InPredicate_Works()
         // Michael or Tony: 1→30, 2→10, 3→20, 4→99, 5→null
-        => Assert.Equal([5, 2, 3, 1, 4], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,in(clientName,(Michael,Tony)),id)" })));
+        => Assert.Equal([5, 2, 3, 1, 4], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,id,in(clientName,(Michael,Tony)))" })));
 
     [Fact]
     public void IntPredicateValue_StringResult()
     {
-        var products = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(id,10),clientName)" }).Query.ToList();
+        var products = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,clientName,eq(id,10))" }).Query.ToList();
 
         // only product 2 has an order with id 10 → the single non-null key sorts last ascending
         Assert.Equal(2, products.Last().Id);
@@ -1812,11 +1818,11 @@ public class FirstOrderTests
 
     [Fact]
     public void CombinedWithScalarSort_TieBreaksNullKeys()
-        => Assert.Equal([4, 5, 2, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(clientName,Michael),id),+id" })));
+        => Assert.Equal([4, 5, 2, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,id,eq(clientName,Michael)),+id" })));
 
     [Fact]
     public void ScalarThenFunction_Works()
-        => Assert.Equal([5, 4, 3, 2, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "-id,+first(orders,eq(clientName,Michael),id)" })));
+        => Assert.Equal([5, 4, 3, 2, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "-id,+first(orders,id,eq(clientName,Michael))" })));
 
     [Fact]
     public void FirstMatch_NotMinOrMax_InMemorySemantics()
@@ -1828,7 +1834,7 @@ public class FirstOrderTests
             new() { Id = 2, Name = "Single", Category = "X", Orders = [new ProductOrder { Id = 50, ClientName = "Michael" }] },
         }.AsQueryable();
 
-        Assert.Equal([2, 1], Ids(Make().Transform(data, new RqlRequest { Order = "+first(orders,eq(clientName,Michael),id)" })));
+        Assert.Equal([2, 1], Ids(Make().Transform(data, new RqlRequest { Order = "+first(orders,id,eq(clientName,Michael))" })));
     }
 
     [Fact]
@@ -1836,7 +1842,7 @@ public class FirstOrderTests
     {
         var data = new List<Product> { new() { Id = 9, Name = "Z", Category = "X", Orders = null! } }.Concat(Data()).AsQueryable();
 
-        var result = Make(NavigationStrategy.Safe).Transform(data, new RqlRequest { Order = "+first(orders,eq(clientName,Michael),id)" });
+        var result = Make(NavigationStrategy.Safe).Transform(data, new RqlRequest { Order = "+first(orders,id,eq(clientName,Michael))" });
 
         Assert.Equal([9, 4, 5, 2, 3, 1], Ids(result));
     }
@@ -1864,7 +1870,7 @@ public class FirstOrderTests
     [Fact]
     public void NonCollection_IsAValidationError()
     {
-        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(name,eq(clientName,Michael),id)" });
+        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(name,id,eq(clientName,Michael))" });
 
         Assert.False(result.IsSuccess);
         Assert.Contains(result.Errors, e => e.Code == "order:not_collection" && e.Path == "name");
@@ -1873,7 +1879,7 @@ public class FirstOrderTests
     [Fact]
     public void UnknownPredicateProperty_ReportsPrefixedPath()
     {
-        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(nonExistent,x),id)" });
+        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,id,eq(nonExistent,x))" });
 
         Assert.False(result.IsSuccess);
         Assert.Contains(result.Errors, e => e.Message == "Invalid property path." && e.Path == "orders.nonExistent");
@@ -1882,7 +1888,7 @@ public class FirstOrderTests
     [Fact]
     public void UnknownSelector_ReportsPrefixedPath()
     {
-        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(clientName,Michael),nonExistent)" });
+        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,nonExistent,eq(clientName,Michael))" });
 
         Assert.False(result.IsSuccess);
         Assert.Contains(result.Errors, e => e.Message == "Invalid property path." && e.Path == "orders.nonExistent");
@@ -1891,7 +1897,7 @@ public class FirstOrderTests
     [Fact]
     public void IncompatiblePredicateValue_IsAValidationError()
     {
-        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(id,not-a-number),clientName)" });
+        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,clientName,eq(id,not-a-number))" });
 
         Assert.False(result.IsSuccess);
         Assert.Contains(result.Errors, e => e.Message.Contains("Cannot convert value"));
@@ -1932,7 +1938,7 @@ using Xunit;
 namespace Rql.Tests.Integration.Tests.Functionality;
 
 /// <summary>
-/// The primary use case: <c>+first(parameters,eq(name,priority),value)</c> over a keyed parameter bag.
+/// The primary use case: <c>+first(parameters,value,eq(name,priority))</c> over a keyed parameter bag.
 /// Values sort lexicographically ("critical" &lt; "high" &lt; "low" &lt; "medium").
 /// </summary>
 public class FirstParameterValueTests
@@ -1986,37 +1992,37 @@ public class FirstParameterValueTests
 
     [Fact]
     public void ByName_Ascending()
-        => Assert.Equal([5, 6, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "+first(parameters,eq(name,priority),value)" })));
+        => Assert.Equal([5, 6, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "+first(parameters,value,eq(name,priority))" })));
 
     [Fact]
     public void ByName_Descending()
-        => Assert.Equal([4, 3, 2, 1, 5, 6], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "-first(parameters,eq(name,priority),value)" })));
+        => Assert.Equal([4, 3, 2, 1, 5, 6], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "-first(parameters,value,eq(name,priority))" })));
 
     [Fact]
     public void GuidPredicateValue_UsesTheFilterPipelineConverter()
-        => Assert.Equal([5, 6, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = $"+first(parameters,eq(key,{PriorityKey}),value)" })));
+        => Assert.Equal([5, 6, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = $"+first(parameters,value,eq(key,{PriorityKey}))" })));
 
     [Fact]
     public void EnumPredicateValue_UsesTheFilterPipelineConverter()
-        => Assert.Equal([5, 6, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "+first(parameters,eq(kind,Choice),value)" })));
+        => Assert.Equal([5, 6, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "+first(parameters,value,eq(kind,Choice))" })));
 
     [Fact]
     public void ValueTypeSelector_MissingElementSortsAsNull_NotZero()
         // rank: 1→-2, 2→-1, 3→1, 4→2, 5→null, 6→null.
         // Lifted:   null, null, -2, -1, 1, 2  → [5, 6, 1, 2, 3, 4]
         // Unlifted: -2, -1, 0, 0, 1, 2        → [1, 2, 5, 6, 3, 4]  (the bug this guards against)
-        => Assert.Equal([5, 6, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "+first(parameters,eq(name,priority),rank)" })));
+        => Assert.Equal([5, 6, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "+first(parameters,rank,eq(name,priority))" })));
 
     [Fact]
     public void CombinedWithScalar_TieBreaksNullKeys()
-        => Assert.Equal([6, 5, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "+first(parameters,eq(name,priority),value),-id" })));
+        => Assert.Equal([6, 5, 1, 2, 3, 4], Ids(MakeTransparent().Transform(Data(), new RqlRequest { Order = "+first(parameters,value,eq(name,priority)),-id" })));
 
     [Fact]
     public void NullBag_SafeNavigation_YieldsNullKey()
     {
         var data = new List<SupportCase> { new() { Id = 9, Title = "Z", Parameters = null! } }.Concat(Data()).AsQueryable();
 
-        Assert.Equal([9, 5, 6, 1, 2, 3, 4], Ids(MakeTransparent(NavigationStrategy.Safe).Transform(data, new RqlRequest { Order = "+first(parameters,eq(name,priority),value)" })));
+        Assert.Equal([9, 5, 6, 1, 2, 3, 4], Ids(MakeTransparent(NavigationStrategy.Safe).Transform(data, new RqlRequest { Order = "+first(parameters,value,eq(name,priority))" })));
     }
 
     // ── Mapping enabled: the graph must carry parameters.name and parameters.value into the projection ──
@@ -2024,7 +2030,7 @@ public class FirstParameterValueTests
     [Fact]
     public void MappingEnabled_CoreOnlySelection_StillSortsCorrectly()
     {
-        var result = MakeMapped().Transform(Data(), new RqlRequest { Order = "+first(parameters,eq(name,priority),value)" });
+        var result = MakeMapped().Transform(Data(), new RqlRequest { Order = "+first(parameters,value,eq(name,priority))" });
 
         Assert.Equal([5, 6, 1, 2, 3, 4], Ids(result));
     }
@@ -2032,7 +2038,7 @@ public class FirstParameterValueTests
     [Fact]
     public void MappingEnabled_ProjectsExactlyTheColumnsTheKeyReads()
     {
-        var cases = MakeMapped().Transform(Data(), new RqlRequest { Order = "+first(parameters,eq(name,priority),value)" }).Query.ToList();
+        var cases = MakeMapped().Transform(Data(), new RqlRequest { Order = "+first(parameters,value,eq(name,priority))" }).Query.ToList();
 
         var critical = cases.Single(c => c.Id == 1).Parameters.Single();
         Assert.Equal("priority", critical.Name);      // predicate column
@@ -2046,7 +2052,7 @@ public class FirstParameterValueTests
     {
         // 'value' and 'name' are also plausible root-level names; with the old design they would have been
         // pulled into the root projection. Here only Id/Title (core) and parameters (hierarchy) are projected.
-        var result = MakeMapped().Transform(Data(), new RqlRequest { Order = "+first(parameters,eq(name,priority),value)" });
+        var result = MakeMapped().Transform(Data(), new RqlRequest { Order = "+first(parameters,value,eq(name,priority))" });
 
         Assert.True(result.IsSuccess);
         Assert.False(result.Graph.TryGetChild("value", out _));
@@ -2100,7 +2106,7 @@ Insert the following block immediately before `## Using RQL mapping` in `README.
 To sort by a value that lives inside a child collection — for example the `value` of the parameter whose `name` is `priority` — use the `first()` ordering function:
 
 ```
-order=+first(<collection>,<predicate>,<path>)
+order=+first(<collection>,<path>,<predicate>)
 order=+first(<collection>,<path>)              # no predicate: the first element
 ```
 
@@ -2111,9 +2117,9 @@ order=+first(<collection>,<path>)              # no predicate: the first element
 Examples:
 
 ```
-order=+first(parameters,eq(name,priority),value)
-order=-first(parameters,eq(externalId,sla),displayValue)
-order=+first(parameters,and(eq(name,priority),ne(value,null)),value),-id
+order=+first(parameters,value,eq(name,priority))
+order=-first(parameters,displayValue,eq(externalId,sla))
+order=+first(parameters,value,and(eq(name,priority),ne(value,null))),-id
 order=+first(orders,id)
 ```
 

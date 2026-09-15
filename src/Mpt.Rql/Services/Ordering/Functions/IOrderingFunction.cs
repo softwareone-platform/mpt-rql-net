@@ -9,6 +9,11 @@ namespace Mpt.Rql.Services.Ordering.Functions;
 /// Implementations are registered in DI as <see cref="IOrderingFunction"/> and resolved by name
 /// through <see cref="OrderingFunctionRegistry"/>.
 /// </summary>
+/// <remarks>
+/// Functions and the registry are <b>singletons</b>: an implementation must be stateless and take
+/// everything request-specific from <see cref="OrderingFunctionContext"/>, never from constructor-injected
+/// scoped services.
+/// </remarks>
 internal interface IOrderingFunction
 {
     /// <summary>Function name as written in the order string (matched case-insensitively).</summary>
