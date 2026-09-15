@@ -37,7 +37,7 @@ internal class CollectionExpressionBuilder : IConcreteExpressionBuilder<RqlColle
 
         // Struct enumerables (e.g. ImmutableArray<T>) are not reference-assignable to IEnumerable<T>; Expression.Call would throw.
         if (property.ElementType == null || accessor.Type.IsValueType)
-            return Error.General("Collection property has incompatible type");
+            return Error.Validation("Collection property has incompatible type", path: _builderContext.GetFullPath(property.Name));
 
         var param = Expression.Parameter(property.ElementType);
 

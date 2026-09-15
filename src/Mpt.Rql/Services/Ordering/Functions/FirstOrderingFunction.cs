@@ -46,7 +46,8 @@ internal sealed class FirstOrderingFunction : IOrderingFunction
 
     public void IncludeInGraph(IOrderingFunctionGraph graph, RqlNode target, IReadOnlyList<RqlExpression> arguments)
     {
-        if (arguments.Count is not (2 or 3))
+        // Wildcards are never valid here; Build reports the error, and we must not fan out the graph meanwhile.
+        if (arguments.Count is not (2 or 3) || arguments.Any(a => a is RqlConstant { Value: "*" }))
             return;
 
         var collectionNode = graph.IncludeHierarchy(target, arguments[0]);
@@ -85,7 +86,7 @@ internal sealed class FirstOrderingFunction : IOrderingFunction
 
         // Struct enumerables (e.g. ImmutableArray<T>) are not reference-assignable to IEnumerable<T>,
         // so Expression.Call would throw; reject them as validation errors instead.
-        if (collectionInfo.Type != RqlPropertyType.Collection || collectionInfo.ElementType is null || collectionExpression.Type.IsValueType)
+        if ((collectionInfo.TypeOverride ?? collectionInfo.Type) != RqlPropertyType.Collection || collectionInfo.ElementType is null || collectionExpression.Type.IsValueType)
             return Error.Validation(
                 $"'{collectionArg.Value}' is not a collection property.",
                 OrderingErrorCodes.NotCollection,

@@ -77,8 +77,8 @@ order=+first(<collection>,<path>)              # no predicate: the first element
 
 RQL does not allow whitespace between arguments.
 
-- `<collection>` — a path to a collection property of the entity (dotted paths allowed). Must permit ordering. With mapping enabled the property must be a `List<T>`.
-- `<predicate>` — any RQL filter expression, evaluated per element (`eq`, `ne`, `in`, `like`, `and`, `or`, `not`, quoted values). Element properties must permit filtering. An unquoted value that matches an element property name is compared as a **property** (`eq(name,value)` means `name == value`); quote it (`eq(name,'value')`) to compare with the literal.
+- `<collection>` — a path to a collection property of the entity (dotted paths allowed). Must permit ordering. With mapping enabled the property must be a list type (`List<T>`, `IList`, arrays).
+- `<predicate>` — any RQL filter expression, evaluated per element (`eq`, `ne`, `in`, `like`, `and`, `or`, `not`, quoted values). Element properties must permit filtering. An unquoted value that matches an element property name **of a compatible type** is compared as a property (`eq(name,value)` means `name == value`; `eq(clientName,id)` falls back to the literal `"id"` because `int` cannot be compared to a string); quote it (`eq(name,'value')`) to force the literal.
 - `<path>` — a path to a primitive property of the element, used as the sort key. Must permit ordering.
 
 Examples:

@@ -1,7 +1,6 @@
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Argument;
 using Mpt.Rql.Abstractions.Configuration;
-using Mpt.Rql.Abstractions.Exception;
 using Mpt.Rql.Abstractions.Group;
 using Mpt.Rql.Abstractions.Result;
 using Mpt.Rql.Core;
@@ -51,15 +50,9 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
         if (string.IsNullOrEmpty(order))
             return;
 
-        RqlGroup node;
-        try
+        if (!TryParse(_parser, order, out var node, out var parseError))
         {
-            node = _parser.Parse(order);
-        }
-        catch (System.Exception ex) when (IsParserException(ex))
-        {
-            // Order strings may embed function/predicate syntax; malformed input is a validation error, not a crash.
-            _context.AddError(Error.Validation($"Malformed order expression: {ex.Message}", MakeErrorCode("malformed")));
+            _context.AddError(parseError!);
             return;
         }
 
@@ -105,14 +98,6 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
 
     private static bool IsFunctionCall(RqlExpression expression)
         => expression is RqlGenericGroup { Name: { Length: > 0 } name } && StringHelper.ExtractSign(name).value.Length > 0;
-
-    private static bool IsParserException(System.Exception ex)
-        => ex is RqlParserException
-            or RqlBinaryParserException
-            or RqlCollectionParserException
-            or RqlUnaryParserException
-            or RqlArgumentParserException
-            or RqlPointerParserException;
 
     private (Expression KeyExpression, bool IsAsc)? ResolveConstantOrder(RqlConstant constant, ParameterExpression param)
     {

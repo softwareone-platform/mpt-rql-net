@@ -68,8 +68,9 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
 
                     // The expression stage resolves an unquoted right-hand constant as a property path when one
                     // matches (property-to-property comparison); include that column too so mapping projects it.
-                    // A literal that is not a property adds nothing. Wildcards are never a comparison operand.
-                    if (binary.Right is RqlConstant { IsQuoted: false } rightConstant && rightConstant.Value != "*")
+                    // Only a fully resolvable path ending in a primitive qualifies — a literal that merely collides
+                    // with a navigation name must not drag that subtree into the projection.
+                    if (binary.Right is RqlConstant { IsQuoted: false } rightConstant && ResolvesToPrimitive(target, rightConstant.Value))
                         ProcessNode(target, rightConstant);
                     else if (binary.Right is RqlPointer rightPointer)
                         TraverseRqlExpression(target, rightPointer);
@@ -83,6 +84,35 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
         }
 
         _builderContext.SetNode(target);
+    }
+
+    /// <summary>
+    /// True when <paramref name="name"/> (sign stripped) resolves segment by segment from the node's type,
+    /// without passing through a collection, to a primitive property — i.e. it can be a comparison operand.
+    /// </summary>
+    private bool ResolvesToPrimitive(RqlNode parentNode, string name)
+    {
+        var (path, _) = StringHelper.ExtractSign(name);
+        if (path.Length == 0 || path.Span.SequenceEqual("*".AsSpan()))
+            return false;
+
+        var currentType = parentNode.Property != null
+            ? parentNode.Property.ElementType ?? parentNode.Property.Property.PropertyType
+            : typeof(TView);
+
+        RqlPropertyInfo? property = null;
+        foreach (var segment in path.ToString().Split('.'))
+        {
+            if (property is { Type: RqlPropertyType.Collection })
+                return false;
+
+            if (!_metadataProvider.TryGetPropertyByDisplayName(currentType, segment, out property) || property!.Mode == RqlPropertyMode.Ignored)
+                return false;
+
+            currentType = property.Property.PropertyType;
+        }
+
+        return property is not null && (property.TypeOverride ?? property.Type) == RqlPropertyType.Primitive;
     }
 
     protected RqlNode? ProcessNode(RqlNode parentNode, RqlExpression constant, bool hierarchyOnly = false)

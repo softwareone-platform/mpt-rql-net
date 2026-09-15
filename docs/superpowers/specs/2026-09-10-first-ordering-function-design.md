@@ -152,7 +152,7 @@ src/Mpt.Rql/Services/Ordering/Functions/
     OrderingFunctionContext.cs      internal record: what a function may use
     OrderingFunctionRegistry.cs     internal name -> function lookup
     FirstOrderingFunction.cs        the built-in
-    CollectionValueMethods.cs       typed-delegate MethodInfo capture (from PR #27's WhereSelectMethods), cached
+    IOrderingFunctionGraph.cs       internal interface: graph operations a function uses to declare the columns its key reads
 ```
 
 Plus targeted edits to `OrderingService`, `OrderingGraphBuilder` / `GraphBuilder`, and
@@ -164,8 +164,8 @@ The work branches from `master`, not from PR #27, so nothing is deleted; the fol
 PR #27 pieces are intentionally **not** re-created: the public `IOrderingFunction`
 contract and `IOrderingFunctionProvider` / `OrderingFunctionProvider` (replaced by the
 internal interface and registry above), `OrderByOrderingFunction`,
-`WhereSelectMethods.cs` (its typed-delegate technique is reused inside
-`CollectionValueMethods`), the `PathInfoBuilder` pivot and its `Get*Method` helpers, and
+`WhereSelectMethods.cs` (its typed-delegate technique already exists in `ProjectionFunctions`,
+which gains `GetWhere()`), the `PathInfoBuilder` pivot and its `Get*Method` helpers, and
 all tests for `orderby()` and the pivot (`OrderByOrderTests`, `OrderByParameterValueTests`,
 `CollectionOrderTests`, `OrderByOrderingFunctionTests`,
 `OrderByOrderingFunction_ParameterValueTests`, the `PathInfoBuilderTests` additions).
@@ -211,8 +211,8 @@ Inputs via `OrderingFunctionContext`: root parameter, `IReadOnlyList<RqlExpressi
    segment** using a new internal overload `IBuilderContext.TryGoToChild(string name)`
    (the graph stage, 5.3, has already created these nodes as `Hierarchy`). This is what
    makes predicate/selector error paths read `customer.parameters.value` for a dotted
-   collection path; the existing `CollectionExpressionBuilder` only descends one level
-   and is not changed here. If a step fails (e.g. the graph stage rejected the path) the
+   collection path. `CollectionExpressionBuilder` (used for a nested `any()` inside the
+   predicate) restores the caller's node afterwards instead of jumping to root (revised after review). If a step fails (e.g. the graph stage rejected the path) the
    walk stops and later error paths simply lack the prefix — never an exception.
    Create `elementParam = Expression.Parameter(elementType)`.
 4. **Predicate** (3-arg form). `filterBuilder.Build(elementParam, args[1])`. Errors
@@ -229,7 +229,7 @@ Inputs via `OrderingFunctionContext`: root parameter, `IReadOnlyList<RqlExpressi
    try/finally).
 7. **Lift.** If the selector type is a non-nullable value type, `Expression.Convert` to
    `Nullable<T>`; `resultType` is the lifted type.
-8. **Chain.** Using `CollectionValueMethods.For(elementType, resultType)`:
+8. **Chain.** Using `ProjectionFunctions<elementType, resultType>` (`GetWhere`/`GetSelect`/`GetFirstOrDefault`; revised after review — the earlier `CollectionValueMethods` duplicated it):
    `source = collectionExpr`; if predicate: `source = Where(source, Lambda(pred, e))`;
    `selected = Select(source, Lambda(selector, e))`; `key = FirstOrDefault(selected)`.
 9. **No outer null guard** (revised after review). EF Core cannot translate
@@ -297,13 +297,13 @@ building a `Dictionary<string, IOrderingFunction>(StringComparer.OrdinalIgnoreCa
 not throw). Exposes `TryGet(name, out function)` and `Contains(name)` (used by the graph
 builder).
 
-### 5.5 `CollectionValueMethods`
+### 5.5 Method capture (revised after review)
 
-`internal interface ICollectionValueMethods { MethodInfo Where; MethodInfo Select; MethodInfo FirstOrDefault; }`
-and `internal sealed class CollectionValueMethods<TElement, TResult>` obtaining the three
-closed `MethodInfo`s by assigning method groups to typed delegates (compile-time overload
-resolution; no reflection scanning). `static ICollectionValueMethods For(Type element, Type result)`
-caches instances in a `ConcurrentDictionary<(Type, Type), ICollectionValueMethods>`.
+The `Where`/`Select`/`FirstOrDefault` `MethodInfo`s come from the existing
+`ProjectionFunctions<TFrom, TTo>` (`Services/Mapping`), which gains `GetWhere()`; it captures them by
+assigning method groups to typed delegates (compile-time overload resolution, no reflection scanning)
+and is instantiated per call with `Activator.CreateInstance`, exactly like `MappingService` and
+`OrderingService.MakeOrderingMethod` do.
 
 ### 5.6 DI (`RqlExtensions.AddRql`)
 
@@ -352,7 +352,8 @@ All conditions produce collected validation errors; no exceptions escape to the 
 
 - `FirstOrderingFunctionTests`: 2- and 3-arg happy paths (compile and evaluate the key
   against in-memory objects); every row of the error table; nullable lifting for `int`
-  and already-nullable types; safe-navigation wrap present iff `Safe`; dotted collection
+  and already-nullable types; the key is never wrapped in a collection null check (any navigation);
+  under `Safe` a dotted-prefix guard is applied around the key; dotted collection
   paths; `GoToRoot` called on error paths. The filtering `IExpressionBuilder` is mocked
   here; Guid and enum predicate values are covered by the integration tests, which run
   the real filtering pipeline.
@@ -362,7 +363,6 @@ All conditions produce collected validation errors; no exceptions escape to the 
 - `OrderingServiceTests` additions: unknown function code; sign handling `+`/`-`/none;
   `first()` combined with scalar item in both orders (`OrderBy` then `ThenBy`);
   duplicate registration does not throw.
-- `CollectionValueMethodsTests`: correct closed generics; cache returns same instance.
 
 ### Integration (`tests/Rql.Tests.Integration`, LINQ-to-Objects as today)
 
