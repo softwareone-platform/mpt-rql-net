@@ -32,6 +32,9 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
         {
             case RqlGroup group:
                 {
+                    if (group is RqlGenericGroup functionGroup && TryTraverseFunctionGroup(target, functionGroup))
+                        break;
+
                     var currentTarget = target;
                     if (group is RqlGenericGroup genericGroup)
                     {
@@ -62,6 +65,15 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
             case RqlBinary binary:
                 {
                     TraverseRqlExpression(target, binary.Left);
+
+                    // The expression stage resolves an unquoted right-hand constant as a property path when one
+                    // matches (property-to-property comparison); include that column too so mapping projects it.
+                    // Only a fully resolvable path ending in a primitive qualifies — a literal that merely collides
+                    // with a navigation name must not drag that subtree into the projection.
+                    if (binary.Right is RqlConstant { IsQuoted: false } rightConstant && ResolvesToPrimitive(target, rightConstant.Value))
+                        ProcessNode(target, rightConstant);
+                    else if (binary.Right is RqlPointer rightPointer)
+                        TraverseRqlExpression(target, rightPointer);
                 }
                 break;
             case RqlConstant constant:
@@ -74,7 +86,36 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
         _builderContext.SetNode(target);
     }
 
-    private RqlNode? ProcessNode(RqlNode parentNode, RqlExpression constant, bool hierarchyOnly = false)
+    /// <summary>
+    /// True when <paramref name="name"/> (sign stripped) resolves segment by segment from the node's type,
+    /// without passing through a collection, to a primitive property — i.e. it can be a comparison operand.
+    /// </summary>
+    private bool ResolvesToPrimitive(RqlNode parentNode, string name)
+    {
+        var (path, _) = StringHelper.ExtractSign(name);
+        if (path.Length == 0 || path.Span.SequenceEqual("*".AsSpan()))
+            return false;
+
+        var currentType = parentNode.Property != null
+            ? parentNode.Property.ElementType ?? parentNode.Property.Property.PropertyType
+            : typeof(TView);
+
+        RqlPropertyInfo? property = null;
+        foreach (var segment in path.ToString().Split('.'))
+        {
+            if (property is { Type: RqlPropertyType.Collection })
+                return false;
+
+            if (!_metadataProvider.TryGetPropertyByDisplayName(currentType, segment, out property) || property!.Mode == RqlPropertyMode.Ignored)
+                return false;
+
+            currentType = property.Property.PropertyType;
+        }
+
+        return property is not null && (property.TypeOverride ?? property.Type) == RqlPropertyType.Primitive;
+    }
+
+    protected RqlNode? ProcessNode(RqlNode parentNode, RqlExpression constant, bool hierarchyOnly = false)
     {
         if (constant is not RqlConstant constExpression)
             return null;
@@ -149,6 +190,13 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
     protected virtual void OnValidationFailed(RqlNode node, RqlPropertyInfo property) { }
 
     protected virtual void OnNodeAddedDueToHierarchy(RqlNode node, RqlPropertyInfo property) { }
+
+    /// <summary>
+    /// Gives derived builders a chance to interpret a named generic group as a function call
+    /// (e.g. ordering's <c>first(...)</c>). Return <c>true</c> when the group has been handled; the
+    /// base traversal — which treats the group's items as property paths — is then skipped.
+    /// </summary>
+    protected virtual bool TryTraverseFunctionGroup(RqlNode target, RqlGenericGroup group) => false;
 
     private IEnumerable<RqlPropertyInfo> GetProperties(Type type, ReadOnlyMemory<char> path)
     {
