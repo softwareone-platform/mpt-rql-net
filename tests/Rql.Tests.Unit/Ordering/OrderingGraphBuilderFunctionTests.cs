@@ -38,7 +38,7 @@ public class OrderingGraphBuilderFunctionTests
         _ordering = new OrderingGraphBuilder<Product>(metadata, validator.Object, builderContext, filtering, registry);
     }
 
-    private IRqlNode Traverse(string order)
+    private RqlNode Traverse(string order)
     {
         _ordering.TraverseRqlExpression(_queryContext.Graph, _parser.Parse(order));
         return _queryContext.Graph;

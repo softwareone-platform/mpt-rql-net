@@ -52,7 +52,8 @@ public class OrderingServiceFunctionTests
             .Returns((ParameterExpression e, RqlExpression _) =>
                 new Result<Expression>(Expression.Equal(Expression.Property(e, nameof(Item.Name)), Expression.Constant("x"))));
 
-        _service = new OrderingService<Product>(_queryContext, orderingGraph, new RqlParser(), pathBuilder, filterBuilder.Object, builderContext, settings, registry);
+        var services = new OrderingFunctionServices(pathBuilder, filterBuilder.Object, builderContext, settings, registry);
+        _service = new OrderingService<Product>(_queryContext, orderingGraph, new RqlParser(), services);
     }
 
     /// <summary>

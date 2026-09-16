@@ -146,11 +146,10 @@ internal sealed class FirstOrderingFunction : IOrderingFunction
     /// </summary>
     private static void DescendInto(IBuilderContext builderContext, string collectionPath)
     {
-        foreach (var segment in collectionPath.Split('.'))
-        {
-            if (!builderContext.TryGoToChild(segment))
-                return;
-        }
+        var segments = collectionPath.Split('.');
+        var i = 0;
+        while (i < segments.Length && builderContext.TryGoToChild(segments[i]))
+            i++;
     }
 
     private static Expression BuildKey(

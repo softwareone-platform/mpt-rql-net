@@ -17,6 +17,8 @@ internal class ProjectionFunctions<T> : ProjectionFunctions<T, T> { }
 /// reduce collections. Obtained by assigning method groups to typed delegates so overload resolution
 /// happens at compile time.
 /// </summary>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Major Code Smell", "S2743:Static fields should not be used in generic types",
+    Justification = "Intentional: each closed generic type caches the MethodInfos for its own TFrom/TTo, which is exactly the per-type behaviour the rule warns about.")]
 internal class ProjectionFunctions<TFrom, TTo> : IProjectionFunctions
 {
     private static readonly MethodInfo _whereMethod;

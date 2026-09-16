@@ -37,7 +37,7 @@ public class FilteringGraphBuilderRightHandTests
         _filtering = new FilteringGraphBuilder<Product>(metadata, validator.Object, new BuilderContext());
     }
 
-    private IRqlNode Traverse(string filter)
+    private RqlNode Traverse(string filter)
     {
         _filtering.TraverseRqlExpression(_queryContext.Graph, _parser.Parse(filter));
         return _queryContext.Graph;

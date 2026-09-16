@@ -316,7 +316,9 @@ services.AddSingleton<IOrderingFunction, FirstOrderingFunction>();  // stateless
 services.AddSingleton<OrderingFunctionRegistry>();
 ```
 
-`OrderingService` and `OrderingGraphBuilder` take `OrderingFunctionRegistry`;
+`OrderingService` takes the scoped bundle `OrderingFunctionServices` (path builder, filtering
+builder, builder context, settings, registry) instead of couriering each service through its own
+constructor (revised after review); `OrderingGraphBuilder` takes `OrderingFunctionRegistry`;
 `OrderingGraphBuilder` additionally takes `IFilteringGraphBuilder<TView>` (already
 registered, scoped) for predicate traversal. `FirstOrderingFunction` takes nothing;
 everything it needs arrives in the context. `IBuilderContext` gains the internal

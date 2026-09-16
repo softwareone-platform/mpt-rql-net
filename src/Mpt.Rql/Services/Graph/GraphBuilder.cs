@@ -32,24 +32,7 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
         switch (expression)
         {
             case RqlGroup group:
-                {
-                    if (group is RqlGenericGroup functionGroup && TryTraverseFunctionGroup(target, functionGroup))
-                        break;
-
-                    var currentTarget = target;
-                    if (group is RqlGenericGroup genericGroup)
-                    {
-                        var updatedTarget = ProcessNode(target, genericGroup.Name);
-                        if (updatedTarget != null)
-                            currentTarget = updatedTarget;
-                    }
-
-                    if (group.Items != null)
-                        foreach (var item in group.Items)
-                        {
-                            TraverseRqlExpression(currentTarget, item);
-                        }
-                }
+                TraverseGroup(target, group);
                 break;
             case RqlUnary unary:
                 TraverseRqlExpression(target, unary.Nested);
@@ -64,19 +47,7 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
                 }
                 break;
             case RqlBinary binary:
-                {
-                    TraverseRqlExpression(target, binary.Left);
-
-                    // The expression stage resolves an unquoted right-hand constant as a property path when one
-                    // matches AND its type can be coerced to the left side (property-to-property comparison);
-                    // include that column too so mapping projects it. Mirror that decision here so a literal that
-                    // merely collides with a property name — or a property of an incompatible type, which the
-                    // expression stage treats as a literal — never drags an unread column into the projection.
-                    if (binary.Right is RqlConstant { IsQuoted: false } rightConstant && IsRightHandProperty(target, binary.Left, rightConstant.Value))
-                        ProcessNode(target, rightConstant);
-                    else if (binary.Right is RqlPointer rightPointer)
-                        TraverseRqlExpression(target, rightPointer);
-                }
+                TraverseBinary(target, binary);
                 break;
             case RqlConstant constant:
                 {
@@ -88,6 +59,39 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
         _builderContext.SetNode(target);
     }
 
+    private void TraverseGroup(RqlNode target, RqlGroup group)
+    {
+        if (group is RqlGenericGroup functionGroup && TryTraverseFunctionGroup(target, functionGroup))
+            return;
+
+        var currentTarget = target;
+        if (group is RqlGenericGroup genericGroup)
+        {
+            var updatedTarget = ProcessNode(target, genericGroup.Name);
+            if (updatedTarget != null)
+                currentTarget = updatedTarget;
+        }
+
+        if (group.Items == null)
+            return;
+
+        foreach (var item in group.Items)
+            TraverseRqlExpression(currentTarget, item);
+    }
+
+    private void TraverseBinary(RqlNode target, RqlBinary binary)
+    {
+        TraverseRqlExpression(target, binary.Left);
+
+        // The expression stage compares against a right-hand PROPERTY when an unquoted constant resolves to one
+        // of a compatible type, and against the literal text otherwise. Mirror that decision so mapping projects
+        // exactly the columns the comparison reads and never a column that merely shares a name with the literal.
+        if (binary.Right is RqlConstant { IsQuoted: false } rightConstant && IsRightHandProperty(target, binary.Left, rightConstant.Value))
+            ProcessNode(target, rightConstant);
+        else if (binary.Right is RqlPointer rightPointer)
+            TraverseRqlExpression(target, rightPointer);
+    }
+
     /// <summary>
     /// Decides whether an unquoted right-hand constant is a property operand (to be included in the graph) or a
     /// literal, mirroring <c>BinaryExpressionBuilder</c>: the path must resolve to a primitive — or to a custom
@@ -96,21 +100,19 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
     /// </summary>
     private bool IsRightHandProperty(RqlNode parentNode, RqlExpression left, string rightName)
     {
-        var right = ResolvePrimitivePath(parentNode, rightName);
-        if (right is not { Resolved: true })
+        if (ResolvePrimitivePath(parentNode, rightName) is not { Resolved: true } right)
             return false;
 
-        if (right.Value.ResolverConsumed)
+        if (right.ResolverConsumed || right.Leaf is null)
             return true; // the carrier property is what the graph needs; the leaf type is the resolver's business
 
         if (left is not RqlConstant leftConstant)
             return true;
 
-        var leftPath = ResolvePrimitivePath(parentNode, leftConstant.Value);
-        if (leftPath is not { Resolved: true, ResolverConsumed: false, Leaf: not null })
+        if (ResolvePrimitivePath(parentNode, leftConstant.Value) is not { Resolved: true, ResolverConsumed: false, Leaf: { } leftLeaf })
             return true;
 
-        return CanConvertChecked(right.Value.Leaf!.Property.PropertyType, leftPath.Value.Leaf!.Property.PropertyType);
+        return CanConvertChecked(right.Leaf.Property.PropertyType, leftLeaf.Property.PropertyType);
     }
 
     private readonly record struct PrimitivePath(bool Resolved, bool ResolverConsumed, RqlPropertyInfo? Leaf);
