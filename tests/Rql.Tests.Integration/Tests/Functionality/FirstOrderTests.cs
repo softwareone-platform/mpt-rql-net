@@ -6,7 +6,7 @@ using Xunit;
 namespace Rql.Tests.Integration.Tests.Functionality;
 
 /// <summary>
-/// <c>first(&lt;collection&gt;, [&lt;predicate&gt;,] &lt;path&gt;)</c> against Product.Orders, LINQ-to-Objects.
+/// <c>first(&lt;collection&gt;, &lt;path&gt;[, &lt;predicate&gt;])</c> against Product.Orders, LINQ-to-Objects.
 /// </summary>
 public class FirstOrderTests
 {
