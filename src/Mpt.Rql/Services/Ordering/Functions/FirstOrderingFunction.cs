@@ -15,8 +15,8 @@ namespace Mpt.Rql.Services.Ordering.Functions;
 /// <remarks>
 /// <para>
 /// Sort key = <c>collection.Where(e =&gt; predicate).Select(e =&gt; path).FirstOrDefault()</c>; the
-/// <c>Where</c> is omitted in the two-argument form (required arguments first, the optional predicate
-/// last). Value-type selectors are lifted to
+/// <c>Where</c> is omitted in the two-argument form. Arguments are ordered required-first: the
+/// collection, then the path, then the optional predicate. Value-type selectors are lifted to
 /// <see cref="Nullable{T}"/> so "no matching element" and "empty collection" both yield <c>null</c>.
 /// </para>
 /// <para>

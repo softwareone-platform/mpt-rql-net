@@ -35,8 +35,9 @@ which does not meet the requirement above, so it was rejected. Building on
 **Goals**
 
 - RQL-expressible: collection, matching predicate, and value path are all in the request.
-- Consistent with existing RQL vocabulary: `first(<collection>,<path>,<predicate>)` is
-  the value-returning sibling of `any(<collection>, <predicate>)` / `all(...)`.
+- Consistent with existing RQL vocabulary: `first(<collection>,<path>[,<predicate>])` is
+  the value-returning sibling of `any(<collection>,<predicate>)` / `all(...)` — the same
+  collection-plus-predicate idea, with the value path inserted before the (optional) predicate.
 - Structurally correct: graph inclusion, error paths, permissions, safe navigation,
   constant conversion and SQL parameterization all come from existing machinery.
 - Full predicate power (`eq`, `ne`, `in`, `like`, `and`/`or`, `not`, quoted values), not a
@@ -220,7 +221,9 @@ Inputs via `OrderingFunctionContext`: root parameter, `IReadOnlyList<RqlExpressi
    `parameters.value`, not `value`). Result is a `bool` expression.
 5. **Selector.** The path argument `args[1]` (always second; the optional predicate is
    `args[2]`, revised after review to keep required arguments first) must be `RqlConstant` → else `order:func_args`
-   `"'first': path argument must be a property path."`.
+   `"'first': path argument must be a property path."` (this shape check runs up front with
+   the other argument checks in step 1, before the collection is resolved; the path is
+   *resolved* here, after the predicate).
    `pathBuilder.Build(elementParam, path)`; errors propagate. Effective type
    (`TypeOverride ?? Type`) must be `Primitive` → else validation error
    `order:not_primitive` `"'first': path must resolve to a primitive property."` with the
@@ -272,15 +275,16 @@ builder. When the sign-stripped, case-insensitive name is registered (`first`):
    collection path as `Hierarchy` (same call the `RqlCollection` case uses). If it returns
    `null` (unknown/ignored/unpermitted), return `true` (handled; the expression stage
    will report the error).
-2. If 3 arguments: `_filteringGraphBuilder.TraverseRqlExpression(collectionNode, args[2])`
+2. `ProcessNode(collectionNode, args[1])` — includes the selector path under the
+   collection node with the `Order` reason.
+3. If 3 arguments: `_filteringGraphBuilder.TraverseRqlExpression(collectionNode, args[2])`
    — the predicate is traversed by the **filtering** graph builder, so its properties are
    included with the `Filter` reason and validated against the `Filter` action, exactly
    as `any()` does and exactly as the expression stage (5.2 step 4) will validate them.
    Using the ordering builder here would validate `Order` instead and could silently drop
    a filterable-but-not-orderable property from the graph, yielding a null column and a
-   wrong sort with no error.
-3. `ProcessNode(collectionNode, args[1])` — includes the selector path under the
-   collection node with the `Order` reason.
+   wrong sort with no error. (Steps 2 and 3 are order-independent: both add children of
+   the same collection node, and the enclosing traversal resets the builder context.)
 4. Return `true` so the base class does **not** process the arguments as root-level
    property names.
 

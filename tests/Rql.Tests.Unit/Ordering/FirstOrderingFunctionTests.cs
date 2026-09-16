@@ -203,7 +203,8 @@ public class FirstOrderingFunctionTests
     [Fact]
     public void Build_PathArgumentNotAPath_ReturnsFunctionArgumentsError()
     {
-        var h = Make("+first(items,eq(name,x),eq(id,1))");
+        // Two-argument form whose path slot (args[1]) holds a predicate instead of a property path.
+        var h = Make("+first(items,eq(id,1))");
 
         var result = h.Function.Build(h.Context);
 

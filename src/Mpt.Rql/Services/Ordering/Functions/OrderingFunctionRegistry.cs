@@ -6,6 +6,10 @@ namespace Mpt.Rql.Services.Ordering.Functions;
 /// Resolves <see cref="IOrderingFunction"/>s by name, case-insensitively. When several registrations
 /// share a name the last one wins, so a duplicate <c>AddRql()</c> call cannot break ordering.
 /// </summary>
+/// <remarks>
+/// Registered as a singleton and shared across request scopes: the dictionary is populated once in the
+/// constructor and never mutated afterwards. Do not add mutators without revisiting the lifetime.
+/// </remarks>
 internal sealed class OrderingFunctionRegistry
 {
     private readonly Dictionary<string, IOrderingFunction> _functions = new(StringComparer.OrdinalIgnoreCase);
