@@ -48,6 +48,24 @@ internal class BinaryExpressionBuilder : IConcreteExpressionBuilder<RqlBinary>
         return expression.IsError ? expression.Errors : expression;
     }
 
+    /// <summary>
+    /// A right-hand path whose type cannot be coerced to the left side (e.g. Guid vs string) is not a usable
+    /// property comparison; the caller then treats the text as a literal instead of throwing.
+    /// </summary>
+    private static bool TryConvertChecked(Expression expression, Type targetType, out Expression converted)
+    {
+        try
+        {
+            converted = Expression.ConvertChecked(expression, targetType);
+            return true;
+        }
+        catch (InvalidOperationException)
+        {
+            converted = expression;
+            return false;
+        }
+    }
+
     private Result<Expression> MakeComparison(ParameterExpression parameter, RqlBinary node, IRqlPropertyInfo propertyInfo, Expression accessor, IComparisonOperator comparison)
     {
         if (node.Right is RqlPointer pointer)
@@ -56,7 +74,11 @@ internal class BinaryExpressionBuilder : IConcreteExpressionBuilder<RqlBinary>
             if (rightExpression.IsError)
                 return rightExpression.Errors;
 
-            return ((ComparisonOperator)comparison).Handler.Invoke(accessor, Expression.ConvertChecked(rightExpression.Value!.Expression, accessor.Type));
+            // self(...) explicitly names a property, so an incompatible type is an error, not a literal fallback.
+            if (!TryConvertChecked(rightExpression.Value!.Expression, accessor.Type, out var pointerExpression))
+                return FilteringError.IncompatibleComparison(accessor.Type, rightExpression.Value.Expression.Type);
+
+            return ((ComparisonOperator)comparison).Handler.Invoke(accessor, pointerExpression);
         }
 
         // Try to interpret right side as property path if it's an unquoted constant
@@ -64,10 +86,10 @@ internal class BinaryExpressionBuilder : IConcreteExpressionBuilder<RqlBinary>
         if (node.Right is RqlConstant constant && !string.IsNullOrEmpty(constant.Value) && !constant.IsQuoted)
         {
             var rightAsProperty = _pathBuilder.Build(parameter, constant.Value);
-            if (!rightAsProperty.IsError)
+            if (!rightAsProperty.IsError && TryConvertChecked(rightAsProperty.Value!.Expression, accessor.Type, out var rightExpression))
             {
-                // Successfully resolved as property path
-                return ((ComparisonOperator)comparison).Handler.Invoke(accessor, Expression.ConvertChecked(rightAsProperty.Value!.Expression, accessor.Type));
+                // Successfully resolved as a property path of a compatible type
+                return ((ComparisonOperator)comparison).Handler.Invoke(accessor, rightExpression);
             }
         }
 

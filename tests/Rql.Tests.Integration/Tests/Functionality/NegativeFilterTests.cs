@@ -1,5 +1,4 @@
 ﻿using Mpt.Rql;
-using Mpt.Rql.Abstractions.Exception;
 using Mpt.Rql.Abstractions.Result;
 using Rql.Tests.Integration.Core;
 using Xunit;
@@ -83,15 +82,18 @@ public class NegativeFilterTests
     [Theory]
     [InlineData("any()")]
     [InlineData("all()")]
-    public void Collection_WithoutArguments_ThrowsRqlCollectionParserException(string query)
+    public void Collection_WithoutArguments_IsAMalformedFilterValidationError(string query)
     {
         // Arrange
         var testData = ProductRepository.Query();
 
-        // Act and Assert
-        var exception = Assert.Throws<RqlCollectionParserException>(() =>
-            _rql.Transform(testData, new RqlRequest { Filter = query }));
+        // Act — parser failures are reported like every other malformed input, never thrown out of Transform
+        var result = _rql.Transform(testData, new RqlRequest { Filter = query });
 
-        Assert.Equal("Collection expression must have at least 1 argument", exception.Message);
+        // Assert
+        Assert.False(result.IsSuccess);
+        var error = Assert.Single(result.Errors);
+        Assert.Equal("query:malformed", error.Code);
+        Assert.Contains("Collection expression must have at least 1 argument", error.Message);
     }
 }

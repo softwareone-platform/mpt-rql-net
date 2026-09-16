@@ -23,6 +23,12 @@ internal sealed class ProjectionService<TView> : RqlService, IProjectionService<
         if (string.IsNullOrEmpty(projection))
             return;
 
-        _graphBuilder.TraverseRqlExpression(_context.Graph, _parser.Parse(projection));
+        if (!TryParse(_parser, projection, out var node, out var parseError))
+        {
+            _context.AddError(parseError!);
+            return;
+        }
+
+        _graphBuilder.TraverseRqlExpression(_context.Graph, node);
     }
 }
