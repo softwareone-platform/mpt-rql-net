@@ -113,6 +113,18 @@ public class OrderingGraphBuilderFunctionTests
         root.Count.Should().Be(0);
     }
 
+    [Theory]
+    [InlineData("+first(*,id)")]
+    [InlineData("+first(+*,id)")]
+    [InlineData("+first(items,-*)")]
+    public void First_WildcardArgument_DoesNotMutateTheGraph(string order)
+    {
+        // Build rejects wildcards; the graph must not have fanned out every property in the meantime.
+        var root = Traverse(order);
+
+        root.Count.Should().Be(0);
+    }
+
     [Fact]
     public void First_UnknownCollection_DoesNotMutateTheGraph()
     {

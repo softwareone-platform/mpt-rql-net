@@ -378,8 +378,10 @@ All conditions produce collected validation errors; no exceptions escape to the 
 - **Mapping enabled**: the same sorts with `Mapping.Transparent = false` and
   `Select.Implicit = Select.Explicit = Core` on models whose element properties are *not*
   core — asserts correct order and that the projected elements carry the columns.
-- Null collection with `Ordering.Navigation = Safe` → no exception, null key; with
-  `Default` → documented provider behaviour (not asserted).
+- Safe navigation (revised after review): a null *reference prefix* on a dotted collection
+  path (`reference.orders` with `Reference == null`) → no exception, null key; the
+  collection itself is never guarded (EF Core cannot translate that), so a null collection
+  throws in memory exactly as `any()` does — documented, not asserted.
 - Regression: `+orders.clientName` and `eq(orders.clientName,x)` are validation errors
   (pivot removed).
 

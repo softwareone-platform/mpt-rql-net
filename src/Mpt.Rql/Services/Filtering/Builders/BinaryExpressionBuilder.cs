@@ -74,7 +74,11 @@ internal class BinaryExpressionBuilder : IConcreteExpressionBuilder<RqlBinary>
             if (rightExpression.IsError)
                 return rightExpression.Errors;
 
-            return ((ComparisonOperator)comparison).Handler.Invoke(accessor, Expression.ConvertChecked(rightExpression.Value!.Expression, accessor.Type));
+            // self(...) explicitly names a property, so an incompatible type is an error, not a literal fallback.
+            if (!TryConvertChecked(rightExpression.Value!.Expression, accessor.Type, out var pointerExpression))
+                return FilteringError.IncompatibleComparison(accessor.Type, rightExpression.Value.Expression.Type);
+
+            return ((ComparisonOperator)comparison).Handler.Invoke(accessor, pointerExpression);
         }
 
         // Try to interpret right side as property path if it's an unquoted constant

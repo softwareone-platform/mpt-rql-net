@@ -57,6 +57,16 @@ public class SharedPipelineFixesTests
     }
 
     [Fact]
+    public void ExplicitPointer_IncompatibleType_IsAValidationError()
+    {
+        // self(name) explicitly names a property; a type clash must not fall back to a literal, nor throw.
+        var result = Make<Product>().Transform(ProductRepository.Query(), new RqlRequest { Filter = "eq(id,self(name))" });
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains(result.Errors, e => e.Code == "query:incompatible_types" && e.Message.Contains("'Int32' and 'String'"));
+    }
+
+    [Fact]
     public void RightHandProperty_CompatibleType_IsComparedAsProperty()
     {
         // price == sellPrice: product 6 (129.99 both)

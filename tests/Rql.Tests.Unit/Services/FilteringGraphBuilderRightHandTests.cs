@@ -64,6 +64,44 @@ public class FilteringGraphBuilderRightHandTests
         name!.IncludeReason.Should().HaveFlag(IncludeReasons.Filter);
     }
 
+    [Fact]
+    public void RightHandPrimitiveOfIncompatibleType_AddsNothing()
+    {
+        // The expression stage cannot coerce int `id` to string `name`, so it compares with the literal "id";
+        // the graph must agree and not project a column the query never reads.
+        var root = Traverse("eq(name,id)");
+
+        root.Children.Should().ContainSingle(n => n.Name == "name");
+    }
+
+    [Fact]
+    public void RightHandResolverBackedPath_IncludesTheCarrierProperty()
+    {
+        // `jsonProp.dynamicProp` has no CLR leaf; the expression stage hands it to the property's custom resolver,
+        // so the graph must include the carrier `jsonProp` for mapping — just as it does when it is the left side.
+        var validator = new Mock<IActionValidator>();
+        validator.Setup(v => v.Validate(It.IsAny<RqlPropertyInfo>(), It.IsAny<RqlActions>())).Returns(true);
+        var accessor = new ExternalServiceAccessor();
+        accessor.SetServiceProvider(new ServiceCollection().BuildServiceProvider());
+        var queryContext = new QueryContext<ResolverHolder>(accessor);
+        var metadata = new MetadataProvider(new PropertyNameProvider(), new MetadataFactory(new GlobalRqlSettings()));
+        var filtering = new FilteringGraphBuilder<ResolverHolder>(metadata, validator.Object, new BuilderContext());
+
+        filtering.TraverseRqlExpression(queryContext.Graph, _parser.Parse("eq(name,jsonProp.dynamicProp)"));
+
+        queryContext.Graph.TryGetChild("jsonProp", out var carrier).Should().BeTrue();
+        carrier!.IncludeReason.Should().HaveFlag(IncludeReasons.Filter);
+    }
+
+    private sealed class ResolverHolder
+    {
+        public string Name { get; set; } = "";
+
+        // The graph builder never invokes the resolver, so the interface type itself is a valid placeholder here.
+        [RqlProperty(CustomResolver = typeof(Mpt.Rql.Abstractions.IRqlCustomPropertyResolver))]
+        public string JsonProp { get; set; } = "";
+    }
+
     [Theory]
     [InlineData("eq(name,category)")]        // reference navigation
     [InlineData("eq(name,items)")]           // collection navigation

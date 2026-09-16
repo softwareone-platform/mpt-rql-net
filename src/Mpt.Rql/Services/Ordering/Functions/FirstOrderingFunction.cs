@@ -48,8 +48,8 @@ internal sealed class FirstOrderingFunction : IOrderingFunction
 
     public void IncludeInGraph(IOrderingFunctionGraph graph, RqlNode target, IReadOnlyList<RqlExpression> arguments)
     {
-        // Wildcards are never valid here; Build reports the error, and we must not fan out the graph meanwhile.
-        if (arguments.Count is not (2 or 3) || arguments.Any(a => a is RqlConstant { Value: "*" }))
+        // Wildcards (also signed: "+*") are never valid here; Build reports the error, and we must not fan out the graph meanwhile.
+        if (arguments.Count is not (2 or 3) || arguments.Any(IsWildcard))
             return;
 
         var collectionNode = graph.IncludeHierarchy(target, arguments[0]);
@@ -135,6 +135,9 @@ internal sealed class FirstOrderingFunction : IOrderingFunction
             builderContext.GoToRoot();
         }
     }
+
+    private static bool IsWildcard(RqlExpression argument)
+        => argument is RqlConstant constant && StringHelper.ExtractSign(constant.Value).value.Span.SequenceEqual("*".AsSpan());
 
     /// <summary>
     /// Walks the builder context down the collection path segment by segment (graph node names are
