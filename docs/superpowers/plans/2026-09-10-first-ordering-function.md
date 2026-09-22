@@ -1,7 +1,9 @@
 # `first()` Ordering Function Implementation Plan
 
-> **Historical record.** This plan was executed as written; two review rounds afterwards changed the
-> result: the argument order became `first(<collection>,<path>[,<predicate>])` (optional argument last),
+> **Historical record.** This plan was executed as written; three review rounds afterwards changed the
+> result: the syntax became `first(<collection>[,<predicate>]).<path>` — `first()` is an evaluator and the sort key
+> is a dotted member access on its result (`RqlMemberAccess`, one small parser addition; literal predicate values
+> are documented quoted, `eq(name,"priority")`),
 > `IOrderingFunction`/`OrderingFunctionRegistry` are singletons, `CollectionValueMethods` was replaced by
 > `ProjectionFunctions.GetWhere()`, and the collection is no longer null-guarded. The spec is the design of
 > record; code blocks below show the pre-review state.
