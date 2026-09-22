@@ -96,5 +96,8 @@ public abstract class RqlExpression
     public static RqlSelf Self(RqlExpression? inner = null)
         => new(inner);
 
+    public static RqlMemberAccess Member(RqlExpression inner, string path)
+        => new(inner, path);
+
     #endregion
 }

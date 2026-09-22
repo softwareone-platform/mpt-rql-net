@@ -10,13 +10,15 @@ using System.Linq.Expressions;
 namespace Mpt.Rql.Services.Ordering.Functions;
 
 /// <summary>
-/// Built-in ordering function: <c>first(&lt;collection&gt;, &lt;path&gt;[, &lt;predicate&gt;])</c>.
+/// Built-in ordering function: <c>first(&lt;collection&gt;[, &lt;predicate&gt;]).&lt;path&gt;</c>.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Sort key = <c>collection.Where(e =&gt; predicate).Select(e =&gt; path).FirstOrDefault()</c>; the
-/// <c>Where</c> is omitted in the two-argument form. Arguments are ordered required-first: the
-/// collection, then the path, then the optional predicate. Value-type selectors are lifted to
+/// <c>first()</c> is an evaluator — it yields the first matching element — and, like <c>any()</c>, takes
+/// the collection and an optional predicate; the sort key is then selected from that element with an
+/// ordinary member path after the call. Sort key =
+/// <c>collection.Where(e =&gt; predicate).Select(e =&gt; path).FirstOrDefault()</c>; the <c>Where</c> is
+/// omitted when there is no predicate. Value-type selectors are lifted to
 /// <see cref="Nullable{T}"/> so "no matching element" and "empty collection" both yield <c>null</c>.
 /// </para>
 /// <para>
@@ -46,38 +48,41 @@ internal sealed class FirstOrderingFunction : IOrderingFunction
 
     public string Name => FunctionName;
 
-    public void IncludeInGraph(IOrderingFunctionGraph graph, RqlNode target, IReadOnlyList<RqlExpression> arguments)
+    public void IncludeInGraph(IOrderingFunctionGraph graph, RqlNode target, IReadOnlyList<RqlExpression> arguments, string? memberPath)
     {
         // Wildcards (also signed: "+*") are never valid here; Build reports the error, and we must not fan out the graph meanwhile.
-        if (arguments.Count is not (2 or 3) || arguments.Any(IsWildcard))
+        if (arguments.Count is not (1 or 2) || memberPath is null || arguments.Any(IsWildcard) || IsWildcard(memberPath))
             return;
 
         var collectionNode = graph.IncludeHierarchy(target, arguments[0]);
         if (collectionNode is null)
             return;
 
-        graph.IncludeOrderPath(collectionNode, arguments[1]);
+        graph.IncludeOrderPath(collectionNode, memberPath);
 
-        if (arguments.Count == 3)
-            graph.TraversePredicate(collectionNode, arguments[2]);
+        if (arguments.Count == 2)
+            graph.TraversePredicate(collectionNode, arguments[1]);
     }
 
     public Result<Expression> Build(OrderingFunctionContext context)
     {
         var args = context.Arguments;
 
-        if (args.Count is not (2 or 3))
+        if (args.Count is not (1 or 2))
             return Error.Validation(
-                $"'{FunctionName}' requires 2 or 3 arguments: (collection, path[, predicate]). Got {args.Count}.",
+                $"'{FunctionName}' requires 1 or 2 arguments: (collection[, predicate]). Got {args.Count}.",
                 OrderingErrorCodes.FunctionArguments);
 
         if (args[0] is not RqlConstant collectionArg)
             return Error.Validation($"'{FunctionName}': collection argument must be a property path.", OrderingErrorCodes.FunctionArguments);
 
-        if (args[1] is not RqlConstant pathArg)
-            return Error.Validation($"'{FunctionName}': path argument must be a property path.", OrderingErrorCodes.FunctionArguments);
+        if (string.IsNullOrEmpty(context.MemberPath))
+            return Error.Validation(
+                $"'{FunctionName}' yields an element, not a sort key: follow the call with the member path to sort by, e.g. {FunctionName}(parameters,eq(name,\"priority\")).value.",
+                OrderingErrorCodes.FunctionArguments);
 
-        var predicateArg = args.Count == 3 ? args[2] : null;
+        var path = context.MemberPath;
+        var predicateArg = args.Count == 2 ? args[1] : null;
 
         var collection = context.PathBuilder.Build(context.Root, collectionArg.Value);
         if (collection.IsError)
@@ -116,7 +121,7 @@ internal sealed class FirstOrderingFunction : IOrderingFunction
                 predicate = predicateResult.Value!;
             }
 
-            var selector = context.PathBuilder.Build(element, pathArg.Value);
+            var selector = context.PathBuilder.Build(element, path);
             if (selector.IsError)
                 return selector.Errors;
 
@@ -125,7 +130,7 @@ internal sealed class FirstOrderingFunction : IOrderingFunction
                 return Error.Validation(
                     $"'{FunctionName}': path must resolve to a primitive property.",
                     OrderingErrorCodes.NotPrimitive,
-                    builderContext.GetFullPath(pathArg.Value));
+                    builderContext.GetFullPath(path));
 
             return BuildKey(collectionExpression, elementType, element, predicate, selector.Value.Expression);
         }
@@ -136,8 +141,10 @@ internal sealed class FirstOrderingFunction : IOrderingFunction
         }
     }
 
-    private static bool IsWildcard(RqlExpression argument)
-        => argument is RqlConstant constant && StringHelper.ExtractSign(constant.Value).value.Span.SequenceEqual("*".AsSpan());
+    private static bool IsWildcard(RqlExpression argument) => argument is RqlConstant constant && IsWildcard(constant.Value);
+
+    private static bool IsWildcard(string value)
+        => StringHelper.ExtractSign(value).value.Span.SequenceEqual("*".AsSpan());
 
     /// <summary>
     /// Walks the builder context down the collection path segment by segment (graph node names are

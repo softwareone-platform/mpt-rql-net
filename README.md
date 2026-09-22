@@ -71,23 +71,25 @@ public class UserQueryBuilder(IRqlQueryable<User> rql)
 To sort by a value that lives inside a child collection — for example the `value` of the parameter whose `name` is `priority` — use the `first()` ordering function:
 
 ```
-order=+first(<collection>,<path>,<predicate>)
-order=+first(<collection>,<path>)              # no predicate: the first element
+order=+first(<collection>,<predicate>).<path>
+order=+first(<collection>).<path>              # no predicate: the first element
 ```
+
+`first()` is an *evaluator*: it yields the first element of the collection that matches the predicate. The dot after the call then reads the sort key from that element, exactly like any other dotted path in RQL. It is the value-returning sibling of the *predicates* `any()` and `all()`, which take the same `(collection, predicate)` arguments but answer a yes/no question instead.
 
 RQL does not allow whitespace between arguments.
 
 - `<collection>` — a path to a collection property of the entity (dotted paths allowed). Must permit ordering. With mapping enabled the property must be a list type (`List<T>`, `IList`, arrays).
-- `<path>` — a path to a primitive property of the element, used as the sort key. Must permit ordering.
-- `<predicate>` — optional; any RQL filter expression, evaluated per element (`eq`, `ne`, `in`, `like`, `and`, `or`, `not`, quoted values). Element properties must permit filtering. An unquoted value that matches an element property name **of a compatible type** is compared as a property (`eq(name,value)` means `name == value`; `eq(clientName,id)` falls back to the literal `"id"` because `int` cannot be compared to a string); quote it (`eq(name,'value')`) to force the literal.
+- `<predicate>` — optional; any RQL filter expression, evaluated per element (`eq`, `ne`, `in`, `like`, `and`, `or`, `not`). Element properties must permit filtering. **Quote literal values** (`eq(name,"priority")`): an unquoted value that matches an element property name of a compatible type is compared as a *property* (`eq(name,value)` means `name == value`), while an incompatible one (`eq(clientName,id)` — `int` vs string) falls back to the literal.
+- `.<path>` — required; a path to a primitive property of the matched element, used as the sort key. Must permit ordering. A bare `first(...)` without a path is an error, because an element is not sortable.
 
 Examples:
 
 ```
-order=+first(parameters,value,eq(name,priority))
-order=-first(parameters,displayValue,eq(externalId,sla))
-order=+first(parameters,value,and(eq(name,priority),ne(value,null))),-id
-order=+first(orders,id)
+order=+first(parameters,eq(name,"priority")).value
+order=-first(parameters,eq(externalId,"sla")).displayValue
+order=+first(parameters,and(eq(name,"priority"),ne(value,null))).value,-id
+order=+first(orders).id
 ```
 
 The sort key is `collection.Where(e => predicate).Select(e => path).FirstOrDefault()`. Entities with no matching element (or an empty collection) get a `null` key.
@@ -98,7 +100,7 @@ Caveats:
 - **Null placement follows the provider** (SQL Server and LINQ-to-Objects: nulls first ascending; PostgreSQL: nulls last).
 - **Null collections**: no null check is emitted around the collection itself — EF Core cannot translate one for collection navigations (they are never null in SQL). Under LINQ-to-Objects a `null` collection throws, exactly as `any()` does; initialize collections to empty lists. With `Ordering.Navigation = Safe`, dotted prefixes (`reference.orders`), the selector path and the whole predicate are null-guarded — the predicate is part of the ordering key, so it follows the ordering strategy rather than `Filter.Navigation`.
 - **Cost**: the key is a correlated subquery in `ORDER BY`; it cannot use an index and paging forces a full sort of the filtered set. For very large tables prefer a denormalized sort column.
-- For **filtering** by a collection element use `any(collection, predicate)`, e.g. `any(parameters,and(eq(name,priority),eq(value,high)))`.
+- **Filtering** by a collection element is `any(collection,predicate)`, e.g. `any(parameters,and(eq(name,"priority"),eq(value,"high")))`. `first(...).path` inside `filter=` is not supported yet and is rejected with a validation error.
 
 ## Using RQL mapping
 In many projects, developers prefer to keep database entities separate from data transfer objects (DTOs), especially when their structures differ. To support this approach, Mpt.Rql includes built-in mapping functionality, which is enabled by default and relies on name-based matching. For more advanced scenarios, custom mappings can also be defined manually 

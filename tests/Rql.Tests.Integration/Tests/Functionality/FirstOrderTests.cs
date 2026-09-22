@@ -6,7 +6,7 @@ using Xunit;
 namespace Rql.Tests.Integration.Tests.Functionality;
 
 /// <summary>
-/// <c>first(&lt;collection&gt;, &lt;path&gt;[, &lt;predicate&gt;])</c> against Product.Orders, LINQ-to-Objects.
+/// <c>first(&lt;collection&gt;[, &lt;predicate&gt;]).&lt;path&gt;</c> against Product.Orders, LINQ-to-Objects.
 /// </summary>
 public class FirstOrderTests
 {
@@ -48,39 +48,39 @@ public class FirstOrderTests
 
     [Fact]
     public void Ascending_NullKeysFirst_ThenByMatchedValue()
-        => Assert.Equal([4, 5, 2, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,id,eq(clientName,Michael))" })));
+        => Assert.Equal([4, 5, 2, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(clientName,Michael)).id" })));
 
     [Fact]
     public void Descending_NullKeysLast()
-        => Assert.Equal([1, 3, 2, 4, 5], Ids(Make().Transform(Data(), new RqlRequest { Order = "-first(orders,id,eq(clientName,Michael))" })));
+        => Assert.Equal([1, 3, 2, 4, 5], Ids(Make().Transform(Data(), new RqlRequest { Order = "-first(orders,eq(clientName,Michael)).id" })));
 
     [Fact]
     public void NoSign_IsAscending()
-        => Assert.Equal([4, 5, 2, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "first(orders,id,eq(clientName,Michael))" })));
+        => Assert.Equal([4, 5, 2, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "first(orders,eq(clientName,Michael)).id" })));
 
     [Fact]
     public void QuotedPredicateValue_Works()
-        => Assert.Equal([4, 5, 2, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,id,eq(clientName,'Michael'))" })));
+        => Assert.Equal([4, 5, 2, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(clientName,'Michael')).id" })));
 
     [Fact]
     public void TwoArguments_UsesFirstElement()
         // first order id: 1→30, 2→10, 3→20, 4→99, 5→null
-        => Assert.Equal([5, 2, 3, 1, 4], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,id)" })));
+        => Assert.Equal([5, 2, 3, 1, 4], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders).id" })));
 
     [Fact]
     public void CompoundPredicate_Works()
         // Michael AND id>15: 1→30, 2→null, 3→20, 4→null, 5→null
-        => Assert.Equal([2, 4, 5, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,id,and(eq(clientName,Michael),gt(id,15)))" })));
+        => Assert.Equal([2, 4, 5, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,and(eq(clientName,Michael),gt(id,15))).id" })));
 
     [Fact]
     public void InPredicate_Works()
         // Michael or Tony: 1→30, 2→10, 3→20, 4→99, 5→null
-        => Assert.Equal([5, 2, 3, 1, 4], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,id,in(clientName,(Michael,Tony)))" })));
+        => Assert.Equal([5, 2, 3, 1, 4], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,in(clientName,(Michael,Tony))).id" })));
 
     [Fact]
     public void IntPredicateValue_StringResult()
     {
-        var products = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,clientName,eq(id,10))" }).Query.ToList();
+        var products = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(id,10)).clientName" }).Query.ToList();
 
         // only product 2 has an order with id 10 → the single non-null key sorts last ascending
         Assert.Equal(2, products.Last().Id);
@@ -88,11 +88,11 @@ public class FirstOrderTests
 
     [Fact]
     public void CombinedWithScalarSort_TieBreaksNullKeys()
-        => Assert.Equal([4, 5, 2, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,id,eq(clientName,Michael)),+id" })));
+        => Assert.Equal([4, 5, 2, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(clientName,Michael)).id,+id" })));
 
     [Fact]
     public void ScalarThenFunction_Works()
-        => Assert.Equal([5, 4, 3, 2, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "-id,+first(orders,id,eq(clientName,Michael))" })));
+        => Assert.Equal([5, 4, 3, 2, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "-id,+first(orders,eq(clientName,Michael)).id" })));
 
     [Fact]
     public void FirstMatch_NotMinOrMax_InMemorySemantics()
@@ -104,7 +104,7 @@ public class FirstOrderTests
             new() { Id = 2, Name = "Single", Category = "X", Orders = [new ProductOrder { Id = 50, ClientName = "Michael" }] },
         }.AsQueryable();
 
-        Assert.Equal([2, 1], Ids(Make().Transform(data, new RqlRequest { Order = "+first(orders,id,eq(clientName,Michael))" })));
+        Assert.Equal([2, 1], Ids(Make().Transform(data, new RqlRequest { Order = "+first(orders,eq(clientName,Michael)).id" })));
     }
 
     [Fact]
@@ -119,7 +119,7 @@ public class FirstOrderTests
             new() { Id = 3, Name = "C", Category = "X", Reference = Michael(11, 10) },
         }.AsQueryable();
 
-        var result = Make(NavigationStrategy.Safe).Transform(data, new RqlRequest { Order = "+first(reference.orders,id,eq(clientName,Michael))" });
+        var result = Make(NavigationStrategy.Safe).Transform(data, new RqlRequest { Order = "+first(reference.orders,eq(clientName,Michael)).id" });
 
         Assert.Equal([2, 3, 1], Ids(result));
     }
@@ -136,7 +136,7 @@ public class FirstOrderTests
         }.AsQueryable();
 
         var result = Make(NavigationStrategy.Safe, NavigationStrategy.Default)
-            .Transform(data, new RqlRequest { Order = "+first(collection,id,eq(reference.name,x))" });
+            .Transform(data, new RqlRequest { Order = "+first(collection,eq(reference.name,x)).id" });
 
         Assert.Equal([1, 2], Ids(result)); // product 1 has no match → null key first; no NullReferenceException
     }
@@ -150,7 +150,7 @@ public class FirstOrderTests
     public void UnquotedLiteralMatchingIncompatibleProperty_FallsBackToTheLiteral()
     {
         // `id` is also an element property (int); it cannot be coerced to clientName (string), so it is the literal "id".
-        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,id,eq(clientName,id))" });
+        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(clientName,id)).id" });
 
         Assert.Equal([1, 2, 3, 4, 5], Ids(result)); // nothing matches → all keys null → original order
     }
@@ -178,7 +178,7 @@ public class FirstOrderTests
     [Fact]
     public void NonCollection_IsAValidationError()
     {
-        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(name,id,eq(clientName,Michael))" });
+        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(name,eq(clientName,Michael)).id" });
 
         Assert.False(result.IsSuccess);
         Assert.Contains(result.Errors, e => e.Code == "order:not_collection" && e.Path == "name");
@@ -187,7 +187,7 @@ public class FirstOrderTests
     [Fact]
     public void MalformedPredicate_IsAValidationError()
     {
-        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,id,eq(clientName))" });
+        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(clientName)).id" });
 
         Assert.False(result.IsSuccess);
         Assert.Contains(result.Errors, e => e.Code == "order:malformed");
@@ -196,7 +196,7 @@ public class FirstOrderTests
     [Fact]
     public void UnknownPredicateProperty_ReportsPrefixedPath()
     {
-        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,id,eq(nonExistent,x))" });
+        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(nonExistent,x)).id" });
 
         Assert.False(result.IsSuccess);
         Assert.Contains(result.Errors, e => e.Message == "Invalid property path." && e.Path == "orders.nonExistent");
@@ -205,7 +205,7 @@ public class FirstOrderTests
     [Fact]
     public void UnknownSelector_ReportsPrefixedPath()
     {
-        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,nonExistent,eq(clientName,Michael))" });
+        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(clientName,Michael)).nonExistent" });
 
         Assert.False(result.IsSuccess);
         Assert.Contains(result.Errors, e => e.Message == "Invalid property path." && e.Path == "orders.nonExistent");
@@ -216,7 +216,7 @@ public class FirstOrderTests
     {
         var data = new List<Product> { new() { Id = 1, Name = "A", Category = "X", Reference = Michael(10, 30) } }.AsQueryable();
 
-        var result = Make().Transform(data, new RqlRequest { Order = "+first(Reference.Orders,nonExistent,eq(clientName,Michael))" });
+        var result = Make().Transform(data, new RqlRequest { Order = "+first(Reference.Orders,eq(clientName,Michael)).nonExistent" });
 
         Assert.False(result.IsSuccess);
         Assert.Contains(result.Errors, e => e.Message == "Invalid property path." && e.Path == "reference.orders.nonExistent");
@@ -227,7 +227,7 @@ public class FirstOrderTests
     {
         var data = new List<Product> { new() { Id = 1, Name = "A", Category = "X", Collection = [Michael(10, 30)] } }.AsQueryable();
 
-        var result = Make().Transform(data, new RqlRequest { Order = "+first(collection,nonExistent,any(orders,eq(clientName,Michael)))" });
+        var result = Make().Transform(data, new RqlRequest { Order = "+first(collection,any(orders,eq(clientName,Michael))).nonExistent" });
 
         Assert.False(result.IsSuccess);
         Assert.Contains(result.Errors, e => e.Message == "Invalid property path." && e.Path == "collection.nonExistent");
@@ -236,7 +236,7 @@ public class FirstOrderTests
     [Fact]
     public void IncompatiblePredicateValue_IsAValidationError()
     {
-        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,clientName,eq(id,not-a-number))" });
+        var result = Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(id,not-a-number)).clientName" });
 
         Assert.False(result.IsSuccess);
         Assert.Contains(result.Errors, e => e.Message.Contains("Cannot convert value"));

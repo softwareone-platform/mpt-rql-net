@@ -34,13 +34,13 @@ internal class OrderingGraphBuilder<TView> : GraphBuilder<TView>, IOrderingGraph
         => parentNode.IncludeChild(rqlProperty, IncludeReasons.Order);
 
     /// <summary>
-    /// In an order string every group with a name (after stripping the sign) is a function call: the
-    /// function declares the nodes its key reads via <see cref="IOrderingFunction.IncludeInGraph"/>.
-    /// Unknown names are claimed too (no graph mutation) so that arguments are never resolved as
-    /// root-level properties; the expression stage reports the unknown function. Anonymous and
-    /// sign-only groups (<c>+(id,name)</c>) are plain lists of order terms and take the base path.
+    /// In an order string every group with a name (after stripping the sign) is a function call, optionally
+    /// followed by a member path (<c>first(...).value</c>): the function declares the nodes its key reads via
+    /// <see cref="IOrderingFunction.IncludeInGraph"/>. Unknown names are claimed too (no graph mutation) so that
+    /// arguments are never resolved as root-level properties; the expression stage reports the unknown function.
+    /// Anonymous and sign-only groups (<c>+(id,name)</c>) are plain lists of order terms and take the base path.
     /// </summary>
-    protected override bool TryTraverseFunctionGroup(RqlNode target, RqlGenericGroup group)
+    protected override bool TryTraverseFunction(RqlNode target, RqlGenericGroup group, string? memberPath)
     {
         if (string.IsNullOrEmpty(group.Name))
             return false;
@@ -50,7 +50,7 @@ internal class OrderingGraphBuilder<TView> : GraphBuilder<TView>, IOrderingGraph
             return false;
 
         if (_functions.TryGet(name.ToString(), out var function))
-            function.IncludeInGraph(this, target, group.Items ?? []);
+            function.IncludeInGraph(this, target, group.Items ?? [], memberPath);
 
         return true;
     }
@@ -61,6 +61,6 @@ internal class OrderingGraphBuilder<TView> : GraphBuilder<TView>, IOrderingGraph
     void IOrderingFunctionGraph.TraversePredicate(RqlNode target, RqlExpression predicate)
         => _filteringGraphBuilder.TraverseRqlExpression(target, predicate);
 
-    void IOrderingFunctionGraph.IncludeOrderPath(RqlNode target, RqlExpression path)
-        => ProcessNode(target, path);
+    void IOrderingFunctionGraph.IncludeOrderPath(RqlNode target, string path)
+        => ProcessNode(target, RqlExpression.Constant(path));
 }

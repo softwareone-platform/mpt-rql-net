@@ -157,9 +157,43 @@ public class RqlParser : IRqlParser
     {
         var innerNodes = ParseInternal(query, currentIndex + 1, out currentIndex, false);
         var node = RqlNodeParser.Parse(word.ToString(), innerNodes);
+
+        // A dotted path directly after the closing parenthesis is a member access on the call's result:
+        // first(parameters,eq(name,"priority")).value
+        var memberPath = ReadMemberPath(query, currentIndex + 1, out var memberPathEnd);
+        if (memberPathEnd > currentIndex)
+        {
+            if (memberPath.Length > 0)
+                node = RqlExpression.Member(node, memberPath);
+            currentIndex = memberPathEnd; // a bare trailing dot is consumed and ignored
+        }
+
         expressions.Add(new ExpressionPair(word.GroupType, node));
 
         word = Word.Make(query, currentIndex + 1);
+    }
+
+    /// <summary>
+    /// Reads <c>.a.b.c</c> starting at <paramref name="start"/> (which must hold the dot) up to the next structural
+    /// character; returns the path without the leading dot and the index of its last consumed character (the dot
+    /// itself when nothing follows it). Returns an empty path, with <paramref name="lastIndex"/> before <paramref name="start"/>,
+    /// when there is no dot.
+    /// </summary>
+    private static string ReadMemberPath(ReadOnlyMemory<char> query, int start, out int lastIndex)
+    {
+        lastIndex = start - 1;
+        var span = query.Span;
+        if (start >= span.Length || span[start] != '.')
+            return string.Empty;
+
+        var end = start + 1;
+        while (end < span.Length && span[end] != '(' && span[end] != ')' && span[end] != '=' && !_operatorToType.ContainsKey(span[end]) && !_textDelimiters.Contains(span[end]))
+            end++;
+
+        lastIndex = end - 1;
+        if (end == start + 1)
+            return string.Empty;
+        return query[(start + 1)..end].ToString();
     }
 
     private static void HandleParenthesesEnd(ReadOnlyMemory<char> query, ref int currentIndex, ref Word word, List<ExpressionPair> expressions)

@@ -77,25 +77,25 @@ public class OrderingServiceFunctionTests
     [Fact]
     public void FunctionThenScalar_OrdersByKeyAscThenTieBreaks()
         // null keys first (P3, P4 ordered by -id => 4, 3), then key 10 (P2), key 30 (P1)
-        => Run("+first(items,id,eq(name,x)),-id").Should().Equal(4, 3, 2, 1);
+        => Run("+first(items,eq(name,x)).id,-id").Should().Equal(4, 3, 2, 1);
 
     [Fact]
     public void FunctionDescending_PutsNullKeysLast()
-        => Run("-first(items,id,eq(name,x))").Should().Equal(1, 2, 3, 4);
+        => Run("-first(items,eq(name,x)).id").Should().Equal(1, 2, 3, 4);
 
     [Fact]
     public void NoSign_MeansAscending()
-        => Run("first(items,id,eq(name,x))").Should().Equal(3, 4, 2, 1);
+        => Run("first(items,eq(name,x)).id").Should().Equal(3, 4, 2, 1);
 
     [Fact]
     public void ScalarThenFunction_UsesThenBy()
         // all ids distinct, so the scalar decides; the function must still build (ThenBy path)
-        => Run("-id,+first(items,id,eq(name,x))").Should().Equal(4, 3, 2, 1);
+        => Run("-id,+first(items,eq(name,x)).id").Should().Equal(4, 3, 2, 1);
 
     [Fact]
     public void TwoArgumentForm_Works()
         // first item id: P1 30, P2 10, P3 20, P4 null
-        => Run("+first(items,id)").Should().Equal(4, 2, 3, 1);
+        => Run("+first(items).id").Should().Equal(4, 2, 3, 1);
 
     [Fact]
     public void UnknownFunction_ReportsUnknownFunctionCode()
@@ -118,7 +118,7 @@ public class OrderingServiceFunctionTests
     [Fact]
     public void UnknownSelector_ReportsFullPath()
     {
-        _service.Process("+first(items,nope,eq(name,x))");
+        _service.Process("+first(items,eq(name,x)).nope");
 
         var error = _queryContext.GetErrors().Single();
         error.Message.Should().Be("Invalid property path.");
@@ -146,7 +146,7 @@ public class OrderingServiceFunctionTests
     [Fact]
     public void MalformedOrder_ReportsValidationErrorInsteadOfThrowing()
     {
-        _service.Process("+first(items,id,eq(name))");
+        _service.Process("+first(items,eq(name)).id");
 
         var error = _queryContext.GetErrors().Single();
         error.Code.Should().Be("order:malformed");

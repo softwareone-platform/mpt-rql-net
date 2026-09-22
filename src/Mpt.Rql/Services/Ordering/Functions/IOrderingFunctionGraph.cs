@@ -15,5 +15,5 @@ internal interface IOrderingFunctionGraph
     void TraversePredicate(RqlNode target, RqlExpression predicate);
 
     /// <summary>Includes a (possibly dotted) path under <paramref name="target"/> with the Order reason.</summary>
-    void IncludeOrderPath(RqlNode target, RqlExpression path);
+    void IncludeOrderPath(RqlNode target, string path);
 }

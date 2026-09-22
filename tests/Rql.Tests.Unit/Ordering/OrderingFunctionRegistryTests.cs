@@ -13,7 +13,7 @@ public class OrderingFunctionRegistryTests
     private sealed class StubFunction(string name) : IOrderingFunction
     {
         public string Name => name;
-        public void IncludeInGraph(IOrderingFunctionGraph graph, RqlNode target, IReadOnlyList<RqlExpression> arguments) => throw new NotSupportedException();
+        public void IncludeInGraph(IOrderingFunctionGraph graph, RqlNode target, IReadOnlyList<RqlExpression> arguments, string? memberPath) => throw new NotSupportedException();
         public Result<Expression> Build(OrderingFunctionContext context) => throw new NotSupportedException();
     }
 

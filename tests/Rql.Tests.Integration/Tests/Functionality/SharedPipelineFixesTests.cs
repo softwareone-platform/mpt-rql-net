@@ -23,7 +23,7 @@ public class SharedPipelineFixesTests
 
     [Theory]
     [InlineData("eq(name)", null, null, "query:malformed")]
-    [InlineData(null, "+first(orders,id,eq(clientName))", null, "order:malformed")]
+    [InlineData(null, "+first(orders,eq(clientName)).id", null, "order:malformed")]
     [InlineData(null, "eq(name)", null, "order:malformed")]
     [InlineData(null, null, "eq(name)", "select:malformed")]
     public void MalformedExpression_IsAValidationError(string? filter, string? order, string? select, string expectedCode)

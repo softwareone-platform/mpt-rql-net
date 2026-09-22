@@ -37,6 +37,8 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
             case RqlUnary unary:
                 TraverseRqlExpression(target, unary.Nested);
                 break;
+            case RqlMemberAccess { Inner: RqlGenericGroup calledGroup } member when TryTraverseFunction(target, calledGroup, member.Path):
+                break;
             case RqlPointer pointer:
                 TraverseRqlExpression(target, pointer.Inner);
                 break;
@@ -61,7 +63,7 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
 
     private void TraverseGroup(RqlNode target, RqlGroup group)
     {
-        if (group is RqlGenericGroup functionGroup && TryTraverseFunctionGroup(target, functionGroup))
+        if (group is RqlGenericGroup functionGroup && TryTraverseFunction(target, functionGroup, memberPath: null))
             return;
 
         var currentTarget = target;
@@ -245,10 +247,11 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
 
     /// <summary>
     /// Gives derived builders a chance to interpret a named generic group as a function call
-    /// (e.g. ordering's <c>first(...)</c>). Return <c>true</c> when the group has been handled; the
+    /// (e.g. ordering's <c>first(...).value</c>; <paramref name="memberPath"/> is the dotted path after the call, or
+    /// <c>null</c>). Return <c>true</c> when the group has been handled; the
     /// base traversal — which treats the group's items as property paths — is then skipped.
     /// </summary>
-    protected virtual bool TryTraverseFunctionGroup(RqlNode target, RqlGenericGroup group) => false;
+    protected virtual bool TryTraverseFunction(RqlNode target, RqlGenericGroup group, string? memberPath) => false;
 
     private IEnumerable<RqlPropertyInfo> GetProperties(Type type, ReadOnlyMemory<char> path)
     {

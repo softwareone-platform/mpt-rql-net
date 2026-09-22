@@ -1,5 +1,6 @@
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Argument;
+using Mpt.Rql.Abstractions.Argument.Pointer;
 using Mpt.Rql.Abstractions.Group;
 using Mpt.Rql.Abstractions.Result;
 using Mpt.Rql.Core;
@@ -44,9 +45,9 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
 
         _graphBuilder.TraverseRqlExpression(_context.Graph, node);
 
-        // A single function call at the root parses to a named RqlGenericGroup. Anything else parses to a group
-        // whose items are the individual order terms. Anonymous and sign-only groups are plain lists of terms,
-        // not function calls.
+        // A single function call at the root parses to a named RqlGenericGroup (or a member access over one:
+        // first(...).value). Anything else parses to a group whose items are the individual order terms.
+        // Anonymous and sign-only groups are plain lists of terms, not function calls.
         List<RqlExpression> orderItems = IsFunctionCall(node)
             ? [node]
             : node.Items!.Where(item => item is RqlConstant || IsFunctionCall(item)).ToList();
@@ -65,7 +66,8 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
             var resolved = item switch
             {
                 RqlConstant constant => ResolveConstantOrder(constant, param),
-                RqlGenericGroup group => ResolveFunctionOrder(group, param),
+                RqlGenericGroup group => ResolveFunctionOrder(group, memberPath: null, param),
+                RqlMemberAccess { Inner: RqlGenericGroup group } member => ResolveFunctionOrder(group, member.Path, param),
                 _ => null
             };
 
@@ -83,7 +85,12 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
     }
 
     private static bool IsFunctionCall(RqlExpression expression)
-        => expression is RqlGenericGroup { Name: { Length: > 0 } name } && StringHelper.ExtractSign(name).value.Length > 0;
+        => expression switch
+        {
+            RqlGenericGroup { Name: { Length: > 0 } name } => StringHelper.ExtractSign(name).value.Length > 0,
+            RqlMemberAccess { Inner: RqlGenericGroup inner } => IsFunctionCall(inner),
+            _ => false,
+        };
 
     private (Expression KeyExpression, bool IsAsc)? ResolveConstantOrder(RqlConstant constant, ParameterExpression param)
     {
@@ -99,7 +106,7 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
         return (member.Value!.Expression, isAsc);
     }
 
-    private (Expression KeyExpression, bool IsAsc)? ResolveFunctionOrder(RqlGenericGroup group, ParameterExpression param)
+    private (Expression KeyExpression, bool IsAsc)? ResolveFunctionOrder(RqlGenericGroup group, string? memberPath, ParameterExpression param)
     {
         var (nameMemory, isAsc) = StringHelper.ExtractSign(group.Name);
         var name = nameMemory.ToString();
@@ -113,6 +120,7 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
         var context = new OrderingFunctionContext(
             param,
             group.Items ?? [],
+            memberPath,
             _services.PathBuilder,
             _services.FilterBuilder,
             _services.BuilderContext,

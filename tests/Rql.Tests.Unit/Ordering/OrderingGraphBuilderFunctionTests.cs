@@ -53,7 +53,7 @@ public class OrderingGraphBuilderFunctionTests
     [Fact]
     public void First_WithPredicate_IncludesCollectionPredicateAndSelector_UnderTheCollection()
     {
-        var root = Traverse("+first(items,description,eq(name,x))");
+        var root = Traverse("+first(items,eq(name,x)).description");
 
         var items = Child(root, "items");
         items.IncludeReason.Should().HaveFlag(IncludeReasons.Hierarchy);
@@ -65,7 +65,7 @@ public class OrderingGraphBuilderFunctionTests
     [Fact]
     public void First_DoesNotResolveArgumentsAgainstTheRoot()
     {
-        var root = Traverse("+first(items,description,eq(name,x))");
+        var root = Traverse("+first(items,eq(name,x)).description");
 
         root.TryGetChild("name", out _).Should().BeFalse();
         root.TryGetChild("description", out _).Should().BeFalse();
@@ -75,7 +75,7 @@ public class OrderingGraphBuilderFunctionTests
     [Fact]
     public void First_TwoArguments_IncludesCollectionAndSelector()
     {
-        var root = Traverse("-first(items,description)");
+        var root = Traverse("-first(items).description");
 
         var items = Child(root, "items");
         items.IncludeReason.Should().HaveFlag(IncludeReasons.Hierarchy);
@@ -86,7 +86,7 @@ public class OrderingGraphBuilderFunctionTests
     [Fact]
     public void First_DottedCollectionPath_IncludesEverySegmentAsHierarchy()
     {
-        var root = Traverse("+first(category.products,description,eq(name,x))");
+        var root = Traverse("+first(category.products,eq(name,x)).description");
 
         var category = Child(root, "category");
         category.IncludeReason.Should().HaveFlag(IncludeReasons.Hierarchy);
@@ -99,7 +99,7 @@ public class OrderingGraphBuilderFunctionTests
     [Fact]
     public void First_CombinedWithScalarItem_IncludesBoth()
     {
-        var root = Traverse("+first(items,description,eq(name,x)),-id");
+        var root = Traverse("+first(items,eq(name,x)).description,-id");
 
         Child(root, "id").IncludeReason.Should().HaveFlag(IncludeReasons.Order);
         Child(Child(root, "items"), "description").IncludeReason.Should().HaveFlag(IncludeReasons.Order);
@@ -114,9 +114,9 @@ public class OrderingGraphBuilderFunctionTests
     }
 
     [Theory]
-    [InlineData("+first(*,id)")]
-    [InlineData("+first(+*,id)")]
-    [InlineData("+first(items,-*)")]
+    [InlineData("+first(*).id")]
+    [InlineData("+first(+*).id")]
+    [InlineData("+first(items).-*")]
     public void First_WildcardArgument_DoesNotMutateTheGraph(string order)
     {
         // Build rejects wildcards; the graph must not have fanned out every property in the meantime.
@@ -128,7 +128,7 @@ public class OrderingGraphBuilderFunctionTests
     [Fact]
     public void First_UnknownCollection_DoesNotMutateTheGraph()
     {
-        var root = Traverse("+first(nope,description,eq(name,x))");
+        var root = Traverse("+first(nope,eq(name,x)).description");
 
         root.Count.Should().Be(0);
     }
@@ -155,7 +155,7 @@ public class OrderingGraphBuilderFunctionTests
     public void PredicateRightHandProperty_IsIncludedUnderTheCollection()
     {
         // eq(name,description) compares two element properties; both columns must be projected
-        var root = Traverse("+first(items,id,eq(name,description))");
+        var root = Traverse("+first(items,eq(name,description)).id");
 
         var items = Child(root, "items");
         Child(items, "name").IncludeReason.Should().HaveFlag(IncludeReasons.Filter);

@@ -11,6 +11,7 @@ namespace Mpt.Rql.Services.Ordering.Functions;
 /// </summary>
 /// <param name="Root">Parameter representing the root entity (<c>TView</c>).</param>
 /// <param name="Arguments">The parsed function arguments, in order.</param>
+/// <param name="MemberPath">The dotted path applied to the call's result (<c>first(...).value</c> → <c>value</c>), or <c>null</c> when absent.</param>
 /// <param name="PathBuilder">Ordering path builder (validates the <c>Order</c> action, applies ordering navigation).</param>
 /// <param name="FilterBuilder">Filtering expression builder used for predicate arguments.</param>
 /// <param name="BuilderContext">Shared builder context; drives error-path prefixes.</param>
@@ -18,6 +19,7 @@ namespace Mpt.Rql.Services.Ordering.Functions;
 internal sealed record OrderingFunctionContext(
     ParameterExpression Root,
     IReadOnlyList<RqlExpression> Arguments,
+    string? MemberPath,
     IOrderingPathInfoBuilder PathBuilder,
     IExpressionBuilder FilterBuilder,
     IBuilderContext BuilderContext,

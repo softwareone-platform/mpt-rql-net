@@ -3,6 +3,7 @@ using Moq;
 using Mpt.Rql;
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Configuration;
+using Mpt.Rql.Abstractions.Argument.Pointer;
 using Mpt.Rql.Abstractions.Group;
 using Mpt.Rql.Core;
 using Mpt.Rql.Core.Metadata;
@@ -63,10 +64,14 @@ public class FirstOrderingFunctionTests
             .Returns((ParameterExpression e, RqlExpression _) =>
                 new Result<Expression>(Expression.Equal(Expression.Property(e, nameof(Item.Name)), Expression.Constant("x"))));
 
-        var group = (RqlGenericGroup)new RqlParser().Parse(order);
+        var parsed = new RqlParser().Parse(order);
+        var (group, memberPath) = parsed.Items is [RqlMemberAccess { Inner: RqlGenericGroup inner } member]
+            ? (inner, member.Path)
+            : ((RqlGenericGroup)parsed, null);
         var context = new OrderingFunctionContext(
             Expression.Parameter(typeof(TRoot), "p"),
             group.Items!,
+            memberPath,
             pathBuilder,
             filterBuilder.Object,
             builderContext,
@@ -88,7 +93,7 @@ public class FirstOrderingFunctionTests
     [Fact]
     public void Build_ThreeArguments_ReturnsSelectorOfFirstMatchingElement()
     {
-        var h = Make("+first(items,id,eq(name,x))");
+        var h = Make("+first(items,eq(name,x)).id");
 
         var result = h.Function.Build(h.Context);
 
@@ -102,7 +107,7 @@ public class FirstOrderingFunctionTests
     [Fact]
     public void Build_TwoArguments_UsesFirstElementWithoutPredicate()
     {
-        var h = Make("+first(items,description)");
+        var h = Make("+first(items).description");
 
         var result = h.Function.Build(h.Context);
 
@@ -116,7 +121,7 @@ public class FirstOrderingFunctionTests
     [Fact]
     public void Build_ValueTypeSelector_IsLiftedToNullable()
     {
-        var h = Make("+first(items,id,eq(name,x))");
+        var h = Make("+first(items,eq(name,x)).id");
 
         h.Function.Build(h.Context).Value!.Type.Should().Be(typeof(int?));
     }
@@ -128,7 +133,7 @@ public class FirstOrderingFunctionTests
     {
         // EF Core cannot translate `collection == null ? ... : ...` for collection navigations, so the key is
         // always the bare Where/Select/FirstOrDefault chain (a null collection throws in-memory, like any()).
-        var h = Make("+first(items,id,eq(name,x))", navigation);
+        var h = Make("+first(items,eq(name,x)).id", navigation);
 
         var result = h.Function.Build(h.Context);
 
@@ -139,7 +144,7 @@ public class FirstOrderingFunctionTests
     [Fact]
     public void Build_BuildsThePredicateUnderTheOrderingNavigation_AndRestoresTheFilterSetting()
     {
-        var h = Make("+first(items,id,eq(name,x))", NavigationStrategy.Safe);
+        var h = Make("+first(items,eq(name,x)).id", NavigationStrategy.Safe);
         h.Context.Settings.Filter.Navigation.Should().Be(NavigationStrategy.Default);
         NavigationStrategy? observed = null;
         var filterBuilder = new Mock<IExpressionBuilder>();
@@ -161,7 +166,7 @@ public class FirstOrderingFunctionTests
     [Fact]
     public void Build_SafeNavigation_DottedCollection_GuardsThePrefixAroundTheKey()
     {
-        var h = Make("+first(category.products,description,eq(name,x))", NavigationStrategy.Safe);
+        var h = Make("+first(category.products,eq(name,x)).description", NavigationStrategy.Safe);
 
         var result = h.Function.Build(h.Context);
 
@@ -176,8 +181,8 @@ public class FirstOrderingFunctionTests
     }
 
     [Theory]
-    [InlineData("+first(items)", 1)]
-    [InlineData("+first(items,eq(name,x),id,extra)", 4)]
+    [InlineData("+first().id", 0)]
+    [InlineData("+first(items,eq(name,x),extra).id", 3)]
     public void Build_WrongArity_ReturnsFunctionArgumentsError(string order, int count)
     {
         var h = Make(order);
@@ -186,13 +191,13 @@ public class FirstOrderingFunctionTests
 
         var error = result.Errors.Single();
         error.Code.Should().Be(OrderingErrorCodes.FunctionArguments);
-        error.Message.Should().Be($"'first' requires 2 or 3 arguments: (collection, path[, predicate]). Got {count}.");
+        error.Message.Should().Be($"'first' requires 1 or 2 arguments: (collection[, predicate]). Got {count}.");
     }
 
     [Fact]
     public void Build_CollectionArgumentNotAPath_ReturnsFunctionArgumentsError()
     {
-        var h = Make("+first(eq(name,x),id)");
+        var h = Make("+first(eq(name,x)).id");
 
         var result = h.Function.Build(h.Context);
 
@@ -201,21 +206,21 @@ public class FirstOrderingFunctionTests
     }
 
     [Fact]
-    public void Build_PathArgumentNotAPath_ReturnsFunctionArgumentsError()
+    public void Build_WithoutMemberPath_ReturnsFunctionArgumentsError()
     {
-        // Two-argument form whose path slot (args[1]) holds a predicate instead of a property path.
+        // first() yields an element; without a trailing member path there is nothing to sort by.
         var h = Make("+first(items,eq(id,1))");
 
         var result = h.Function.Build(h.Context);
 
         result.Errors.Single().Code.Should().Be(OrderingErrorCodes.FunctionArguments);
-        result.Errors.Single().Message.Should().Be("'first': path argument must be a property path.");
+        result.Errors.Single().Message.Should().StartWith("'first' yields an element, not a sort key");
     }
 
     [Fact]
     public void Build_CollectionIsNotACollection_ReturnsNotCollectionError()
     {
-        var h = Make("+first(name,id,eq(name,x))");
+        var h = Make("+first(name,eq(name,x)).id");
 
         var error = h.Function.Build(h.Context).Errors.Single();
 
@@ -227,7 +232,7 @@ public class FirstOrderingFunctionTests
     [Fact]
     public void Build_StructEnumerableCollection_ReturnsNotCollectionErrorInsteadOfThrowing()
     {
-        var h = Make<FrozenHolder>("+first(items,id,eq(name,x))");
+        var h = Make<FrozenHolder>("+first(items,eq(name,x)).id");
 
         var error = h.Function.Build(h.Context).Errors.Single();
 
@@ -238,7 +243,7 @@ public class FirstOrderingFunctionTests
     [Fact]
     public void Build_UnknownCollection_PropagatesPathBuilderError()
     {
-        var h = Make("+first(nope,id,eq(name,x))");
+        var h = Make("+first(nope,eq(name,x)).id");
 
         var error = h.Function.Build(h.Context).Errors.Single();
 
@@ -249,7 +254,7 @@ public class FirstOrderingFunctionTests
     [Fact]
     public void Build_UnknownSelector_PropagatesPathBuilderErrorWithCollectionPrefix()
     {
-        var h = Make("+first(items,nope,eq(name,x))");
+        var h = Make("+first(items,eq(name,x)).nope");
 
         var error = h.Function.Build(h.Context).Errors.Single();
 
@@ -258,8 +263,8 @@ public class FirstOrderingFunctionTests
     }
 
     [Theory]
-    [InlineData("+first(category.products,nope,eq(name,x))")]
-    [InlineData("+first(Category.PRODUCTS,nope,eq(name,x))")] // graph lookups are case-insensitive, like metadata
+    [InlineData("+first(category.products,eq(name,x)).nope")]
+    [InlineData("+first(Category.PRODUCTS,eq(name,x)).nope")] // graph lookups are case-insensitive, like metadata
     public void Build_UnknownSelector_DottedCollection_PrefixesTheFullPath(string order)
     {
         var h = Make(order);
@@ -271,8 +276,8 @@ public class FirstOrderingFunctionTests
     }
 
     [Theory]
-    [InlineData("+first(category.products,coreCategory,eq(name,x))")] // reference
-    [InlineData("+first(category.products,items,eq(name,x))")]        // collection
+    [InlineData("+first(category.products,eq(name,x)).coreCategory")] // reference
+    [InlineData("+first(category.products,eq(name,x)).items")]        // collection
     public void Build_SelectorNotPrimitive_ReturnsNotPrimitiveError(string order)
     {
         var h = Make(order);
@@ -287,7 +292,7 @@ public class FirstOrderingFunctionTests
     [Fact]
     public void Build_DottedCollectionPath_Works()
     {
-        var h = Make("+first(category.products,description,eq(name,x))");
+        var h = Make("+first(category.products,eq(name,x)).description");
 
         var result = h.Function.Build(h.Context);
 
@@ -301,10 +306,10 @@ public class FirstOrderingFunctionTests
     }
 
     [Theory]
-    [InlineData("+first(items,id,eq(name,x))")]
-    [InlineData("+first(items,nope,eq(name,x))")]
-    [InlineData("+first(category.products,nope,eq(name,x))")]
-    [InlineData("+first(name,id,eq(name,x))")]
+    [InlineData("+first(items,eq(name,x)).id")]
+    [InlineData("+first(items,eq(name,x)).nope")]
+    [InlineData("+first(category.products,eq(name,x)).nope")]
+    [InlineData("+first(name,eq(name,x)).id")]
     public void Build_AlwaysReturnsBuilderContextToTheRootNode(string order)
     {
         var h = Make(order);
