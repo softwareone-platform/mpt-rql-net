@@ -12,5 +12,8 @@ public class RqlMemberAccess : RqlPointer
         Path = path;
     }
 
+    /// <summary>The evaluated expression the path is applied to; never <c>null</c> for a member access.</summary>
+    public new RqlExpression Inner => base.Inner!;
+
     public string Path { get; }
 }

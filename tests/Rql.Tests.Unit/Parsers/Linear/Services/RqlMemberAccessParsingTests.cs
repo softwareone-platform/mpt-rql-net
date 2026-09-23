@@ -81,6 +81,21 @@ public class RqlMemberAccessParsingTests
         second.Right.Should().BeOfType<RqlConstant>().Which.Value.Should().Be("1");
     }
 
+
+    [Theory]
+    [InlineData("name=self(other)x")]
+    [InlineData("name=first(orders).id(x)")]
+    public void Parse_GarbageAfterParenthesisedEqualsShortcutRightSide_IsParsedAsTheNextItem(string query)
+    {
+        // Whatever follows the call must start where the loop resumes; a misaligned word start used to overrun the query.
+        var result = _sut.Parse(query);
+
+        var items = result.Should().BeAssignableTo<RqlGroup>().Subject.Items!;
+        items.Should().HaveCount(2);
+        items[0].Should().BeOfType<RqlEqual>().Which.Right.Should().BeAssignableTo<RqlPointer>();
+        items[1].Should().NotBeOfType<RqlEqual>();
+    }
+
     [Fact]
     public void Parse_CallWithoutPath_IsStillAPlainGroup()
     {

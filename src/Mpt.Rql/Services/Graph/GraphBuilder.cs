@@ -85,6 +85,11 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
     {
         TraverseRqlExpression(target, binary.Left);
 
+        // Only comparison operators resolve their right-hand side as a property: like/ilike and in/out always take
+        // literals, so nothing on their right side is ever read from the entity.
+        if (binary is RqlLike or RqlLikeCaseInsensitive or RqlListIn or RqlListOut)
+            return;
+
         // The expression stage compares against a right-hand PROPERTY when an unquoted constant resolves to one
         // of a compatible type, and against the literal text otherwise. Mirror that decision so mapping projects
         // exactly the columns the comparison reads and never a column that merely shares a name with the literal.

@@ -64,6 +64,20 @@ public class FilteringGraphBuilderRightHandTests
         name!.IncludeReason.Should().HaveFlag(IncludeReasons.Filter);
     }
 
+
+    [Theory]
+    [InlineData("like(description,name)")]
+    [InlineData("ilike(description,name)")]
+    [InlineData("in(description,(name))")]
+    [InlineData("out(description,(name))")]
+    public void RightHandOfSearchOrListOperator_IsNeverIncluded(string filter)
+    {
+        // like/ilike and in/out always take literals; the expression stage never reads a property on their right.
+        var root = Traverse(filter);
+
+        root.TryGetChild("description", out _).Should().BeTrue();
+        root.TryGetChild("name", out _).Should().BeFalse();
+    }
     [Fact]
     public void RightHandPrimitiveOfIncompatibleType_AddsNothing()
     {

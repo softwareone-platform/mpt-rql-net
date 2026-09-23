@@ -37,7 +37,8 @@ internal abstract class RqlService
 
     // The parser exception types share no base class and live in Abstractions, which this change does not touch.
     private static bool IsParserException(System.Exception ex)
-        => ex is RqlParserException
+        => ex is ArgumentOutOfRangeException // what the linear parser throws today on an unterminated quote (filter=")
+            or RqlParserException
             or RqlBinaryParserException
             or RqlCollectionParserException
             or RqlUnaryParserException

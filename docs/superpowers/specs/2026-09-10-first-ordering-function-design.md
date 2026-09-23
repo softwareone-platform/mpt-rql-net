@@ -37,7 +37,7 @@ which does not meet the requirement above, so it was rejected. Building on
 - RQL-expressible: collection, matching predicate, and value path are all in the request.
 - Consistent with existing RQL vocabulary: `first(<collection>[,<predicate>]).<path>` is
   the value-returning sibling of `any(<collection>,<predicate>)` / `all(...)` — the same
-  collection-plus-predicate idea, with the value path inserted before the (optional) predicate.
+  collection-plus-predicate idea; the sort key is a dotted member access on the call's result.
 - Structurally correct: graph inclusion, error paths, permissions, safe navigation,
   constant conversion and SQL parameterization all come from existing machinery.
 - Full predicate power (`eq`, `ne`, `in`, `like`, `and`/`or`, `not`, quoted values), not a
@@ -150,7 +150,7 @@ as the consumer's filters, no more and no less.
 - `Mpt.Rql.Abstractions` — adds `RqlMemberAccess : RqlPointer` (`Inner` + `Path`) and the factory `RqlExpression.Member`; nothing else.
 - `PathInfoBuilder` (master version, including `IRqlCustomPropertyResolver` support) —
   no changes. The PR #27 collection pivot is **not** carried over.
-- `FilteringService`, `ProjectionService`, `MappingService` — no changes.
+- `FilteringService`, `ProjectionService`, `MappingService` — unchanged apart from the shared `RqlService.TryParse` (malformed input → `<prefix>:malformed`) and `NullableExpressionHelper` extraction.
 
 ### Added
 
@@ -262,7 +262,7 @@ Constant handling inside the predicate is entirely the filtering pipeline's
 `RqlGenericGroup` before the existing name/items processing:
 
 ```csharp
-protected virtual bool TryTraverseFunctionGroup(RqlNode target, RqlGenericGroup group) => false;
+protected virtual bool TryTraverseFunction(RqlNode target, RqlGenericGroup group, string? memberPath) => false;
 ```
 
 `OrderingGraphBuilder` overrides it (the `ProcessNode` overloads it needs become
@@ -370,10 +370,10 @@ All conditions produce collected validation errors; no exceptions escape to the 
   paths; `GoToRoot` called on error paths. The filtering `IExpressionBuilder` is mocked
   here; Guid and enum predicate values are covered by the integration tests, which run
   the real filtering pipeline.
-- `OrderingGraphBuilderTests`: graph contains collection (Hierarchy), predicate properties
+- `OrderingGraphBuilderFunctionTests`: graph contains collection (Hierarchy), predicate properties
   and selector (Order) under the collection node; **no** root-level node for any argument;
   2-arg form; unknown collection produces no graph mutation.
-- `OrderingServiceTests` additions: unknown function code; sign handling `+`/`-`/none;
+- `OrderingServiceFunctionTests`: unknown function code; sign handling `+`/`-`/none;
   `first()` combined with scalar item in both orders (`OrderBy` then `ThenBy`);
   duplicate registration does not throw.
 

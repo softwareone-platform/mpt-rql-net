@@ -26,6 +26,8 @@ public class SharedPipelineFixesTests
     [InlineData(null, "+first(orders,eq(clientName)).id", null, "order:malformed")]
     [InlineData(null, "eq(name)", null, "order:malformed")]
     [InlineData(null, null, "eq(name)", "select:malformed")]
+    [InlineData("\"", null, null, "query:malformed")]
+    [InlineData("name=first(orders).id\"", null, null, "query:malformed")]
     public void MalformedExpression_IsAValidationError(string? filter, string? order, string? select, string expectedCode)
     {
         var result = Make<Product>().Transform(ProductRepository.Query(), new RqlRequest { Filter = filter, Order = order, Select = select });

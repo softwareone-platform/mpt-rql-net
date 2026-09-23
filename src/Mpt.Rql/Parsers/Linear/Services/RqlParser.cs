@@ -112,16 +112,19 @@ public class RqlParser : IRqlParser
             throw new RqlParserException("Invalid equals shortcut expression");
         expressions.Add(new ExpressionPair(word.GroupType, RqlExpression.Equal(left, rightNodes[0].Expression)));
 
-        int shift = 1;
-        // A parenthesised right side (function, pointer, or a call with a member path such as first(orders).id) leaves
-        // currentIndex on its last consumed character; step past it so the loop resumes on the next structural symbol.
+        // A plain word on the right side leaves currentIndex on the delimiter that ended it; a parenthesised right
+        // side (function, pointer, or a call with a member path such as first(orders).id) leaves it on its last
+        // consumed character, so step past that. The loop resumes at currentIndex without incrementing, so the next
+        // word must start exactly there; structural symbols re-make it anyway.
         if (rightNodes[0].Expression is RqlFunction or RqlPointer)
         {
-            shift = 2;
             currentIndex++;
+            word = Word.Make(query, currentIndex);
         }
-
-        word = Word.Make(query, currentIndex + shift);
+        else
+        {
+            word = Word.Make(query, currentIndex + 1);
+        }
     }
 
     private static void HandleGroupOperator(ReadOnlyMemory<char> query, int currentIndex, ref Word word, GroupType groupType, List<ExpressionPair> expressions)
