@@ -80,6 +80,7 @@ public class RqlMemberAccessParsingTests
         second.Left.Should().BeOfType<RqlConstant>().Which.Value.Should().Be("id");
         second.Right.Should().BeOfType<RqlConstant>().Which.Value.Should().Be("1");
     }
+
     [Fact]
     public void Parse_CallWithoutPath_IsStillAPlainGroup()
     {
