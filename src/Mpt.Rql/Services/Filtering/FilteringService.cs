@@ -30,8 +30,13 @@ internal sealed class FilteringService<TView> : RqlService, IFilteringService<TV
         if (string.IsNullOrEmpty(filter))
             return;
 
+        if (!TryParse(_parser, filter, out var parseResult, out var parseError))
+        {
+            _context.AddError(parseError!);
+            return;
+        }
+
         RqlExpression rql;
-        var parseResult = _parser.Parse(filter);
         if (parseResult.Items?.Count == 1 && parseResult is RqlGenericGroup genGrp && genGrp.Name == string.Empty)
             rql = parseResult.Items[0];
         else

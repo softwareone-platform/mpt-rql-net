@@ -3,6 +3,7 @@ using Mpt.Rql.Abstractions.Argument;
 using Mpt.Rql.Abstractions.Argument.Pointer;
 using Mpt.Rql.Abstractions.Exception;
 using Mpt.Rql.Abstractions.Result;
+using Mpt.Rql.Core.Expressions;
 using Mpt.Rql.Core.Metadata;
 using Mpt.Rql.Services.Context;
 using System.Linq.Expressions;
@@ -132,19 +133,8 @@ internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBui
 
         var currentAccess = memberAccess[index];
         var nextAccess = BuildConditionalExpression(memberAccess, index + 1);
-        var nextAccessType = nextAccess.Type;
 
-        if (nextAccessType.IsValueType && Nullable.GetUnderlyingType(nextAccessType) == null)
-        {
-            // This is a non-nullable value type, make it nullable for the comparison
-            nextAccessType = typeof(Nullable<>).MakeGenericType(nextAccessType);
-            nextAccess = Expression.Convert(nextAccess, nextAccessType);
-        }
-
-        return Expression.Condition(
-            Expression.Equal(currentAccess, Expression.Constant(null, currentAccess.Type)),
-            Expression.Constant(null, nextAccessType),
-            nextAccess);
+        return NullableExpressionHelper.NullGuard(currentAccess, nextAccess);
     }
 
     /// <summary>

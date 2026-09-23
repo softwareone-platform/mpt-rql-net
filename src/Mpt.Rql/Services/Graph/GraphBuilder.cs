@@ -8,6 +8,7 @@ using Mpt.Rql.Abstractions.Unary;
 using Mpt.Rql.Core;
 using Mpt.Rql.Core.Metadata;
 using Mpt.Rql.Services.Context;
+using System.Linq.Expressions;
 
 namespace Mpt.Rql.Services.Graph;
 
@@ -31,24 +32,12 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
         switch (expression)
         {
             case RqlGroup group:
-                {
-                    var currentTarget = target;
-                    if (group is RqlGenericGroup genericGroup)
-                    {
-                        var updatedTarget = ProcessNode(target, genericGroup.Name);
-                        if (updatedTarget != null)
-                            currentTarget = updatedTarget;
-                    }
-
-                    if (group.Items != null)
-                        foreach (var item in group.Items)
-                        {
-                            TraverseRqlExpression(currentTarget, item);
-                        }
-                }
+                TraverseGroup(target, group);
                 break;
             case RqlUnary unary:
                 TraverseRqlExpression(target, unary.Nested);
+                break;
+            case RqlMemberAccess { Inner: RqlGenericGroup calledGroup } member when TryTraverseFunction(target, calledGroup, member.Path):
                 break;
             case RqlPointer pointer:
                 TraverseRqlExpression(target, pointer.Inner);
@@ -60,9 +49,7 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
                 }
                 break;
             case RqlBinary binary:
-                {
-                    TraverseRqlExpression(target, binary.Left);
-                }
+                TraverseBinary(target, binary);
                 break;
             case RqlConstant constant:
                 {
@@ -74,7 +61,120 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
         _builderContext.SetNode(target);
     }
 
-    private RqlNode? ProcessNode(RqlNode parentNode, RqlExpression constant, bool hierarchyOnly = false)
+    private void TraverseGroup(RqlNode target, RqlGroup group)
+    {
+        if (group is RqlGenericGroup functionGroup && TryTraverseFunction(target, functionGroup, memberPath: null))
+            return;
+
+        var currentTarget = target;
+        if (group is RqlGenericGroup genericGroup)
+        {
+            var updatedTarget = ProcessNode(target, genericGroup.Name);
+            if (updatedTarget != null)
+                currentTarget = updatedTarget;
+        }
+
+        if (group.Items == null)
+            return;
+
+        foreach (var item in group.Items)
+            TraverseRqlExpression(currentTarget, item);
+    }
+
+    private void TraverseBinary(RqlNode target, RqlBinary binary)
+    {
+        TraverseRqlExpression(target, binary.Left);
+
+        // Only comparison operators resolve their right-hand side as a property: like/ilike and in/out always take
+        // literals, so nothing on their right side is ever read from the entity.
+        if (binary is RqlLike or RqlLikeCaseInsensitive or RqlListIn or RqlListOut)
+            return;
+
+        // The expression stage compares against a right-hand PROPERTY when an unquoted constant resolves to one
+        // of a compatible type, and against the literal text otherwise. Mirror that decision so mapping projects
+        // exactly the columns the comparison reads and never a column that merely shares a name with the literal.
+        if (binary.Right is RqlConstant { IsQuoted: false } rightConstant && IsRightHandProperty(target, binary.Left, rightConstant.Value))
+            ProcessNode(target, rightConstant);
+        else if (binary.Right is RqlPointer rightPointer)
+            TraverseRqlExpression(target, rightPointer);
+    }
+
+    /// <summary>
+    /// Decides whether an unquoted right-hand constant is a property operand (to be included in the graph) or a
+    /// literal, mirroring <c>BinaryExpressionBuilder</c>: the path must resolve to a primitive — or to a custom
+    /// resolver carrier, whose leaf type is unknown — and, when both sides are plain primitives, the right type must
+    /// be coercible to the left type; otherwise the expression stage falls back to the literal.
+    /// </summary>
+    private bool IsRightHandProperty(RqlNode parentNode, RqlExpression left, string rightName)
+    {
+        if (ResolvePrimitivePath(parentNode, rightName) is not { Resolved: true } right)
+            return false;
+
+        if (right.ResolverConsumed || right.Leaf is null)
+            return true; // the carrier property is what the graph needs; the leaf type is the resolver's business
+
+        if (left is not RqlConstant leftConstant)
+            return true;
+
+        if (ResolvePrimitivePath(parentNode, leftConstant.Value) is not { Resolved: true, ResolverConsumed: false, Leaf: { } leftLeaf })
+            return true;
+
+        return CanConvertChecked(right.Leaf.Property.PropertyType, leftLeaf.Property.PropertyType);
+    }
+
+    private readonly record struct PrimitivePath(bool Resolved, bool ResolverConsumed, RqlPropertyInfo? Leaf);
+
+    /// <summary>
+    /// Walks <paramref name="name"/> (sign stripped) segment by segment from the node's type without passing
+    /// through a collection. Resolves when it ends in a primitive property, or when a segment has no CLR
+    /// counterpart but the previous property carries an <c>IRqlCustomPropertyResolver</c>.
+    /// </summary>
+    private PrimitivePath? ResolvePrimitivePath(RqlNode parentNode, string name)
+    {
+        var (path, _) = StringHelper.ExtractSign(name);
+        if (path.Length == 0 || path.Span.SequenceEqual("*".AsSpan()))
+            return null;
+
+        var currentType = parentNode.Property != null
+            ? parentNode.Property.ElementType ?? parentNode.Property.Property.PropertyType
+            : typeof(TView);
+
+        RqlPropertyInfo? property = null;
+        foreach (var segment in path.ToString().Split('.'))
+        {
+            if (property is { Type: RqlPropertyType.Collection })
+                return null;
+
+            if (!_metadataProvider.TryGetPropertyByDisplayName(currentType, segment, out var next))
+                return property?.CustomResolver is null ? null : new PrimitivePath(true, true, property);
+
+            if (next!.Mode == RqlPropertyMode.Ignored)
+                return null;
+
+            property = next;
+            currentType = property.Property.PropertyType;
+        }
+
+        return property is not null && (property.TypeOverride ?? property.Type) == RqlPropertyType.Primitive
+            ? new PrimitivePath(true, false, property)
+            : null;
+    }
+
+    /// <summary>Same rule <c>BinaryExpressionBuilder</c> applies with <c>Expression.ConvertChecked</c>.</summary>
+    private static bool CanConvertChecked(Type from, Type to)
+    {
+        try
+        {
+            Expression.ConvertChecked(Expression.Default(from), to);
+            return true;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
+    }
+
+    protected RqlNode? ProcessNode(RqlNode parentNode, RqlExpression constant, bool hierarchyOnly = false)
     {
         if (constant is not RqlConstant constExpression)
             return null;
@@ -149,6 +249,14 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
     protected virtual void OnValidationFailed(RqlNode node, RqlPropertyInfo property) { }
 
     protected virtual void OnNodeAddedDueToHierarchy(RqlNode node, RqlPropertyInfo property) { }
+
+    /// <summary>
+    /// Gives derived builders a chance to interpret a named generic group as a function call
+    /// (e.g. ordering's <c>first(...).value</c>; <paramref name="memberPath"/> is the dotted path after the call, or
+    /// <c>null</c>). Return <c>true</c> when the group has been handled; the
+    /// base traversal — which treats the group's items as property paths — is then skipped.
+    /// </summary>
+    protected virtual bool TryTraverseFunction(RqlNode target, RqlGenericGroup group, string? memberPath) => false;
 
     private IEnumerable<RqlPropertyInfo> GetProperties(Type type, ReadOnlyMemory<char> path)
     {

@@ -35,22 +35,32 @@ internal class CollectionExpressionBuilder : IConcreteExpressionBuilder<RqlColle
         var property = memberInfo.Value!.PropertyInfo;
         var accessor = memberInfo.Value.Expression;
 
-        if (property.ElementType == null)
-            return Error.General("Collection property has incompatible type");
+        // Struct enumerables (e.g. ImmutableArray<T>) are not reference-assignable to IEnumerable<T>; Expression.Call would throw.
+        if (property.ElementType == null || accessor.Type.IsValueType)
+            return Error.Validation("Collection property has incompatible type", path: _builderContext.GetFullPath(property.Name));
 
         var param = Expression.Parameter(property.ElementType);
 
         LambdaExpression? innerLambda = null;
         if (node.Right != null)
         {
+            // Restore the caller's scope (not root) afterwards: this builder may run nested inside another
+            // collection scope, e.g. a first() predicate, and error paths must keep that prefix.
+            var previousNode = _builderContext.CurrentNode;
             _builderContext.TryGoToChild(property);
-            var innerExpression = _builder.Build(param, node.Right);
+            try
+            {
+                var innerExpression = _builder.Build(param, node.Right);
 
-            if (innerExpression.IsError)
-                return innerExpression.Errors;
+                if (innerExpression.IsError)
+                    return innerExpression.Errors;
 
-            innerLambda = Expression.Lambda(innerExpression.Value!, param);
-            _builderContext.GoToRoot();
+                innerLambda = Expression.Lambda(innerExpression.Value!, param);
+            }
+            finally
+            {
+                _builderContext.SetNode(previousNode);
+            }
         }
 
         return handler.MakeExpression(property, accessor, innerLambda);

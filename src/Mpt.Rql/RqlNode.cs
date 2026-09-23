@@ -93,7 +93,8 @@ internal class RqlNode : IRqlNode
 
     private RqlNode AddChild(IRqlPropertyInfo rqlProperty, IncludeReasons includeReason, ExcludeReasons excludeReason)
     {
-        _children ??= [];
+        // RQL paths resolve property names case-insensitively (see MetadataProvider); graph lookups must agree.
+        _children ??= new Dictionary<string, RqlNode>(StringComparer.InvariantCultureIgnoreCase);
 
         if (!_children.TryGetValue(rqlProperty.Name, out var child))
         {
