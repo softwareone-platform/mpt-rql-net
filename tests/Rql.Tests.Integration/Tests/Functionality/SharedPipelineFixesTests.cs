@@ -56,6 +56,20 @@ public class SharedPipelineFixesTests
         Assert.Contains(result.Errors, e => e.Message.Contains("Cannot convert value: 'name'"));
     }
 
+
+    // ── first(...).path is an ordering construct; inside filter it is a validation error, never an exception ──
+
+    [Theory]
+    [InlineData("eq(first(orders,eq(clientName,\"x\")).id,5)")]
+    [InlineData("name=first(orders).id")]
+    [InlineData("name=first(orders).id,eq(id,1)")]
+    public void MemberAccessInsideFilter_IsAValidationError(string filter)
+    {
+        var result = Make<Product>().Transform(ProductRepository.Query(), new RqlRequest { Filter = filter });
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains(result.Errors, e => e.Message == "Unsupported property node.");
+    }
     [Fact]
     public void ExplicitPointer_IncompatibleType_IsAValidationError()
     {

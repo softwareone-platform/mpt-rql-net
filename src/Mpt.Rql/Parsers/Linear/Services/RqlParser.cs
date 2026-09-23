@@ -1,5 +1,6 @@
 using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Argument;
+using Mpt.Rql.Abstractions.Argument.Pointer;
 using Mpt.Rql.Abstractions.Exception;
 using Mpt.Rql.Abstractions.Group;
 using Mpt.Rql.Parsers.Linear.Core.Enumerations;
@@ -112,9 +113,9 @@ public class RqlParser : IRqlParser
         expressions.Add(new ExpressionPair(word.GroupType, RqlExpression.Equal(left, rightNodes[0].Expression)));
 
         int shift = 1;
-
-        // If the right side is a function, adjust the shift to skip the closing parenthesis ')'.
-        if (rightNodes[0].Expression is RqlFunction)
+        // A parenthesised right side (function, pointer, or a call with a member path such as first(orders).id) leaves
+        // currentIndex on its last consumed character; step past it so the loop resumes on the next structural symbol.
+        if (rightNodes[0].Expression is RqlFunction or RqlPointer)
         {
             shift = 2;
             currentIndex++;

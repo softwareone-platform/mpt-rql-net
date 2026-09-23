@@ -51,6 +51,35 @@ public class RqlMemberAccessParsingTests
         and.Items[1].Should().BeOfType<RqlConstant>().Which.Value.Should().Be("+id");
     }
 
+
+    [Theory]
+    [InlineData("name=first(orders).id", "id")]
+    [InlineData("name=self(other).id", "id")]
+    public void Parse_MemberAccessAsEqualsShortcutRightSide_IsTheRightOperand(string query, string path)
+    {
+        // The shortcut's right side ends on the path, not on ')'; the parser must resume after it and never throw.
+        var result = _sut.Parse(query);
+
+        var eq = result.Should().BeOfType<RqlGenericGroup>().Subject.Items![0].Should().BeOfType<RqlEqual>().Subject;
+        eq.Left.Should().BeOfType<RqlConstant>().Which.Value.Should().Be("name");
+        eq.Right.Should().BeOfType<RqlMemberAccess>().Which.Path.Should().Be(path);
+    }
+
+    [Theory]
+    [InlineData("name=first(orders).id,eq(id,1)")]
+    [InlineData("name=self(other),eq(id,1)")]
+    [InlineData("and(name=first(orders).id,eq(id,1))")]
+    public void Parse_ParenthesisedEqualsShortcutRightSide_KeepsTheFollowingTerm(string query)
+    {
+        var result = _sut.Parse(query);
+
+        var items = result.Should().BeAssignableTo<RqlGroup>().Subject.Items!;
+        items.Should().HaveCount(2);
+        items[0].Should().BeOfType<RqlEqual>().Which.Right.Should().BeAssignableTo<RqlPointer>();
+        var second = items[1].Should().BeOfType<RqlEqual>().Subject;
+        second.Left.Should().BeOfType<RqlConstant>().Which.Value.Should().Be("id");
+        second.Right.Should().BeOfType<RqlConstant>().Which.Value.Should().Be("1");
+    }
     [Fact]
     public void Parse_CallWithoutPath_IsStillAPlainGroup()
     {
