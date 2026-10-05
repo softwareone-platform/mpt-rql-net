@@ -26,20 +26,21 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
     public RqlGraphResponse BuildGraph(RqlRequest request)
         => BuildGraph(request, static _ => { });
 
-    public RqlGraphResponse BuildGraph(RqlRequest request, Action<IRqlSettings> configure)
+    public RqlGraphResponse BuildGraph(RqlRequest request, Action<IRqlTransformOptions> configure)
        => TransformInternal(null!, request, configure, true);
 
     public RqlResponse<TView> Transform(IQueryable<TStorage> source, RqlRequest request)
         => Transform(source, request, static _ => { });
 
-    public RqlResponse<TView> Transform(IQueryable<TStorage> source, RqlRequest request, Action<IRqlSettings> configure)
+    public RqlResponse<TView> Transform(IQueryable<TStorage> source, RqlRequest request, Action<IRqlTransformOptions> configure)
         => TransformInternal(source, request, configure, false);
 
-    private RqlResponse<TView> TransformInternal(IQueryable<TStorage> source, RqlRequest request, Action<IRqlSettings> configure, bool skipTransformStage)
+    private RqlResponse<TView> TransformInternal(IQueryable<TStorage> source, RqlRequest request, Action<IRqlTransformOptions> configure, bool skipTransformStage)
     {
         using var scope = _serviceProvider.CreateScope();
         var settingsAccessor = GetService<IRqlSettingsAccessor>();
-        configure(settingsAccessor.Current);
+        var options = new RqlTransformOptions(settingsAccessor.Current);
+        configure(options);
 
         GetService<IExternalServiceAccessor>().SetServiceProvider(_serviceProvider);
 
@@ -49,6 +50,9 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
         GetService<IOrderingService<TView>>().Process(request.Order);
         GetService<IProjectionService<TView>>().Process(request.Select);
         GetService<IProjectionGraphBuilder<TView>>().BuildDefaults();
+
+        foreach (var callback in options.GraphCallbacks)
+            callback(context.Graph);
 
         IQueryable<TView>? query = null;
         if (!skipTransformStage)

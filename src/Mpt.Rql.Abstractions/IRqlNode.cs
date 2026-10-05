@@ -17,6 +17,7 @@ public interface IRqlNode
     string Print();
     bool TryGetChild(string name, out IRqlNode? child);
     string GetFullPath();
+    void SetReasons(IncludeReasons includeReason, ExcludeReasons excludeReason);
 }
 
 

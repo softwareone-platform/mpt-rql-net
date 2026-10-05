@@ -66,6 +66,27 @@ public class UserQueryBuilder(IRqlQueryable<User> rql)
 }
 ```
 
+### Customizing the graph
+
+The `configure` callback of `Transform` and `BuildGraph` receives `IRqlTransformOptions`. Its `Settings` apply to that call only, and `OnGraphBuilt` registers a callback that gets the graph once RQL has built it from the request and the defaults, before the query is projected. A callback can replace a node's reasons with `IRqlNode.SetReasons`, and the query is projected from the graph as the callbacks leave it, following `IsIncluded`:
+
+- RQL builds no defaults beneath a node it excluded, so including one projects only the children it already has.
+- The filter and order are compiled before the callbacks run and read their properties from the projection, so keep the `Filter` and `Order` reasons of the nodes they use. Whether a property may be filtered or ordered by is still up to its action strategy.
+
+```csharp
+var response = rql.Transform(sourceQuery, request, options =>
+{
+    options.Settings.Select.Implicit = RqlSelectModes.Core;
+    options.OnGraphBuilt(graph =>
+    {
+        if (graph.TryGetChild("name", out var name))
+            name!.SetReasons(IncludeReasons.None, ExcludeReasons.Invisible);   // name is not loaded
+    });
+});
+```
+
+Changing the graph of a response afterwards leaves its `Query`, which is already projected, as it is.
+
 ### Ordering by a collection value with `first()`
 
 To sort by a value that lives inside a child collection — for example the `value` of the parameter whose `name` is `priority` — use the `first()` ordering function:
