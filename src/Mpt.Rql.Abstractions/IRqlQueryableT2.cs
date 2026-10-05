@@ -7,5 +7,5 @@ public interface IRqlQueryable<in TStorage, TView> : IRqlQueryable
 {
     RqlResponse<TView> Transform(IQueryable<TStorage> source, RqlRequest request);
 
-    RqlResponse<TView> Transform(IQueryable<TStorage> source, RqlRequest request, Action<IRqlSettings> configure);
+    RqlResponse<TView> Transform(IQueryable<TStorage> source, RqlRequest request, Action<IRqlTransformOptions> configure);
 }

@@ -7,5 +7,5 @@ public interface IRqlQueryable
 {
     RqlGraphResponse BuildGraph(RqlRequest request);
 
-    RqlGraphResponse BuildGraph(RqlRequest request, Action<IRqlSettings> configure);
+    RqlGraphResponse BuildGraph(RqlRequest request, Action<IRqlTransformOptions> configure);
 }
