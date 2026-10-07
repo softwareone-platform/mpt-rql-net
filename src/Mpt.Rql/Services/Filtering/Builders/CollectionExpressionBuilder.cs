@@ -1,4 +1,6 @@
+using Mpt.Rql.Abstractions;
 using Mpt.Rql.Abstractions.Argument;
+using Mpt.Rql.Abstractions.Argument.Pointer;
 using Mpt.Rql.Abstractions.Collection;
 using Mpt.Rql.Abstractions.Result;
 using Mpt.Rql.Core;
@@ -48,8 +50,8 @@ internal class CollectionExpressionBuilder : IConcreteExpressionBuilder<RqlColle
             // Restore the caller's scope (not root) afterwards: this builder may run nested inside another
             // collection scope, e.g. a first() predicate, and error paths must keep that prefix.
             var previousNode = _builderContext.CurrentNode;
-            if (node.Left is RqlConstant collectionPath)
-                _builderContext.DescendInto(collectionPath.Value);
+            if (GetCollectionPath(node.Left) is { } collectionPath)
+                _builderContext.DescendInto(collectionPath);
             else
                 _builderContext.TryGoToChild(property);
 
@@ -70,4 +72,12 @@ internal class CollectionExpressionBuilder : IConcreteExpressionBuilder<RqlColle
 
         return handler.MakeExpression(property, accessor, innerLambda);
     }
+
+    // self(path) names the same collection as path
+    private static string? GetCollectionPath(RqlExpression expression) => expression switch
+    {
+        RqlConstant constant => constant.Value,
+        RqlSelf { Inner: { } inner } => GetCollectionPath(inner),
+        _ => null,
+    };
 }
