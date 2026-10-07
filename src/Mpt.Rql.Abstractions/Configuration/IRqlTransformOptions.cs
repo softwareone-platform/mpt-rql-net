@@ -5,8 +5,9 @@ public interface IRqlTransformOptions
     IRqlSettings Settings { get; }
 
     /// <summary>
-    /// Registers a callback that receives the graph once it is built from the request and the defaults. Callbacks run
-    /// in registration order, and the query is projected from the graph as they leave it.
+    /// Overrides the property at the dotted <paramref name="path"/> in this call. Included, it is selected regardless of
+    /// its action strategy and select mode, unless the request deselects it. Excluded, it is treated as if its action
+    /// strategy allowed nothing, so it cannot be selected, filtered or ordered by.
     /// </summary>
-    void OnGraphBuilt(Action<IRqlNode> callback);
+    void Override(string path, bool include);
 }

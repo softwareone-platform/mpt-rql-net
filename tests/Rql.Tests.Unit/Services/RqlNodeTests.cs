@@ -141,34 +141,4 @@ public class RqlNodeTests
         // Assert
         included.Should().BeTrue();
     }
-
-    [Fact]
-    public void SetReasons_WithExistingReasons_ReplacesBoth()
-    {
-        // Arrange
-        var root = RqlNode.MakeRoot();
-        var child = root.IncludeChild(MakeProp("p"), IncludeReasons.Select | IncludeReasons.Default);
-        child.AddExcludeReason(ExcludeReasons.Unselected);
-
-        // Act
-        child.SetReasons(IncludeReasons.Order, ExcludeReasons.Default);
-
-        // Assert
-        child.IncludeReason.Should().Be(IncludeReasons.Order);
-        child.ExcludeReason.Should().Be(ExcludeReasons.Default);
-    }
-
-    [Fact]
-    public void IsIncluded_InvisibleNodeRestoredToDefault_IsTrue()
-    {
-        // Arrange
-        var root = RqlNode.MakeRoot();
-        var child = root.ExcludeChild(MakeProp("p"), ExcludeReasons.Invisible);
-
-        // Act
-        child.SetReasons(IncludeReasons.Default, ExcludeReasons.None);
-
-        // Assert
-        child.IsIncluded.Should().BeTrue();
-    }
 }

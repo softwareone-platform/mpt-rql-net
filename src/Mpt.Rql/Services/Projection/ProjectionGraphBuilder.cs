@@ -5,11 +5,14 @@ using Mpt.Rql.Core;
 using Mpt.Rql.Core.Metadata;
 using Mpt.Rql.Services.Context;
 using Mpt.Rql.Services.Graph;
+using Mpt.Rql.Settings;
 
 namespace Mpt.Rql.Services.Projection;
 
 internal interface IProjectionGraphBuilder<TView> : IGraphBuilder<TView>
 {
+    void BuildDecisions();
+
     void BuildDefaults();
 }
 
@@ -19,16 +22,59 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
     private readonly IMetadataProvider _metadataProvider;
     private readonly IActionValidator _actionValidator;
     private readonly IRqlSettings _settings;
+    private readonly RqlTransformOptions _options;
+    private bool _hasDecisions;
 
     protected override RqlActions Action => RqlActions.Select;
 
-    public ProjectionGraphBuilder(IQueryContext<TView> context, IMetadataProvider metadataProvider, IActionValidator actionValidator, IBuilderContext builderContext, IRqlSettings settings)
+    public ProjectionGraphBuilder(IQueryContext<TView> context, IMetadataProvider metadataProvider, IActionValidator actionValidator, IBuilderContext builderContext, IRqlSettings settings, RqlTransformOptions options)
         : base(metadataProvider, actionValidator, builderContext)
     {
         _context = context;
         _metadataProvider = metadataProvider;
         _actionValidator = actionValidator;
         _settings = settings;
+        _options = options;
+    }
+
+    public void BuildDecisions()
+    {
+        if (_options.Decisions == null)
+            return;
+
+        foreach (var (path, include) in _options.Decisions)
+            BuildDecision(path, include);
+    }
+
+    private void BuildDecision(string path, bool include)
+    {
+        var segments = path.Split('.');
+        var properties = new RqlPropertyInfo[segments.Length];
+        var type = typeof(TView);
+
+        for (var i = 0; i < segments.Length; i++)
+        {
+            // a path that is not a property RQL builds is left alone
+            if (!_metadataProvider.TryGetPropertyByDisplayName(type, segments[i], out var rqlProperty) || rqlProperty!.Property == null || rqlProperty.Mode == RqlPropertyMode.Ignored)
+                return;
+
+            properties[i] = rqlProperty;
+            type = rqlProperty.ElementType ?? rqlProperty.Property.PropertyType;
+        }
+
+        // the properties above the one decided on are added as left out by default, which leaves them to the request
+        // and the defaults
+        var target = _context.Graph;
+        foreach (var rqlProperty in properties[..^1])
+            target = target.ExcludeChild(rqlProperty, ExcludeReasons.Default);
+
+        // an included property is selected once the defaults reach it
+        if (include)
+            target.IncludeChild(properties[^1], IncludeReasons.Override);
+        else
+            target.ExcludeChild(properties[^1], ExcludeReasons.Override);
+
+        _hasDecisions = true;
     }
 
     public void BuildDefaults()
@@ -65,6 +111,20 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
 
             if (shouldContinueToNextProperty)
             {
+                continue;
+            }
+
+            // properties decided on for the call are kept or left out whatever the checks below would say, but the
+            // request deselecting the property or the one above it still leaves it out
+            if (FindDecision(target, rqlProperty) is { } include)
+            {
+                if (include && !IsDeselected(target))
+                {
+                    var included = target.IncludeChild(rqlProperty, IncludeReasons.Default);
+                    if (!IsDeselected(included))
+                        BuildSelectedDefaults(included);
+                }
+
                 continue;
             }
 
@@ -152,9 +212,7 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
         if (sign)
         {
             var child = parentNode.IncludeChild(rqlProperty, IncludeReasons.Select);
-            // extend configured select mode with explicit config
-            var selectMode = rqlProperty.SelectModeOverride.HasValue ? rqlProperty.SelectModeOverride.Value | _settings.Select.Explicit : _settings.Select.Explicit;
-            BuildDefaultsForProperty(child, child.Property, selectMode);
+            BuildSelectedDefaults(child);
             return child;
         }
         else
@@ -165,13 +223,41 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
         }
     }
 
+    private void BuildSelectedDefaults(RqlNode node)
+    {
+        // extend configured select mode with explicit config
+        var selectMode = node.Property.SelectModeOverride.HasValue ? node.Property.SelectModeOverride.Value | _settings.Select.Explicit : _settings.Select.Explicit;
+        BuildDefaultsForProperty(node, node.Property, selectMode);
+    }
+
+    // deselected by the request, which also selecting the property overrules
+    private static bool IsDeselected(RqlNode node)
+        => node.ExcludeReason.HasFlag(ExcludeReasons.Unselected) && !node.IncludeReason.HasFlag(IncludeReasons.Select);
+
+    // the decision on the property beneath the node, which BuildDecisions put in the graph before anything else
+    private bool? FindDecision(RqlNode parentNode, RqlPropertyInfo rqlProperty)
+    {
+        if (!_hasDecisions || !parentNode.TryGetChild(rqlProperty.Name, out var child))
+            return null;
+
+        if (child!.IncludeReason.HasFlag(IncludeReasons.Override))
+            return true;
+
+        return child.ExcludeReason.HasFlag(ExcludeReasons.Override) ? false : null;
+    }
+
     protected override void OnNodeAddedDueToHierarchy(RqlNode node, RqlPropertyInfo property)
     {
         BuildDefaultsForProperty(node, property, RqlSelectModes.None);
     }
 
+    protected override bool IsAllowed(RqlNode parentNode, RqlPropertyInfo rqlProperty)
+        => FindDecision(parentNode, rqlProperty) ?? base.IsAllowed(parentNode, rqlProperty);
+
     protected override void OnValidationFailed(RqlNode node, RqlPropertyInfo property)
     {
-        node.ExcludeChild(property!, ExcludeReasons.Invisible);
+        // a property excluded for the call already carries its reason
+        if (FindDecision(node, property) != false)
+            node.ExcludeChild(property!, ExcludeReasons.Invisible);
     }
 }

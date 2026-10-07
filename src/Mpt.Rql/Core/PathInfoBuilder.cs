@@ -41,6 +41,7 @@ internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBui
         var memberAccess = new List<Expression>(segments.Length);
 
         var state = PathWalkState.Initial(root);
+        IRqlNode? node = builderContext.CurrentNode;
         var currentPathLength = 0;
 
         foreach (var segment in segments.TakeWhile(_ => !state.ResolverConsumedPath))
@@ -53,8 +54,9 @@ internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBui
             if (advanceState.IsError)
                 return advanceState.Errors;
             state = advanceState.Value;
+            node = node != null && node.TryGetChild(segment, out var child) ? child : null;
 
-            var validation = ValidatePath(state.PropInfo!, state.PropertyPath);
+            var validation = ValidatePath(state.PropInfo!, state.PropertyPath, node);
             if (validation.IsError)
                 return validation.Errors;
 
@@ -174,7 +176,11 @@ internal abstract class PathInfoBuilder(IMetadataProvider metadataProvider, IBui
         return resolver.TryResolve(parentExpression, propertyPath, out resolvedExpression, out resolvedPropertyInfo);
     }
 
-    protected abstract Result<bool> ValidatePath(RqlPropertyInfo property, string path);
+    /// <param name="node">The graph node of the path, if the graph has one.</param>
+    protected abstract Result<bool> ValidatePath(RqlPropertyInfo property, string path, IRqlNode? node);
+
+    // a property excluded for the call may not be filtered or ordered by, as if its action strategy allowed neither
+    protected static bool IsExcluded(IRqlNode? node) => node?.ExcludeReason.HasFlag(ExcludeReasons.Override) == true;
 
     /// <summary>
     /// Determines whether safe navigation operators (?.) should be used based on implementation type and settings

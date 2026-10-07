@@ -84,6 +84,25 @@ public class BasicActionStrategyTests
     }
 
     [Theory]
+    [InlineData("-*,Nothing(Id)")]
+    [InlineData("-*,FilterOnly(Id)")]
+    public void Shape_GroupOfForbiddenProperty_SelectsNothing(string selectExpression)
+    {
+        // Arrange
+        var testData = ActionStrategyTestItemRepository.Query();
+
+        // Act
+        var result = _rql.Transform(testData, new RqlRequest { Select = selectExpression });
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var item = result.Query.First();
+        Assert.Equal(0, item.Id);
+        Assert.Null(item.Nothing);
+        Assert.Null(item.FilterOnly);
+    }
+
+    [Theory]
     [InlineData("Nothing")]
     [InlineData("FilterOnly")]
     [InlineData("SelectOnly")]

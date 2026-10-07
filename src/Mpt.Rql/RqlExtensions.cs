@@ -37,6 +37,7 @@ public static class RqlExtensions
 
         services.AddScoped<IRqlSettingsAccessor, RqlSettingsAccessor>();
         services.AddScoped(s => s.GetRequiredService<IRqlSettingsAccessor>().Current);
+        services.AddScoped<RqlTransformOptions>();
         services.AddSingleton(options.Settings);
 
         services.AddSingleton<IRqlParser, RqlParser>();
