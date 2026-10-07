@@ -83,4 +83,18 @@ public class BasicSelectTests
         Assert.Null(shape.HiddenCollection);
         Assert.Null(shape.Ignored);
     }
+
+    [Fact]
+    public void Shape_GroupOfUnknownProperty_SelectsNothing()
+    {
+        // Arrange
+        var testData = ShapedProductRepository.Query();
+
+        // Act
+        var result = _rql.Transform(testData, new RqlRequest { Select = "-*,unknown(id)" });
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal(0, result.Query.First().Id);
+    }
 }

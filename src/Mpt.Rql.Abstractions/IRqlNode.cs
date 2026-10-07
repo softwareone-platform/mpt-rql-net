@@ -31,7 +31,7 @@ public enum IncludeReasons
     Order = 1 << 4,
     Forced = 1 << 5,
 
-    /// <summary>Included by <c>IRqlTransformOptions.Override</c>; it is selected once it also has <see cref="Default"/>.</summary>
+    /// <summary>Shown by <see cref="Abstractions.Configuration.IRqlTransformOptions.SetVisibility"/>; selected once it also has <see cref="Default"/>.</summary>
     Override = 1 << 6
 }
 
@@ -43,6 +43,6 @@ public enum ExcludeReasons
     Unselected = 1 << 1,
     Invisible = 1 << 2,
 
-    /// <summary>Excluded by <c>IRqlTransformOptions.Override</c>.</summary>
+    /// <summary>Hidden by <see cref="Abstractions.Configuration.IRqlTransformOptions.SetVisibility"/>.</summary>
     Override = 1 << 3,
 }

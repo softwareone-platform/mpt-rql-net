@@ -36,6 +36,26 @@ public class BuilderContextTests
     }
 
     [Fact]
+    public void DescendInto_Path_DescendsEverySegment()
+    {
+        var (context, _) = MakeGraph();
+
+        context.DescendInto("Category.products");
+
+        context.GetFullPath("id").Should().Be("category.products.id");
+    }
+
+    [Fact]
+    public void DescendInto_PathWithMissingStep_StopsBeforeIt()
+    {
+        var (context, _) = MakeGraph();
+
+        context.DescendInto("category.nope.products");
+
+        context.GetFullPath("id").Should().Be("category.id");
+    }
+
+    [Fact]
     public void TryGoToChild_ByName_UnknownChild_ReturnsFalseAndStays()
     {
         var (context, root) = MakeGraph();

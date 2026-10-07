@@ -8,6 +8,7 @@ internal interface IBuilderContext
     void SetNode(RqlNode? node);
     bool TryGoToChild(IRqlPropertyInfo rqlProperty);
     bool TryGoToChild(string name);
+    void DescendInto(string path);
     void GoToRoot();
     string GetFullPath(string suffix);
 }
