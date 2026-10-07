@@ -24,6 +24,7 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
     private readonly IRqlSettings _settings;
     private readonly RqlTransformOptions _options;
     private bool _hasDecisions;
+    private List<RqlNode>? _shown;
 
     protected override RqlActions Action => RqlActions.Select;
 
@@ -42,11 +43,11 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
         if (_options.Decisions == null)
             return;
 
-        foreach (var (path, include) in _options.Decisions)
-            BuildDecision(path, include);
+        foreach (var (path, visibility) in _options.Decisions)
+            BuildDecision(path, visibility);
     }
 
-    private void BuildDecision(string path, bool include)
+    private void BuildDecision(string path, RqlVisibility visibility)
     {
         var segments = path.Split('.');
         var properties = new RqlPropertyInfo[segments.Length];
@@ -68,9 +69,9 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
         foreach (var rqlProperty in properties[..^1])
             target = target.ExcludeChild(rqlProperty, ExcludeReasons.Default);
 
-        // an included property is selected once the defaults reach it
-        if (include)
-            target.IncludeChild(properties[^1], IncludeReasons.Override);
+        // a shown property joins the selection once the request is known, see BuildShown
+        if (visibility == RqlVisibility.Shown)
+            (_shown ??= []).Add(target.IncludeChild(properties[^1], IncludeReasons.Override));
         else
             target.ExcludeChild(properties[^1], ExcludeReasons.Override);
 
@@ -78,7 +79,30 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
     }
 
     public void BuildDefaults()
-        => BuildDefaultsForType(_context.Graph, typeof(TView), _settings.Select.Explicit);
+    {
+        BuildDefaultsForType(_context.Graph, typeof(TView), _settings.Select.Explicit);
+        BuildShown();
+    }
+
+    /// <summary>
+    /// Brings the shown properties into the selection once the request is known, top down, wherever RQL built the
+    /// property above them and the request deselects neither them nor it.
+    /// </summary>
+    private void BuildShown()
+    {
+        if (_shown == null)
+            return;
+
+        foreach (var node in _shown.OrderBy(t => t.Depth))
+        {
+            var parent = (RqlNode)node.Parent!;
+            if (parent.AppliedMode == null || IsDeselected(parent) || IsDeselected(node))
+                continue;
+
+            node.AddIncludeReason(IncludeReasons.Default);
+            BuildSelectedDefaults(node);
+        }
+    }
 
     private void BuildDefaultsForType(RqlNode target, Type type, RqlSelectModes currentMode)
     {
@@ -114,19 +138,10 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
                 continue;
             }
 
-            // properties decided on for the call are kept or left out whatever the checks below would say, but the
-            // request deselecting the property or the one above it still leaves it out
-            if (FindDecision(target, rqlProperty) is { } include)
-            {
-                if (include && !IsDeselected(target))
-                {
-                    var included = target.IncludeChild(rqlProperty, IncludeReasons.Default);
-                    if (!IsDeselected(included))
-                        BuildSelectedDefaults(included);
-                }
-
+            // properties with a visibility set for the call skip the checks below: hidden ones stay out, and shown ones
+            // join the selection once the request is known
+            if (FindVisibility(target, rqlProperty) != null)
                 continue;
-            }
 
             // properties which don't pass select validation excluded as invisible
             if (!_actionValidator.Validate(rqlProperty, RqlActions.Select))
@@ -234,16 +249,16 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
     private static bool IsDeselected(RqlNode node)
         => node.ExcludeReason.HasFlag(ExcludeReasons.Unselected) && !node.IncludeReason.HasFlag(IncludeReasons.Select);
 
-    // the decision on the property beneath the node, which BuildDecisions put in the graph before anything else
-    private bool? FindDecision(RqlNode parentNode, RqlPropertyInfo rqlProperty)
+    // the visibility set on the property beneath the node, which BuildDecisions put in the graph before anything else
+    private RqlVisibility? FindVisibility(RqlNode parentNode, RqlPropertyInfo rqlProperty)
     {
         if (!_hasDecisions || !parentNode.TryGetChild(rqlProperty.Name, out var child))
             return null;
 
         if (child!.IncludeReason.HasFlag(IncludeReasons.Override))
-            return true;
+            return RqlVisibility.Shown;
 
-        return child.ExcludeReason.HasFlag(ExcludeReasons.Override) ? false : null;
+        return child.ExcludeReason.HasFlag(ExcludeReasons.Override) ? RqlVisibility.Hidden : null;
     }
 
     protected override void OnNodeAddedDueToHierarchy(RqlNode node, RqlPropertyInfo property)
@@ -252,12 +267,12 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
     }
 
     protected override bool IsAllowed(RqlNode parentNode, RqlPropertyInfo rqlProperty)
-        => FindDecision(parentNode, rqlProperty) ?? base.IsAllowed(parentNode, rqlProperty);
+        => FindVisibility(parentNode, rqlProperty) is { } visibility ? visibility == RqlVisibility.Shown : base.IsAllowed(parentNode, rqlProperty);
 
     protected override void OnValidationFailed(RqlNode node, RqlPropertyInfo property)
     {
-        // a property excluded for the call already carries its reason
-        if (FindDecision(node, property) != false)
+        // a property hidden for the call already carries its reason
+        if (FindVisibility(node, property) != RqlVisibility.Hidden)
             node.ExcludeChild(property!, ExcludeReasons.Invisible);
     }
 }

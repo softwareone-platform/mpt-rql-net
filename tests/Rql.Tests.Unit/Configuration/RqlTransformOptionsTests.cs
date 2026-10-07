@@ -10,7 +10,7 @@ public class RqlTransformOptionsTests
     private readonly RqlTransformOptions _options = new(new GlobalRqlSettings());
 
     [Fact]
-    public void Decisions_WithoutDecisions_IsNull()
+    public void Decisions_WithoutVisibility_IsNull()
     {
         // Act
         var decisions = _options.Decisions;
@@ -20,28 +20,38 @@ public class RqlTransformOptionsTests
     }
 
     [Fact]
-    public void Override_PathAlreadyDecidedOnInAnotherCase_ReplacesTheDecision()
+    public void SetVisibility_PathAlreadySetInAnotherCase_ReplacesTheVisibility()
     {
         // Arrange
-        _options.Override("Reference.Name", include: false);
+        _options.SetVisibility("Reference.Name", RqlVisibility.Hidden);
 
         // Act
-        _options.Override("reference.NAME", include: true);
+        _options.SetVisibility("reference.NAME", RqlVisibility.Shown);
 
         // Assert
-        _options.Decisions.Should().ContainSingle().Which.Value.Should().BeTrue();
-        _options.Decisions!["REFERENCE.name"].Should().BeTrue();
+        _options.Decisions.Should().ContainSingle().Which.Value.Should().Be(RqlVisibility.Shown);
+        _options.Decisions!["REFERENCE.name"].Should().Be(RqlVisibility.Shown);
     }
 
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void Override_WithoutPath_Throws(string? path)
+    public void SetVisibility_WithoutPath_Throws(string? path)
     {
         // Act
-        var act = () => _options.Override(path!, include: true);
+        var act = () => _options.SetVisibility(path!, RqlVisibility.Shown);
 
         // Assert
         act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void SetVisibility_UndefinedVisibility_Throws()
+    {
+        // Act
+        var act = () => _options.SetVisibility("name", (RqlVisibility)42);
+
+        // Assert
+        act.Should().Throw<ArgumentOutOfRangeException>();
     }
 }

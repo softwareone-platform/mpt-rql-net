@@ -108,7 +108,7 @@ internal sealed class FirstOrderingFunction : IOrderingFunction
 
         // Enter the collection's graph scope so predicate/selector errors are reported as "collection.prop",
         // and build the predicate under the ordering navigation strategy (settings are request-scoped).
-        DescendInto(builderContext, collectionArg.Value);
+        builderContext.DescendInto(collectionArg.Value);
         filterSettings.Navigation = context.Settings.Ordering.Navigation;
         try
         {
@@ -145,19 +145,6 @@ internal sealed class FirstOrderingFunction : IOrderingFunction
 
     private static bool IsWildcard(string value)
         => StringHelper.ExtractSign(value).value.Span.SequenceEqual("*".AsSpan());
-
-    /// <summary>
-    /// Walks the builder context down the collection path segment by segment (graph node names are
-    /// matched case-insensitively, like metadata). The graph stage has already created these nodes; if
-    /// a step is missing we stop and later error paths simply lack the prefix.
-    /// </summary>
-    private static void DescendInto(IBuilderContext builderContext, string collectionPath)
-    {
-        var segments = collectionPath.Split('.');
-        var i = 0;
-        while (i < segments.Length && builderContext.TryGoToChild(segments[i]))
-            i++;
-    }
 
     private static Expression BuildKey(
         Expression collection,

@@ -21,10 +21,10 @@ public class TransformOptionsTests
     [Theory]
     [InlineData(null)]
     [InlineData("name")]
-    public void Excluding_Property_LeavesItOutOfTheProjection(string? select)
+    public void Hiding_Property_LeavesItOutOfTheProjection(string? select)
     {
         // Act
-        var result = _rql.Transform(ProductRepository.Query(), new RqlRequest { Select = select }, options => options.Override("name", include: false));
+        var result = _rql.Transform(ProductRepository.Query(), new RqlRequest { Select = select }, options => options.SetVisibility("name", RqlVisibility.Hidden));
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -35,10 +35,10 @@ public class TransformOptionsTests
     }
 
     [Fact]
-    public void Excluding_NestedProperty_LeavesOnlyItOut()
+    public void Hiding_NestedProperty_LeavesOnlyItOut()
     {
         // Act
-        var result = _rql.Transform(ProductRepository.Query(), new RqlRequest(), options => options.Override("Reference.NAME", include: false));
+        var result = _rql.Transform(ProductRepository.Query(), new RqlRequest(), options => options.SetVisibility("Reference.NAME", RqlVisibility.Hidden));
 
         // Assert
         result.Query.ToList().Should().NotBeEmpty()
@@ -46,10 +46,10 @@ public class TransformOptionsTests
     }
 
     [Fact]
-    public void Excluding_Property_StopsTheRequestSelectingBeneathIt()
+    public void Hiding_Property_StopsTheRequestSelectingBeneathIt()
     {
         // Act
-        var result = _rql.Transform(ProductRepository.Query(), new RqlRequest { Select = "reference.name" }, options => options.Override("reference", include: false));
+        var result = _rql.Transform(ProductRepository.Query(), new RqlRequest { Select = "reference.name" }, options => options.SetVisibility("reference", RqlVisibility.Hidden));
 
         // Assert
         result.Query.ToList().Should().NotBeEmpty().And.OnlyContain(t => t.Reference == null);
@@ -57,10 +57,10 @@ public class TransformOptionsTests
     }
 
     [Fact]
-    public void Excluding_Property_DropsTheItemsOfItsGroup()
+    public void Hiding_Property_DropsTheItemsOfItsGroup()
     {
-        // Act — 'name' in the group belongs to the excluded reference, not to the root
-        var result = _rql.Transform(ProductRepository.Query(), new RqlRequest { Select = "-name,reference(name)" }, options => options.Override("reference", include: false));
+        // Act — 'name' in the group belongs to the hidden reference, not to the root
+        var result = _rql.Transform(ProductRepository.Query(), new RqlRequest { Select = "-name,reference(name)" }, options => options.SetVisibility("reference", RqlVisibility.Hidden));
 
         // Assert
         result.Query.ToList().Should().NotBeEmpty().And.OnlyContain(t => t.Name == null && t.Reference == null);
@@ -69,7 +69,7 @@ public class TransformOptionsTests
     [Theory]
     [InlineData("eq({0}.foo,bar)", null)]
     [InlineData(null, "+{0}.foo")]
-    public void Excluding_Property_RejectsItAsAnActionStrategyAllowingNothingDoes(string? filter, string? order)
+    public void Hiding_Property_RejectsItAsAnActionStrategyAllowingNothingDoes(string? filter, string? order)
     {
         // Arrange — 'nothing' allows no action, and 'all' is of the same type
         var rql = MakeActionStrategyRql();
@@ -81,7 +81,7 @@ public class TransformOptionsTests
         var hidden = rql.Transform(ActionStrategyTestItemRepository.Query(), Request("nothing"));
 
         // Act
-        var result = rql.Transform(ActionStrategyTestItemRepository.Query(), Request("all"), options => options.Override("all", include: false));
+        var result = rql.Transform(ActionStrategyTestItemRepository.Query(), Request("all"), options => options.SetVisibility("all", RqlVisibility.Hidden));
 
         // Assert
         hidden.IsSuccess.Should().BeFalse();
@@ -97,24 +97,44 @@ public class TransformOptionsTests
     [InlineData("reference", null, "+reference.name", "Ordering is not permitted.")]
     [InlineData("collection.name", null, "+first(collection,eq(id,1)).name", "Ordering is not permitted.")]
     [InlineData("collection.id", null, "+first(collection,eq(id,1)).name", "Filtering is not permitted.")]
-    public void Excluding_Property_RejectsFilteringAndOrderingByIt(string excluded, string? filter, string? order, string error)
+    public void Hiding_Property_RejectsFilteringAndOrderingByIt(string hidden, string? filter, string? order, string error)
     {
         // Act
-        var result = _rql.Transform(ProductRepository.Query(), new RqlRequest { Filter = filter, Order = order }, options => options.Override(excluded, include: false));
+        var result = _rql.Transform(ProductRepository.Query(), new RqlRequest { Filter = filter, Order = order }, options => options.SetVisibility(hidden, RqlVisibility.Hidden));
 
         // Assert
         result.IsSuccess.Should().BeFalse();
         result.Errors.Should().ContainSingle().Which.Message.Should().Be(error);
     }
 
+    [Theory]
+    [InlineData("reference.orders.clientName", false)]
+    [InlineData("orders.clientName", true)]
+    public void Hiding_PropertyOfACollection_ChecksTheCollectionTheFilterReads(string hidden, bool permitted)
+    {
+        // Arrange — the root and its reference both have orders
+        var rql = RqlFactory.Make<Product>(services => { });
+
+        // Act
+        var result = rql.Transform(ProductRepository.Query(), new RqlRequest { Filter = "any(reference.orders,eq(clientName,Michael))" }, options =>
+            options.SetVisibility(hidden, RqlVisibility.Hidden));
+
+        // Assert
+        result.IsSuccess.Should().Be(permitted);
+        if (permitted)
+            result.Query.ToList().Should().NotBeEmpty();
+        else
+            result.Errors.Should().ContainSingle().Which.Message.Should().Be("Filtering is not permitted.");
+    }
+
     [Fact]
-    public void Including_PropertyThatMayNotBeSelected_BringsItIntoTheSelection()
+    public void Showing_PropertyThatMayNotBeSelected_BringsItIntoTheSelection()
     {
         // Arrange — 'nothing' may not be selected
         var rql = MakeActionStrategyRql();
 
         // Act
-        var result = rql.Transform(ActionStrategyTestItemRepository.Query(), new RqlRequest(), options => options.Override("nothing", include: true));
+        var result = rql.Transform(ActionStrategyTestItemRepository.Query(), new RqlRequest(), options => options.SetVisibility("nothing", RqlVisibility.Shown));
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -124,15 +144,35 @@ public class TransformOptionsTests
         result.Query.ToList().Should().NotBeEmpty().And.OnlyContain(t => t.Nothing != null);
     }
 
+    [Theory]
+    [InlineData("nothing")]
+    [InlineData("nothing.foo")]
+    [InlineData("nothing(foo)")]
+    public void Showing_PropertyThatMayNotBeSelected_LetsTheRequestSelectItAsAVisibleOne(string select)
+    {
+        // Arrange — 'nothing' may not be selected, and 'selectOnly', of the same type, may be
+        var rql = MakeActionStrategyRql();
+        var visible = Child(rql.BuildGraph(new RqlRequest { Select = select.Replace("nothing", "selectOnly", StringComparison.Ordinal) }).Graph, "selectOnly");
+
+        // Act
+        var result = rql.Transform(ActionStrategyTestItemRepository.Query(), new RqlRequest { Select = select }, options => options.SetVisibility("nothing", RqlVisibility.Shown));
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        var nothing = Child(result.Graph, "nothing");
+        (nothing.IncludeReason & ~IncludeReasons.Override, nothing.ExcludeReason).Should().Be((visible.IncludeReason, visible.ExcludeReason));
+        Beneath(nothing).Should().NotBeEmpty().And.Be(Beneath(visible));
+    }
+
     [Fact]
-    public void Including_PropertyTheSelectModeLeavesOut_BuildsWhatSelectingItBuilds()
+    public void Showing_PropertyTheSelectModeLeavesOut_BuildsWhatSelectingItBuilds()
     {
         // Arrange — 'hiddenCollection' is left out by its own select mode
         var rql = RqlFactory.Make<ShapedProduct>(services => { }, rql => rql.Settings.Select.Explicit = RqlSelectModes.All);
         var selected = rql.BuildGraph(new RqlRequest { Select = "hiddenCollection" });
 
         // Act
-        var result = rql.Transform(ShapedProductRepository.Query(), new RqlRequest(), options => options.Override("hiddenCollection", include: true));
+        var result = rql.Transform(ShapedProductRepository.Query(), new RqlRequest(), options => options.SetVisibility("hiddenCollection", RqlVisibility.Shown));
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -147,16 +187,18 @@ public class TransformOptionsTests
     [InlineData("reference", "-reference(-id)", null, null)]
     [InlineData("reference.name", "-reference", null, "+reference.id")]
     [InlineData("reference.name", "-reference,reference.id", null, null)]
+    [InlineData("reference.name", "reference.id,-reference", null, null)]
+    [InlineData("reference.name", "-reference,reference", null, null)]
     [InlineData("collection", "-collection", "any(collection,eq(id,1))", null)]
     [InlineData("collection.name", "-collection", null, "+first(collection,gt(id,0)).id")]
-    public void Including_PropertyTheRequestDeselects_ChangesNothing(string included, string select, string? filter, string? order)
+    public void Showing_PropertyTheRequestDecidesOn_ChangesNothing(string shown, string select, string? filter, string? order)
     {
-        // Arrange — the request deselects the property, or the one above it
+        // Arrange — the request deselects the property or the one above it, or selects it as well
         var request = new RqlRequest { Select = select, Filter = filter, Order = order };
         var expected = JsonSerializer.Serialize(_rql.Transform(ProductRepository.Query(), request).Query.ToList());
 
         // Act
-        var result = _rql.Transform(ProductRepository.Query(), request, options => options.Override(included, include: true));
+        var result = _rql.Transform(ProductRepository.Query(), request, options => options.SetVisibility(shown, RqlVisibility.Shown));
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -164,13 +206,13 @@ public class TransformOptionsTests
     }
 
     [Fact]
-    public void Including_PropertyBeneathOneLeftOut_LeavesItOut()
+    public void Showing_PropertyBeneathOneLeftOut_LeavesItOut()
     {
         // Arrange — 'hiddenCollection' is left out by its own select mode
         var rql = RqlFactory.Make<ShapedProduct>(services => { }, rql => rql.Settings.Select.Explicit = RqlSelectModes.All);
 
         // Act
-        var result = rql.Transform(ShapedProductRepository.Query(), new RqlRequest(), options => options.Override("hiddenCollection.name", include: true));
+        var result = rql.Transform(ShapedProductRepository.Query(), new RqlRequest(), options => options.SetVisibility("hiddenCollection.name", RqlVisibility.Shown));
 
         // Assert
         Child(result.Graph, "hiddenCollection").IsIncluded.Should().BeFalse();
@@ -178,7 +220,7 @@ public class TransformOptionsTests
     }
 
     [Fact]
-    public void Deciding_OnAPathThatIsNotAProperty_LeavesTheGraphAsIs()
+    public void SettingVisibility_OnAPathThatIsNotAProperty_LeavesTheGraphAsIs()
     {
         // Arrange
         var expected = _rql.BuildGraph(new RqlRequest()).Graph.Print();
@@ -186,8 +228,8 @@ public class TransformOptionsTests
         // Act
         var result = _rql.BuildGraph(new RqlRequest(), options =>
         {
-            options.Override("reference.unknown", include: false);
-            options.Override("unknown.name", include: true);
+            options.SetVisibility("reference.unknown", RqlVisibility.Hidden);
+            options.SetVisibility("unknown.name", RqlVisibility.Shown);
         });
 
         // Assert
@@ -195,13 +237,13 @@ public class TransformOptionsTests
     }
 
     [Fact]
-    public void LastDecisionOnAPath_Wins()
+    public void SettingVisibility_TwiceOnAPath_KeepsTheLast()
     {
         // Act
         var result = _rql.Transform(ProductRepository.Query(), new RqlRequest(), options =>
         {
-            options.Override("name", include: false);
-            options.Override("NAME", include: true);
+            options.SetVisibility("name", RqlVisibility.Hidden);
+            options.SetVisibility("NAME", RqlVisibility.Shown);
         });
 
         // Assert
@@ -209,20 +251,20 @@ public class TransformOptionsTests
     }
 
     [Fact]
-    public void BuildGraph_TakesDecisionsIntoAccount()
+    public void BuildGraph_TakesVisibilityIntoAccount()
     {
         // Act
-        var response = _rql.BuildGraph(new RqlRequest(), options => options.Override("name", include: false));
+        var response = _rql.BuildGraph(new RqlRequest(), options => options.SetVisibility("name", RqlVisibility.Hidden));
 
         // Assert
         Child(response.Graph, "name").ExcludeReason.Should().Be(ExcludeReasons.Override);
     }
 
     [Fact]
-    public void Decisions_ApplyToTheirCallOnly()
+    public void Visibility_AppliesToItsCallOnly()
     {
         // Act
-        var configured = _rql.Transform(ProductRepository.Query(), new RqlRequest(), options => options.Override("name", include: false));
+        var configured = _rql.Transform(ProductRepository.Query(), new RqlRequest(), options => options.SetVisibility("name", RqlVisibility.Hidden));
         var unconfigured = _rql.Transform(ProductRepository.Query(), new RqlRequest());
 
         // Assert

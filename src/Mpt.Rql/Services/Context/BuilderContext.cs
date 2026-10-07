@@ -22,6 +22,20 @@ internal class BuilderContext : IBuilderContext
         return true;
     }
 
+    /// <summary>
+    /// Walks down the path segment by segment (graph node names are matched case-insensitively, like metadata). The
+    /// graph stage has already created these nodes; if a step is missing we stop and later error paths simply lack the
+    /// prefix.
+    /// </summary>
+    public void DescendInto(string path)
+    {
+        foreach (var segment in path.Split('.'))
+        {
+            if (!TryGoToChild(segment))
+                return;
+        }
+    }
+
     public void GoToRoot()
     {
         while (CurrentNode?.Parent is not null)

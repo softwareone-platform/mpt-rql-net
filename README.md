@@ -68,18 +68,18 @@ public class UserQueryBuilder(IRqlQueryable<User> rql)
 
 ### Customizing a call
 
-The `configure` callback of `Transform` and `BuildGraph` receives `IRqlTransformOptions`. Its `Settings` apply to that call only, and so do the decisions `Override(path, include)` records on dotted property paths, such as `reference.name`, which RQL adds to the graph before it builds the rest of it:
+The `configure` callback of `Transform` and `BuildGraph` receives `IRqlTransformOptions`. Its `Settings` apply to that call only, and so does the visibility `SetVisibility(path, visibility)` sets on dotted property paths, such as `reference.name`, which RQL adds to the graph before it builds the rest of it:
 
-- Included, the property is selected even when its action strategy hides it or the select mode leaves it out, and the defaults beneath it are built as if the request selected it. A request that deselects the property, or the one above it, still leaves it out.
-- Excluded, the property is treated as if its action strategy allowed nothing: it is not selected even when the request selects it, nothing is built beneath it, and filtering or ordering by it is not permitted. A forced property stays.
-- The node gets the `Override` include or exclude reason. A decision applies wherever RQL builds the path, without selecting the properties above it, and the last decision on a path wins.
+- `RqlVisibility.Shown` selects the property even when its action strategy hides it or the select mode leaves it out, and builds the defaults beneath it as if the request selected it, wherever the property above it is in the selection. A request that deselects the property, or the one above it, still leaves it out.
+- `RqlVisibility.Hidden` treats the property as if its action strategy allowed nothing: it is not selected even when the request selects it, nothing is built beneath it, and filtering or ordering by it is not permitted. A forced property stays.
+- The node gets the `Override` include or exclude reason. Paths that name no property are ignored, and the last visibility set on a path wins.
 
 ```csharp
 var response = rql.Transform(sourceQuery, request, options =>
 {
     options.Settings.Select.Implicit = RqlSelectModes.Core;
-    options.Override("notes", include: true);               // selected although its action strategy hides it
-    options.Override("reference.name", include: false);     // neither selected, filtered nor ordered by
+    options.SetVisibility("notes", RqlVisibility.Shown);             // selected although its action strategy hides it
+    options.SetVisibility("reference.name", RqlVisibility.Hidden);   // neither selected, filtered nor ordered by
 });
 ```
 
