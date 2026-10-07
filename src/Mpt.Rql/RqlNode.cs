@@ -114,12 +114,6 @@ internal class RqlNode : IRqlNode
 
     internal void AddExcludeReason(ExcludeReasons excludeReason) => ExcludeReason |= excludeReason;
 
-    public void SetReasons(IncludeReasons includeReason, ExcludeReasons excludeReason)
-    {
-        IncludeReason = includeReason;
-        ExcludeReason = excludeReason;
-    }
-
     public string GetFullPath()
     {
         if (_fullpath != null)

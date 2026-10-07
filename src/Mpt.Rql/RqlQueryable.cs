@@ -39,20 +39,18 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
     {
         using var scope = _serviceProvider.CreateScope();
         var settingsAccessor = GetService<IRqlSettingsAccessor>();
-        var options = new RqlTransformOptions(settingsAccessor.Current);
-        configure(options);
+        configure(GetService<RqlTransformOptions>());
 
         GetService<IExternalServiceAccessor>().SetServiceProvider(_serviceProvider);
 
         var context = GetService<IQueryContext<TView>>();
+        var projectionGraphBuilder = GetService<IProjectionGraphBuilder<TView>>();
 
+        projectionGraphBuilder.BuildDecisions();
         GetService<IFilteringService<TView>>().Process(request.Filter);
         GetService<IOrderingService<TView>>().Process(request.Order);
         GetService<IProjectionService<TView>>().Process(request.Select);
-        GetService<IProjectionGraphBuilder<TView>>().BuildDefaults();
-
-        foreach (var callback in options.GraphCallbacks)
-            callback(context.Graph);
+        projectionGraphBuilder.BuildDefaults();
 
         IQueryable<TView>? query = null;
         if (!skipTransformStage)

@@ -43,7 +43,7 @@ public class GraphBuilderTests
         var metadataProvider = new MetadataProvider(new PropertyNameProvider(), new MetadataFactory(settings));
         var builderContext = new BuilderContext();
 
-        _projectionBuilder = new ProjectionGraphBuilder<Product>(_queryContext, metadataProvider, actionValidatorMock.Object, builderContext, settings);
+        _projectionBuilder = new ProjectionGraphBuilder<Product>(_queryContext, metadataProvider, actionValidatorMock.Object, builderContext, settings, new RqlTransformOptions(settings));
         _filteringBuilder = new FilteringGraphBuilder<Product>(metadataProvider, actionValidatorMock.Object, builderContext);
         _orderingBuilder = new OrderingGraphBuilder<Product>(metadataProvider, actionValidatorMock.Object, builderContext, _filteringBuilder, new OrderingFunctionRegistry([new FirstOrderingFunction()]));
     }

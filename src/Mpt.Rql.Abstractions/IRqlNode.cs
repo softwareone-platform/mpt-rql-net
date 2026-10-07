@@ -17,7 +17,6 @@ public interface IRqlNode
     string Print();
     bool TryGetChild(string name, out IRqlNode? child);
     string GetFullPath();
-    void SetReasons(IncludeReasons includeReason, ExcludeReasons excludeReason);
 }
 
 
@@ -30,7 +29,10 @@ public enum IncludeReasons
     Hierarchy = 1 << 2,
     Filter = 1 << 3,
     Order = 1 << 4,
-    Forced = 1 << 5
+    Forced = 1 << 5,
+
+    /// <summary>Included by <c>IRqlTransformOptions.Override</c>; it is selected once it also has <see cref="Default"/>.</summary>
+    Override = 1 << 6
 }
 
 [Flags]
@@ -40,4 +42,7 @@ public enum ExcludeReasons
     Default = 1 << 0,
     Unselected = 1 << 1,
     Invisible = 1 << 2,
+
+    /// <summary>Excluded by <c>IRqlTransformOptions.Override</c>.</summary>
+    Override = 1 << 3,
 }
