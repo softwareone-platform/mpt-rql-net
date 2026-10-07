@@ -66,26 +66,22 @@ public class UserQueryBuilder(IRqlQueryable<User> rql)
 }
 ```
 
-### Customizing the graph
+### Customizing a call
 
-The `configure` callback of `Transform` and `BuildGraph` receives `IRqlTransformOptions`. Its `Settings` apply to that call only, and `OnGraphBuilt` registers a callback that gets the graph once RQL has built it from the request and the defaults, before the query is projected. A callback can replace a node's reasons with `IRqlNode.SetReasons`, and the query is projected from the graph as the callbacks leave it, following `IsIncluded`:
+The `configure` callback of `Transform` and `BuildGraph` receives `IRqlTransformOptions`. Its `Settings` apply to that call only, and so does the visibility `SetVisibility(path, visibility)` sets on dotted property paths, such as `reference.name`, which RQL adds to the graph before it builds the rest of it:
 
-- RQL builds no defaults beneath a node it excluded, so including one projects only the children it already has.
-- The filter and order are compiled before the callbacks run and read their properties from the projection, so keep the `Filter` and `Order` reasons of the nodes they use. Whether a property may be filtered or ordered by is still up to its action strategy.
+- `RqlVisibility.Shown` selects the property even when its action strategy hides it or the select mode leaves it out, and builds the defaults beneath it as if the request selected it, wherever RQL builds the defaults of the property above it: where the request or the defaults select that property within `MaxDepth`, and not where only the filter or the order reads it or where it is forced but left out by the select mode. A request that deselects the property, or the one above it, still leaves it out.
+- `RqlVisibility.Hidden` treats the property as if its action strategy allowed nothing: it is not selected even when the request selects it, nothing is built beneath it, and filtering or ordering by it is not permitted. A property declared with `RqlPropertyMode.Forced` is still projected, as it is when its action strategy hides it.
+- The node gets the `Override` include or exclude reason. Paths that name no property are ignored, and the last visibility set on a path wins.
 
 ```csharp
 var response = rql.Transform(sourceQuery, request, options =>
 {
     options.Settings.Select.Implicit = RqlSelectModes.Core;
-    options.OnGraphBuilt(graph =>
-    {
-        if (graph.TryGetChild("name", out var name))
-            name!.SetReasons(IncludeReasons.None, ExcludeReasons.Invisible);   // name is not loaded
-    });
+    options.SetVisibility("notes", RqlVisibility.Shown);             // selected although its action strategy hides it
+    options.SetVisibility("reference.name", RqlVisibility.Hidden);   // neither selected, filtered nor ordered by
 });
 ```
-
-Changing the graph of a response afterwards leaves its `Query`, which is already projected, as it is.
 
 ### Ordering by a collection value with `first()`
 

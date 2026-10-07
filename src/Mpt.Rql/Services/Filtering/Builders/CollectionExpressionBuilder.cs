@@ -47,7 +47,9 @@ internal class CollectionExpressionBuilder : IConcreteExpressionBuilder<RqlColle
             // Restore the caller's scope (not root) afterwards: this builder may run nested inside another
             // collection scope, e.g. a first() predicate, and error paths must keep that prefix.
             var previousNode = _builderContext.CurrentNode;
-            _builderContext.TryGoToChild(property);
+            // the path builder resolved the collection, so it is a path, possibly within self()
+            _builderContext.DescendInto(node.Left.AsPath()!.Value);
+
             try
             {
                 var innerExpression = _builder.Build(param, node.Right);

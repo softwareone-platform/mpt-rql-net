@@ -780,6 +780,24 @@ public class BasicFilterTests
     }
 
     [Theory]
+    [InlineData("any(orders,eq(id,1))")]
+    [InlineData("any(self(orders),eq(id,1))")]
+    public void Any_OrdersTheRequestDeselects_ReadsWhatTheFilterNeeds(string query)
+    {
+        // Arrange
+        var testData = GetTestData();
+
+        // Act
+        var result = _rql.Transform(testData.AsQueryable(), new RqlRequest { Filter = query, Select = "-orders" });
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var products = result.Query.ToList();
+        Assert.Equal(2, products.Count);
+        Assert.All(products, p => Assert.Contains(p.Orders, o => o.Id == 1));
+    }
+
+    [Theory]
     [InlineData("any(orders,eq(id,999))")]
     public void Any_Orders_Id_Equals_NoMatch(string query)
     {

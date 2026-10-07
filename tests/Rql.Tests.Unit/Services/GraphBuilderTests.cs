@@ -23,6 +23,7 @@ public class GraphBuilderTests
     private readonly ProjectionGraphBuilder<Product> _projectionBuilder;
     private readonly IQueryContext<Product> _queryContext;
     private readonly RqlParser _rqlParser;
+    private readonly RqlTransformOptions _options;
 
     public GraphBuilderTests()
     {
@@ -43,7 +44,8 @@ public class GraphBuilderTests
         var metadataProvider = new MetadataProvider(new PropertyNameProvider(), new MetadataFactory(settings));
         var builderContext = new BuilderContext();
 
-        _projectionBuilder = new ProjectionGraphBuilder<Product>(_queryContext, metadataProvider, actionValidatorMock.Object, builderContext, settings);
+        _options = new RqlTransformOptions(settings);
+        _projectionBuilder = new ProjectionGraphBuilder<Product>(_queryContext, metadataProvider, actionValidatorMock.Object, builderContext, settings, _options);
         _filteringBuilder = new FilteringGraphBuilder<Product>(metadataProvider, actionValidatorMock.Object, builderContext);
         _orderingBuilder = new OrderingGraphBuilder<Product>(metadataProvider, actionValidatorMock.Object, builderContext, _filteringBuilder, new OrderingFunctionRegistry([new FirstOrderingFunction()]));
     }
@@ -51,6 +53,23 @@ public class GraphBuilderTests
     [Fact]
     public void TraverseRqlExpression_WithEmptyExpression_BuildsDefaultGraph()
         => RunTest(string.Empty, string.Empty, string.Empty);
+
+    [Fact]
+    public void BuildDefaults_WhenForcedPropertyIsHidden_propertyStaysForcedWithNothingBeneath()
+    {
+        // Arrange
+        _options.SetVisibility("forcedCategory", RqlVisibility.Hidden);
+
+        // Act
+        _projectionBuilder.BuildDecisions();
+        _projectionBuilder.BuildDefaults();
+
+        // Assert
+        _queryContext.Graph.TryGetChild("forcedCategory", out var forced).Should().BeTrue();
+        (forced!.IncludeReason, forced.ExcludeReason).Should().Be((IncludeReasons.Forced, ExcludeReasons.Override));
+        forced.IsIncluded.Should().BeTrue();
+        forced.Count.Should().Be(0);
+    }
 
     [Fact]
     public void TraverseRqlExpression_WhenHidingProperty_propertyIsHidden()

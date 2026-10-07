@@ -72,6 +72,10 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
             var updatedTarget = ProcessNode(target, genericGroup.Name);
             if (updatedTarget != null)
                 currentTarget = updatedTarget;
+            // the items of a property that could not be added, because it may not be used or does not exist, belong
+            // to it rather than to the parent, so they are dropped with it
+            else if (IsPropertyName(genericGroup.Name))
+                return;
         }
 
         if (group.Items == null)
@@ -79,6 +83,13 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
 
         foreach (var item in group.Items)
             TraverseRqlExpression(currentTarget, item);
+    }
+
+    // anonymous, sign-only and wildcard group names name no property
+    private static bool IsPropertyName(string name)
+    {
+        var (path, _) = StringHelper.ExtractSign(name);
+        return path.Length > 0 && !path.Span.SequenceEqual("*".AsSpan());
     }
 
     private void TraverseBinary(RqlNode target, RqlBinary binary)
@@ -176,7 +187,7 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
 
     protected RqlNode? ProcessNode(RqlNode parentNode, RqlExpression constant, bool hierarchyOnly = false)
     {
-        if (constant is not RqlConstant constExpression)
+        if (constant.AsPath() is not { } constExpression)
             return null;
 
         return ProcessNode(parentNode, constExpression.Value, hierarchyOnly);
@@ -218,7 +229,7 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
         {
             var rqlProperty = segments[i];
 
-            if (!_actionValidator.Validate(rqlProperty, Action))
+            if (!IsAllowed(currentNode, rqlProperty))
             {
                 OnValidationFailed(currentNode, rqlProperty);
                 return null;
@@ -245,6 +256,11 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
     protected abstract RqlActions Action { get; }
 
     protected abstract RqlNode AddNodeToGraph(RqlNode parentNode, RqlPropertyInfo rqlProperty, bool sign);
+
+    // a property excluded for the call takes part in no action, as if its action strategy allowed none
+    protected virtual bool IsAllowed(RqlNode parentNode, RqlPropertyInfo rqlProperty)
+        => !(parentNode.TryGetChild(rqlProperty.Name, out var child) && child!.ExcludeReason.HasFlag(ExcludeReasons.Override))
+            && _actionValidator.Validate(rqlProperty, Action);
 
     protected virtual void OnValidationFailed(RqlNode node, RqlPropertyInfo property) { }
 
