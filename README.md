@@ -70,7 +70,7 @@ public class UserQueryBuilder(IRqlQueryable<User> rql)
 
 The `configure` callback of `Transform` and `BuildGraph` receives `IRqlTransformOptions`. Its `Settings` apply to that call only, and so does the visibility `SetVisibility(path, visibility)` sets on dotted property paths, such as `reference.name`, which RQL adds to the graph before it builds the rest of it:
 
-- `RqlVisibility.Shown` selects the property even when its action strategy hides it or the select mode leaves it out, and builds the defaults beneath it as if the request selected it, wherever the request or the defaults select the property above it; being read by the filter or the order is not enough. A request that deselects the property, or the one above it, still leaves it out.
+- `RqlVisibility.Shown` selects the property even when its action strategy hides it or the select mode leaves it out, and builds the defaults beneath it as if the request selected it, wherever RQL builds the defaults of the property above it: where the request or the defaults select that property within `MaxDepth`, and not where only the filter or the order reads it or where it is forced but left out by the select mode. A request that deselects the property, or the one above it, still leaves it out.
 - `RqlVisibility.Hidden` treats the property as if its action strategy allowed nothing: it is not selected even when the request selects it, nothing is built beneath it, and filtering or ordering by it is not permitted. A property declared with `RqlPropertyMode.Forced` is still projected, as it is when its action strategy hides it.
 - The node gets the `Override` include or exclude reason. Paths that name no property are ignored, and the last visibility set on a path wins.
 

@@ -116,6 +116,7 @@ public class OrderingGraphBuilderFunctionTests
     [Theory]
     [InlineData("+first(*).id")]
     [InlineData("+first(+*).id")]
+    [InlineData("+first(self(*)).id")]
     [InlineData("+first(items).-*")]
     public void First_WildcardArgument_DoesNotMutateTheGraph(string order)
     {

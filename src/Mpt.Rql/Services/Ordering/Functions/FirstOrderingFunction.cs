@@ -1,5 +1,4 @@
 using Mpt.Rql.Abstractions;
-using Mpt.Rql.Abstractions.Argument;
 using Mpt.Rql.Abstractions.Result;
 using Mpt.Rql.Core;
 using Mpt.Rql.Core.Expressions;
@@ -72,7 +71,7 @@ internal sealed class FirstOrderingFunction : IOrderingFunction
                 $"'{FunctionName}' requires 1 or 2 arguments: (collection[, predicate]). Got {args.Count}.",
                 OrderingErrorCodes.FunctionArguments);
 
-        if (args[0] is not RqlConstant collectionArg)
+        if (args[0].AsPath() is not { } collectionArg)
             return Error.Validation($"'{FunctionName}': collection argument must be a property path.", OrderingErrorCodes.FunctionArguments);
 
         if (string.IsNullOrEmpty(context.MemberPath))
@@ -140,7 +139,7 @@ internal sealed class FirstOrderingFunction : IOrderingFunction
         }
     }
 
-    private static bool IsWildcard(RqlExpression argument) => argument is RqlConstant constant && IsWildcard(constant.Value);
+    private static bool IsWildcard(RqlExpression argument) => argument.AsPath() is { } path && IsWildcard(path.Value);
 
     private static bool IsWildcard(string value)
         => StringHelper.ExtractSign(value).value.Span.SequenceEqual("*".AsSpan());

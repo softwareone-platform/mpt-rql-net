@@ -187,11 +187,7 @@ internal abstract class GraphBuilder<TView> : IGraphBuilder<TView>
 
     protected RqlNode? ProcessNode(RqlNode parentNode, RqlExpression constant, bool hierarchyOnly = false)
     {
-        // self(path) names the same property as path
-        if (constant is RqlSelf { Inner: { } inner })
-            return ProcessNode(parentNode, inner, hierarchyOnly);
-
-        if (constant is not RqlConstant constExpression)
+        if (constant.AsPath() is not { } constExpression)
             return null;
 
         return ProcessNode(parentNode, constExpression.Value, hierarchyOnly);

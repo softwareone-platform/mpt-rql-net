@@ -23,7 +23,7 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
     private readonly IActionValidator _actionValidator;
     private readonly IRqlSettings _settings;
     private readonly RqlTransformOptions _options;
-    private bool _hasDecisions;
+    private HashSet<RqlNode>? _decidedParents;
     private List<RqlNode>? _shown;
 
     protected override RqlActions Action => RqlActions.Select;
@@ -75,7 +75,7 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
         else
             target.ExcludeChild(properties[^1], ExcludeReasons.Override);
 
-        _hasDecisions = true;
+        (_decidedParents ??= []).Add(target);
     }
 
     public void BuildDefaults()
@@ -138,8 +138,8 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
                 continue;
             }
 
-            // properties with a visibility set for the call skip the checks below: hidden ones stay out, and shown ones
-            // join the selection once the request is known
+            // properties with a visibility set for the call skip the checks below: hidden ones stay out unless forced
+            // above, and shown ones join the selection once the request is known
             if (FindVisibility(target, rqlProperty) != null)
                 continue;
 
@@ -252,7 +252,7 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
     // the visibility set on the property beneath the node, which BuildDecisions put in the graph before anything else
     private RqlVisibility? FindVisibility(RqlNode parentNode, RqlPropertyInfo rqlProperty)
     {
-        if (!_hasDecisions || !parentNode.TryGetChild(rqlProperty.Name, out var child))
+        if (_decidedParents?.Contains(parentNode) != true || !parentNode.TryGetChild(rqlProperty.Name, out var child))
             return null;
 
         if (child!.IncludeReason.HasFlag(IncludeReasons.Override))

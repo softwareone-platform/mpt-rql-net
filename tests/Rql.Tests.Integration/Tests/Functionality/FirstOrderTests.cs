@@ -59,6 +59,10 @@ public class FirstOrderTests
         => Assert.Equal([4, 5, 2, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "first(orders,eq(clientName,Michael)).id" })));
 
     [Fact]
+    public void SelfCollection_SortsLikeThePlainPath()
+        => Assert.Equal([4, 5, 2, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(self(orders),eq(clientName,Michael)).id" })));
+
+    [Fact]
     public void QuotedPredicateValue_Works()
         => Assert.Equal([4, 5, 2, 3, 1], Ids(Make().Transform(Data(), new RqlRequest { Order = "+first(orders,eq(clientName,'Michael')).id" })));
 
