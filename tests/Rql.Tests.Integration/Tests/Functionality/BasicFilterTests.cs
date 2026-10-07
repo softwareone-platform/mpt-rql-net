@@ -764,6 +764,7 @@ public class BasicFilterTests
     [Theory]
     [InlineData("any(orders,(id=1))")]
     [InlineData("any(orders,eq(id,1))")]
+    [InlineData("any(self(orders),eq(id,1))")]
     public void Any_Orders_Id_Equals(string query)
     {
         // Arrange

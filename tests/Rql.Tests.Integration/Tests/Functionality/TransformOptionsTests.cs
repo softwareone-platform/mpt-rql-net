@@ -108,15 +108,17 @@ public class TransformOptionsTests
     }
 
     [Theory]
-    [InlineData("reference.orders.clientName", false)]
-    [InlineData("orders.clientName", true)]
-    public void Hiding_PropertyOfACollection_ChecksTheCollectionTheFilterReads(string hidden, bool permitted)
+    [InlineData("reference.orders.clientName", "any(reference.orders,eq(clientName,Michael))", false)]
+    [InlineData("orders.clientName", "any(reference.orders,eq(clientName,Michael))", true)]
+    [InlineData("reference.orders.clientName", "any(self(reference.orders),eq(clientName,Michael))", false)]
+    [InlineData("orders.clientName", "any(self(reference.orders),eq(clientName,Michael))", true)]
+    public void Hiding_PropertyOfACollection_ChecksTheCollectionTheFilterReads(string hidden, string filter, bool permitted)
     {
         // Arrange — the root and its reference both have orders
         var rql = RqlFactory.Make<Product>(services => { });
 
         // Act
-        var result = rql.Transform(ProductRepository.Query(), new RqlRequest { Filter = "any(reference.orders,eq(clientName,Michael))" }, options =>
+        var result = rql.Transform(ProductRepository.Query(), new RqlRequest { Filter = filter }, options =>
             options.SetVisibility(hidden, RqlVisibility.Hidden));
 
         // Assert
@@ -145,14 +147,14 @@ public class TransformOptionsTests
     }
 
     [Theory]
-    [InlineData("nothing")]
-    [InlineData("nothing.foo")]
-    [InlineData("nothing(foo)")]
-    public void Showing_PropertyThatMayNotBeSelected_LetsTheRequestSelectItAsAVisibleOne(string select)
+    [InlineData("nothing", "selectOnly")]
+    [InlineData("nothing.foo", "selectOnly.foo")]
+    [InlineData("nothing(foo)", "selectOnly(foo)")]
+    public void Showing_PropertyThatMayNotBeSelected_LetsTheRequestSelectItAsAVisibleOne(string select, string visibleSelect)
     {
         // Arrange — 'nothing' may not be selected, and 'selectOnly', of the same type, may be
         var rql = MakeActionStrategyRql();
-        var visible = Child(rql.BuildGraph(new RqlRequest { Select = select.Replace("nothing", "selectOnly", StringComparison.Ordinal) }).Graph, "selectOnly");
+        var visible = Child(rql.BuildGraph(new RqlRequest { Select = visibleSelect }).Graph, "selectOnly");
 
         // Act
         var result = rql.Transform(ActionStrategyTestItemRepository.Query(), new RqlRequest { Select = select }, options => options.SetVisibility("nothing", RqlVisibility.Shown));
@@ -205,6 +207,46 @@ public class TransformOptionsTests
         JsonSerializer.Serialize(result.Query.ToList()).Should().Be(expected);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Showing_PropertyAndTheOneAboveIt_BuildsBothInEitherOrder(bool childFirst)
+    {
+        // Arrange — 'hiddenCollection' is left out by its own select mode
+        var rql = RqlFactory.Make<ShapedProduct>(services => { }, rql => rql.Settings.Select.Explicit = RqlSelectModes.None);
+
+        // Act
+        var result = rql.Transform(ShapedProductRepository.Query(), new RqlRequest(), options =>
+        {
+            if (childFirst)
+                options.SetVisibility("hiddenCollection.name", RqlVisibility.Shown);
+
+            options.SetVisibility("hiddenCollection", RqlVisibility.Shown);
+
+            if (!childFirst)
+                options.SetVisibility("hiddenCollection.name", RqlVisibility.Shown);
+        });
+
+        // Assert — the explicit select mode beneath 'hiddenCollection' is None, so only the shown name is built
+        result.Query.ToList().Should().NotBeEmpty()
+            .And.OnlyContain(t => t.HiddenCollection.Count > 0 && t.HiddenCollection.All(c => c.Id == 0 && c.Name != null));
+    }
+
+    [Fact]
+    public void Showing_PropertyBeneathOneTheFilterOnlyReads_LeavesItOut()
+    {
+        // Arrange — 'hiddenCollection' is left out by its own select mode, so only the filter reads it
+        var rql = RqlFactory.Make<ShapedProduct>(services => { }, rql => rql.Settings.Select.Explicit = RqlSelectModes.All);
+
+        // Act
+        var result = rql.Transform(ShapedProductRepository.Query(), new RqlRequest { Filter = "any(hiddenCollection,eq(id,1))" }, options =>
+            options.SetVisibility("hiddenCollection.name", RqlVisibility.Shown));
+
+        // Assert
+        result.Query.ToList().Should().NotBeEmpty()
+            .And.OnlyContain(t => t.HiddenCollection.Count > 0 && t.HiddenCollection.All(c => c.Id > 0 && c.Name == null));
+    }
+
     [Fact]
     public void Showing_PropertyBeneathOneLeftOut_LeavesItOut()
     {
@@ -220,16 +262,17 @@ public class TransformOptionsTests
     }
 
     [Fact]
-    public void SettingVisibility_OnAPathThatIsNotAProperty_LeavesTheGraphAsIs()
+    public void SettingVisibility_OnAPathRqlDoesNotBuild_LeavesTheGraphAsIs()
     {
         // Arrange
         var expected = _rql.BuildGraph(new RqlRequest()).Graph.Print();
 
-        // Act
+        // Act — 'ignored' is not part of RQL, and the other paths name no property
         var result = _rql.BuildGraph(new RqlRequest(), options =>
         {
             options.SetVisibility("reference.unknown", RqlVisibility.Hidden);
             options.SetVisibility("unknown.name", RqlVisibility.Shown);
+            options.SetVisibility("ignored", RqlVisibility.Shown);
         });
 
         // Assert
