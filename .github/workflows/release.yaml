@@ -1,13 +1,8 @@
 name: Release NuGet Package
 
-#on:
-#  release:
-    # types: [published]
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - revert-36-feature/MPT-24702
+  release:
+    types: [published]
 
 permissions:
   id-token: write
@@ -44,5 +39,5 @@ jobs:
       - name: Pack with version from tag
         run: dotnet pack --configuration Release --no-build --output ./nupkgs /p:PackageVersion=${{ env.PACKAGE_VERSION }}
 
-      # - name: Push to NuGet
-      #   run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} --source https://api.nuget.org/v3/index.json
+      - name: Push to NuGet
+        run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} --source https://api.nuget.org/v3/index.json
