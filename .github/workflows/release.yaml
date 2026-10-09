@@ -30,6 +30,12 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
+      - name: NuGet login (OIDC)
+        uses: NuGet/login@v1@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0 
+        id: login
+        with:
+          user: service-user.mpt
+          
       - name: Pack with version from tag
         run: dotnet pack --configuration Release --no-build --output ./nupkgs /p:PackageVersion=${{ env.PACKAGE_VERSION }}
 
