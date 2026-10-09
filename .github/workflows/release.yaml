@@ -8,8 +8,6 @@ on:
   push:
     branches:
       - revert-36-feature/MPT-24702
-    paths:
-      - workflows/release.yaml
 
 permissions:
   id-token: write
