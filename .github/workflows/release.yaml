@@ -1,8 +1,15 @@
 name: Release NuGet Package
 
+#on:
+#  release:
+    # types: [published]
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+  push:
+    branches:
+      - revert-36-feature/MPT-24702
+    paths:
+      - workflows/release.yaml
 
 jobs:
   build-and-publish:
