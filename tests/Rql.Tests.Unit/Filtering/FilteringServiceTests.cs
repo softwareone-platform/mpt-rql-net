@@ -35,7 +35,7 @@ public class FilteringServiceTests
 
         var graphBuilder = new Mock<IFilteringGraphBuilder<TView>>();
         var builder = ExpressionBuilderFactory.GetBinary(operatorInstance);
-        var sut = new FilteringService<TView>(contextSubstitute, graphBuilder.Object, builder, parserMock);
+        var sut = new FilteringService<TView>(contextSubstitute, graphBuilder.Object, builder, parserMock, new RqlSettings());
         return (sut, contextSubstitute);
     }
 

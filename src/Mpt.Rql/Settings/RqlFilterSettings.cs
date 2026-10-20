@@ -8,4 +8,6 @@ internal record RqlFilterSettings : IRqlFilterSettings
     public IRqlStringFilterSettings Strings { get; init; } = new RqlStringFilterSettings();
 
     public NavigationStrategy Navigation { get; set; } = NavigationStrategy.Default;
+
+    public FilterPlacement Placement { get; set; } = FilterPlacement.AfterProjection;
 }

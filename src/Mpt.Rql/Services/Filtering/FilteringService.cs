@@ -1,4 +1,6 @@
 using Mpt.Rql.Abstractions;
+using Mpt.Rql.Abstractions.Configuration;
+using Mpt.Rql.Abstractions.Configuration.Filter;
 using Mpt.Rql.Abstractions.Group;
 using Mpt.Rql.Services.Context;
 using Mpt.Rql.Services.Filtering.Builders;
@@ -14,13 +16,15 @@ internal sealed class FilteringService<TView> : RqlService, IFilteringService<TV
     private readonly IFilteringGraphBuilder<TView> _graphBuilder;
     private readonly IExpressionBuilder _builder;
     private readonly IRqlParser _parser;
+    private readonly IRqlSettings _settings;
 
-    public FilteringService(IQueryContext<TView> context, IFilteringGraphBuilder<TView> graphBuilder, IExpressionBuilder builder, IRqlParser parser)
+    public FilteringService(IQueryContext<TView> context, IFilteringGraphBuilder<TView> graphBuilder, IExpressionBuilder builder, IRqlParser parser, IRqlSettings settings)
     {
         _context = context;
         _graphBuilder = graphBuilder;
         _builder = builder;
         _parser = parser;
+        _settings = settings;
     }
 
     protected override string ErrorPrefix => "query";
@@ -56,7 +60,9 @@ internal sealed class FilteringService<TView> : RqlService, IFilteringService<TV
         _context.AddTransformation(q =>
         {
             var lambda = (Expression<Func<TView, bool>>)Expression.Lambda(expression.Value!, param);
-            return q.Where(lambda);
+            return _settings.Filter.Placement == FilterPlacement.BeforeProjection
+                ? FilterPushdownVisitor.Apply(q, lambda)
+                : q.Where(lambda);
         });
     }
 }

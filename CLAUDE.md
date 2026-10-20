@@ -57,6 +57,7 @@ Fluent builder API for programmatically constructing `RqlRequest` objects.
 - **Rql.Tests.Common** — Shared fixtures, test entities, and helpers.
 - **Rql.Tests.Unit** — xUnit tests using Moq and FluentAssertions. Covers filtering, ordering, projection, mapping (collection, conditional, inline, factory), parsing, and configuration.
 - **Rql.Tests.Integration** — End-to-end tests with database scenarios.
+- **Rql.Tests.EfCore** — EF Core on SQLite in memory: the generated SQL and the selected rows of filters through nullable nested references.
 
 ## Tech Stack
 
