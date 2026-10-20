@@ -12,14 +12,15 @@ internal class MappingService<TStorage, TView>(IQueryContext<TView> queryContext
 {
     private readonly bool _useSafeNavigation = settings.Mapping.Navigation == NavigationStrategy.Safe;
 
-    public IQueryable<TView> Apply(IQueryable<TStorage> query)
+    public Expression<Func<TStorage, TView>> BuildSelector()
     {
         var param = Expression.Parameter(typeof(TStorage));
 
         var initExpression = MakeInitExpression(param, queryContext.Graph, typeof(TStorage), typeof(TView));
-        var selector = Expression.Lambda(initExpression!, param);
-        return query.Select((Expression<Func<TStorage, TView>>)selector);
+        return (Expression<Func<TStorage, TView>>)Expression.Lambda(initExpression!, param);
     }
+
+    public IQueryable<TView> Apply(IQueryable<TStorage> query) => query.Select(BuildSelector());
 
     private MemberInitExpression MakeInitExpression(Expression param, IRqlNode rqlNode, Type typeFrom, Type typeTo)
     {

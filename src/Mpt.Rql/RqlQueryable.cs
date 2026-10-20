@@ -1,8 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Mpt.Rql.Abstractions.Configuration;
+using Mpt.Rql.Abstractions.Configuration.Filter;
 using Mpt.Rql.Core;
 using Mpt.Rql.Services.Context;
 using Mpt.Rql.Services.Filtering;
+using Mpt.Rql.Services.Filtering.Binding;
 using Mpt.Rql.Services.Mapping;
 using Mpt.Rql.Services.Ordering;
 using Mpt.Rql.Services.Projection;
@@ -55,12 +57,29 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
         IQueryable<TView>? query = null;
         if (!skipTransformStage)
         {
-            if (settingsAccessor.Current.Mapping.Transparent && typeof(TView) == typeof(TStorage))
-                query = (IQueryable<TView>)source;
-            else
-                query = GetService<IMappingService<TStorage, TView>>().Apply(source);
+            var settings = settingsAccessor.Current;
+            var filterOnView = true;
 
-            query = context.ApplyTransformations(query);
+            if (settings.Mapping.Transparent && typeof(TView) == typeof(TStorage))
+            {
+                query = (IQueryable<TView>)source;
+            }
+            else
+            {
+                var selector = GetService<IMappingService<TStorage, TView>>().BuildSelector();
+
+                // Storage binding filters before the projection, so the projection's null guards become
+                // boolean terms instead of conditionals around the compared member (see FilterBinding).
+                if (context.FilterPredicate != null && settings.Filter.Binding == FilterBinding.Storage)
+                {
+                    source = source.Where(StoragePredicateBinder.Bind(context.FilterPredicate, selector));
+                    filterOnView = false;
+                }
+
+                query = source.Select(selector);
+            }
+
+            query = context.ApplyTransformations(query, filterOnView);
         }
 
         return new RqlResponse<TView>

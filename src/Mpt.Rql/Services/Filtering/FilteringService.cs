@@ -53,10 +53,8 @@ internal sealed class FilteringService<TView> : RqlService, IFilteringService<TV
             return;
         }
 
-        _context.AddTransformation(q =>
-        {
-            var lambda = (Expression<Func<TView, bool>>)Expression.Lambda(expression.Value!, param);
-            return q.Where(lambda);
-        });
+        // Not a transformation: the queryable decides whether the predicate is applied to the view or,
+        // rewritten, to the storage query (settings.Filter.Binding).
+        _context.FilterPredicate = (Expression<Func<TView, bool>>)Expression.Lambda(expression.Value!, param);
     }
 }

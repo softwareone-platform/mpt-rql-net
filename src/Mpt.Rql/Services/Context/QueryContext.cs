@@ -1,5 +1,6 @@
 using Mpt.Rql.Abstractions.Result;
 using Mpt.Rql.Core;
+using System.Linq.Expressions;
 
 namespace Mpt.Rql.Services.Context;
 
@@ -10,6 +11,8 @@ internal class QueryContext<TView>(IExternalServiceAccessor serviceAccessor) : I
 
     public IServiceProvider ExternalServices { get; } = serviceAccessor.GetServiceProvider();
 
+    public Expression<Func<TView, bool>>? FilterPredicate { get; set; }
+
     public IEnumerable<Error> GetErrors() => _errors ?? Enumerable.Empty<Error>();
 
     public void AddTransformation(Func<IQueryable<TView>, IQueryable<TView>> func)
@@ -18,8 +21,13 @@ internal class QueryContext<TView>(IExternalServiceAccessor serviceAccessor) : I
         _transformations.Add(func);
     }
 
-    public IQueryable<TView> ApplyTransformations(IQueryable<TView> query)
+    public IQueryable<TView> ApplyTransformations(IQueryable<TView> query) => ApplyTransformations(query, applyFilter: true);
+
+    public IQueryable<TView> ApplyTransformations(IQueryable<TView> query, bool applyFilter)
     {
+        if (applyFilter && FilterPredicate != null)
+            query = query.Where(FilterPredicate);
+
         if (_transformations == null)
             return query;
 

@@ -165,6 +165,27 @@ public class UserQueryBuilder(IRqlQueryable<DbUser, User> rql)
 }
 ```
 
+### Filter binding
+
+By default the filter is applied to the projected view, after the mapping `Select`. The projection guards every nullable nested reference (`x != null ? new T { ... } : null`), so a filter such as `eq(supportCase.reporter.email,x)` reaches a relational provider as a conditional around the compared column:
+
+```sql
+WHERE CASE WHEN [case].[Id] IS NOT NULL THEN [contact].[Email] END = @value
+```
+
+SQL Server does not use an index for a column inside a `CASE`, so such filters scan the joined tables. Set `Filter.Binding` to `Storage` to apply the filter to the storage query, before the projection. RQL then rewrites the view predicate onto the storage type and turns the guards into boolean terms around a plain member access:
+
+```sql
+WHERE [case].[Id] IS NOT NULL AND [contact].[Id] IS NOT NULL AND [contact].[Email] = @value
+```
+
+```csharp
+services.AddRql(options => options.Settings.Filter.Binding = FilterBinding.Storage);   // globally
+rql.Transform(source, request, options => options.Settings.Filter.Binding = FilterBinding.Storage);   // per call
+```
+
+The rewrite preserves the C# meaning of every operator — a failed guard yields `null`, and the rewrite spells out what the operator does with it (`eq` is false, `ne` is true, ordering comparisons are false, `empty`/`null` checks follow suit) — so the rows selected are the same as with view binding, under a database provider and under LINQ-to-Objects alike. The setting has no effect on a transparent mapping, and ordering is still applied to the view. Shapes the rewrite does not recognise (a `MapIf` conditional, a `self()` comparison across two nullable references, factory mappings) are left as they are; they stay correct, only not simplified.
+
 ## Contributing
 
 We welcome contributions to enhance the library. Please see our Contributing Guide for details:

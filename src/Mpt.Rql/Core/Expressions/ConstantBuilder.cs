@@ -16,6 +16,8 @@ internal static class ConstantBuilder
 internal interface IHostedConstant
 {
     void SetValue(object? value);
+
+    object? GetValue();
 }
 
 internal class HostedConstant<T> : IHostedConstant
@@ -26,4 +28,6 @@ internal class HostedConstant<T> : IHostedConstant
     {
         Value = (T?)value;
     }
+
+    public object? GetValue() => Value;
 }
