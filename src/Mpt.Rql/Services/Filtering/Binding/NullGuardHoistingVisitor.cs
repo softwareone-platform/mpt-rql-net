@@ -1,5 +1,6 @@
 using Mpt.Rql.Core.Expressions;
 using Mpt.Rql.Services.Mapping;
+using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -67,10 +68,13 @@ internal sealed class NullGuardHoistingVisitor : ExpressionVisitor
             return resolved;
 
         // (g ? e : null).M  =>  (g ? e.M : null)
-        return TryGetGuard(operand, out var condition, out var value) && node.Member.DeclaringType!.IsAssignableFrom(value.Type)
+        return TryGetGuard(operand, out var condition, out var value) && IsDeclaredOn(node.Member, value)
             ? MakeGuard(condition, Expression.MakeMemberAccess(value, node.Member))
             : node.Update(operand);
     }
+
+    private static bool IsDeclaredOn(MemberInfo member, Expression expression)
+        => member.DeclaringType is { } declaringType && declaringType.IsAssignableFrom(expression.Type);
 
     /// <summary>
     /// Object initialisers are the projection substituted for the view parameter. Their bindings are only
@@ -126,27 +130,36 @@ internal sealed class NullGuardHoistingVisitor : ExpressionVisitor
 
         if (node.Method.DeclaringType == typeof(Enumerable) && node.Method.IsGenericMethod)
         {
-            switch (node.Method.Name)
+            var rewritten = node.Method.Name switch
             {
-                // list.Contains(g ? e : null)  =>  g && list.Contains(e)
-                case nameof(Enumerable.Contains) when arguments.Count == 2 && TryGetGuard(arguments[1], out var itemCondition, out var item):
-                {
-                    // a value-type member reached through a guard was lifted on the way (see VisitMember); the list is of the plain type
-                    var elementType = node.Method.GetGenericArguments()[0];
-                    if (item.Type != elementType && item is UnaryExpression { NodeType: ExpressionType.Convert } lift && lift.Operand.Type == elementType)
-                        item = lift.Operand;
+                nameof(Enumerable.Contains) when arguments.Count == 2 => RewriteContains(node, arguments),
+                nameof(Enumerable.Any) or nameof(Enumerable.All) when arguments.Count is 1 or 2 => RewriteCollectionCall(node, arguments),
+                _ => null
+            };
 
-                    return item.Type == elementType
-                        ? And(itemCondition, Expression.Call(node.Method, arguments[0], item))
-                        : node.Update(instance, arguments);
-                }
-
-                case nameof(Enumerable.Any) or nameof(Enumerable.All) when arguments.Count is 1 or 2:
-                    return RewriteCollectionCall(node, arguments);
-            }
+            if (rewritten != null)
+                return rewritten;
         }
 
         return node.Update(instance, arguments);
+    }
+
+    /// <summary>
+    /// <c>list.Contains(g ? e : null)</c> becomes <c>g &amp;&amp; list.Contains(e)</c>. A value-type member reached
+    /// through a guard was lifted on the way (see <see cref="VisitMember"/>) while RQL builds the list of the plain
+    /// type, so the lift is undone; a call whose item still does not fit the list is left as it was. Returns
+    /// <c>null</c> when the item is not guarded.
+    /// </summary>
+    private static Expression? RewriteContains(MethodCallExpression node, ReadOnlyCollection<Expression> arguments)
+    {
+        if (!TryGetGuard(arguments[1], out var condition, out var item))
+            return null;
+
+        var elementType = node.Method.GetGenericArguments()[0];
+        if (item.Type != elementType && item is UnaryExpression { NodeType: ExpressionType.Convert, Method: null } lift && lift.Operand.Type == elementType)
+            item = lift.Operand;
+
+        return item.Type == elementType ? And(condition, Expression.Call(node.Method, arguments[0], item)) : node;
     }
 
     /// <summary>
@@ -169,7 +182,7 @@ internal sealed class NullGuardHoistingVisitor : ExpressionVisitor
                 return null;
 
             case UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } convert
-                when !convert.Type.IsValueType && !convert.Operand.Type.IsValueType && member.DeclaringType!.IsAssignableFrom(convert.Operand.Type):
+                when !convert.Type.IsValueType && !convert.Operand.Type.IsValueType && IsDeclaredOn(member, convert.Operand):
                 return ResolveMember(convert.Operand, member);
         }
 
@@ -196,14 +209,19 @@ internal sealed class NullGuardHoistingVisitor : ExpressionVisitor
         if (IsNull(other))
             return RewriteComparisonWithNull(isEqual, condition, value, comparison);
 
-        // (g ? e : null) == v  =>  g && e == v               (g ? e : null) != v  =>  !g || e != v
+        // Against a value that is never null, equality needs the guard to hold as well, and inequality already
+        // holds when the guard fails.
         if (IsKnownNonNull(other))
             return isEqual ? And(condition, comparison) : Expression.OrElse(Negate(condition), comparison);
 
         return RewriteComparisonWithNullableOperand(isEqual, condition, other, comparison);
     }
 
-    // (g ? e : null) == null  =>  !g || e == null        (g ? e : null) != null  =>  g && e != null
+    /// <summary>
+    /// Compared with <c>null</c>, a failed guard counts as <c>null</c>: equality holds when the guard fails or the
+    /// value is <c>null</c>, inequality needs the guard and a non-null value. A value that can never be
+    /// <c>null</c> (an object initialiser) reduces the comparison to the guard itself.
+    /// </summary>
     private static Expression RewriteComparisonWithNull(bool isEqual, Expression condition, Expression value, BinaryExpression comparison)
     {
         if (IsNeverNull(value))
@@ -212,8 +230,11 @@ internal sealed class NullGuardHoistingVisitor : ExpressionVisitor
         return isEqual ? Expression.OrElse(Negate(condition), comparison) : Expression.AndAlso(condition, comparison);
     }
 
-    // v may itself be null at run time: when the guard fails the comparison is null == v / null != v.
-    private static Expression RewriteComparisonWithNullableOperand(bool isEqual, Expression condition, Expression other, BinaryExpression comparison)
+    /// <summary>
+    /// The other operand may itself be <c>null</c> at run time, so when the guard fails the comparison is the one
+    /// between <c>null</c> and that operand.
+    /// </summary>
+    private static BinaryExpression RewriteComparisonWithNullableOperand(bool isEqual, Expression condition, Expression other, BinaryExpression comparison)
     {
         var otherLifted = NullableExpressionHelper.LiftToNullable(other);
         var otherNull = Expression.Constant(null, otherLifted.Type);
@@ -248,7 +269,7 @@ internal sealed class NullGuardHoistingVisitor : ExpressionVisitor
     /// <c>g &amp;&amp; list.Any(p)</c>, and <c>src.Select(sel).ToList().Any(p)</c> becomes <c>src.Any(p ∘ sel)</c>
     /// with the element predicate bound to the element projection.
     /// </summary>
-    private Expression RewriteCollectionCall(MethodCallExpression node, IReadOnlyList<Expression> arguments)
+    private Expression RewriteCollectionCall(MethodCallExpression node, ReadOnlyCollection<Expression> arguments)
     {
         var source = arguments[0];
         var hasGuard = TryGetGuard(source, out var condition, out var guardedSource);
@@ -287,7 +308,7 @@ internal sealed class NullGuardHoistingVisitor : ExpressionVisitor
     }
 
     /// <summary>A comparison whose operands were visited but not hoisted; an operand lifted on the way still needs its types aligned.</summary>
-    private static Expression Rebuild(BinaryExpression node, Expression left, Expression right)
+    private static BinaryExpression Rebuild(BinaryExpression node, Expression left, Expression right)
         => left == node.Left && right == node.Right ? node : MakeComparison(node, left, right);
 
     /// <summary>
@@ -386,7 +407,7 @@ internal sealed class NullGuardHoistingVisitor : ExpressionVisitor
                 Collect(and.Left);
                 Collect(and.Right);
             }
-            else if (TryGetNullCheckKey(expression, out var key) ? nullChecks.Add(key) : true)
+            else if (!TryGetNullCheckKey(expression, out var key) || nullChecks.Add(key))
             {
                 terms.Add(expression);
             }
