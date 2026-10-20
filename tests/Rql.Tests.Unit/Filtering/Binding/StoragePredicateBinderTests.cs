@@ -34,8 +34,8 @@ public class StoragePredicateBinderTests
 
     private static readonly Ticket[] _tickets =
     [
-        new() { Id = 1, Title = "a", Score = 5, Case = new TicketCase { Id = 10, Status = "Open", Reporter = new Person { Id = 100, Email = "x", Phone = "1" } }, Tags = [new TicketTag { Value = "t1" }] },
-        new() { Id = 2, Title = "b", Score = null, Case = new TicketCase { Id = 20, Status = "Closed", Reporter = new Person { Id = 200, Email = "y", Phone = null } } },
+        new() { Id = 1, Title = "a", Score = 5, Case = new TicketCase { Id = 10, Status = "Open", Reporter = new Person { Id = 100, Email = "ann", Phone = "1" } }, Tags = [new TicketTag { Value = "t1" }] },
+        new() { Id = 2, Title = "b", Score = null, Case = new TicketCase { Id = 20, Status = "Closed", Reporter = new Person { Id = 200, Email = "bob", Phone = null } } },
         new() { Id = 3, Title = "c", Score = 7, Case = new TicketCase { Id = 30, Status = "Open", Reporter = null } },
         new() { Id = 4, Title = null, Score = 1, Case = null },
     ];
@@ -43,18 +43,18 @@ public class StoragePredicateBinderTests
     [Fact]
     public void Eq_ThroughTwoNullableReferences_BecomesConjunctionWithoutConditional()
     {
-        var bound = Bind(v => v.Case!.Reporter!.Email == "x");
+        var bound = Bind(v => v.Case!.Reporter!.Email == "ann");
 
-        bound.Body.ToString().Should().Be("(((t.Case != null) AndAlso (t.Case.Reporter != null)) AndAlso (t.Case.Reporter.Email == \"x\"))");
+        bound.Body.ToString().Should().Be("(((t.Case != null) AndAlso (t.Case.Reporter != null)) AndAlso (t.Case.Reporter.Email == \"ann\"))");
         Ids(bound).Should().Equal(1);
     }
 
     [Fact]
     public void Ne_ThroughNullableReferences_IsTrueWhenAGuardFails()
     {
-        var bound = Bind(v => v.Case!.Reporter!.Email != "x");
+        var bound = Bind(v => v.Case!.Reporter!.Email != "ann");
 
-        bound.Body.ToString().Should().Be("(((t.Case == null) OrElse (t.Case.Reporter == null)) OrElse (t.Case.Reporter.Email != \"x\"))");
+        bound.Body.ToString().Should().Be("(((t.Case == null) OrElse (t.Case.Reporter == null)) OrElse (t.Case.Reporter.Email != \"ann\"))");
         Ids(bound).Should().Equal(2, 3, 4);
     }
 
@@ -107,18 +107,18 @@ public class StoragePredicateBinderTests
     [Fact]
     public void InstanceMethod_OnAGuardedString_IsCalledUnderTheGuard()
     {
-        var bound = Bind(v => v.Case!.Reporter!.Email.StartsWith("x"));
+        var bound = Bind(v => v.Case!.Reporter!.Email.StartsWith("an"));
 
-        bound.Body.ToString().Should().Be("(((t.Case != null) AndAlso (t.Case.Reporter != null)) AndAlso t.Case.Reporter.Email.StartsWith(\"x\"))");
+        bound.Body.ToString().Should().Be("(((t.Case != null) AndAlso (t.Case.Reporter != null)) AndAlso t.Case.Reporter.Email.StartsWith(\"an\"))");
         Ids(bound).Should().Equal(1);
     }
 
     [Fact]
     public void NegatedInstanceMethod_IsTrueWhenAGuardFails()
     {
-        var bound = Bind(v => !v.Case!.Reporter!.Email.Equals("x"));
+        var bound = Bind(v => !v.Case!.Reporter!.Email.Equals("ann"));
 
-        bound.Body.ToString().Should().Be("Not((((t.Case != null) AndAlso (t.Case.Reporter != null)) AndAlso t.Case.Reporter.Email.Equals(\"x\")))");
+        bound.Body.ToString().Should().Be("Not((((t.Case != null) AndAlso (t.Case.Reporter != null)) AndAlso t.Case.Reporter.Email.Equals(\"ann\")))");
         Ids(bound).Should().Equal(2, 3, 4);
     }
 
@@ -126,7 +126,7 @@ public class StoragePredicateBinderTests
     public void ListContains_OnAGuardedMember_IsCalledUnderTheGuard()
     {
         // RQL's in() calls Enumerable.Contains on a hosted list
-        var values = new List<string> { "x", "y" };
+        var values = new List<string> { "ann", "bob" };
         var bound = Bind(v => Enumerable.Contains(values, v.Case!.Reporter!.Email));
 
         bound.Body.ToString().Should().EndWith(".Contains(t.Case.Reporter.Email))").And.StartWith("(((t.Case != null) AndAlso (t.Case.Reporter != null)) AndAlso ");
@@ -134,13 +134,42 @@ public class StoragePredicateBinderTests
     }
 
     [Fact]
+    public void ListContains_OnAGuardedValueTypeMember_UndoesTheLift()
+    {
+        // in(case.id,(10,20)): the list is List<int>, the hoisted member was lifted to int?
+        var values = new List<int> { 10, 20 };
+        var bound = Bind(v => Enumerable.Contains(values, v.Case!.Id));
+
+        bound.Body.ToString().Should().EndWith(".Contains(t.Case.Id))").And.StartWith("((t.Case != null) AndAlso ");
+        Ids(bound).Should().Equal(1, 2);
+    }
+
+    [Fact]
+    public void NullChecksOnDifferentParameters_AreBothKept()
+    {
+        // unnamed parameters print alike; de-duplication must key on the parameter instance
+        var t = Expression.Parameter(typeof(Ticket));
+        var other = Expression.Parameter(typeof(Ticket));
+        var left = Expression.NotEqual(Expression.Property(t, nameof(Ticket.Case)), Expression.Constant(null, typeof(TicketCase)));
+        var right = Expression.NotEqual(Expression.Property(other, nameof(Ticket.Case)), Expression.Constant(null, typeof(TicketCase)));
+        var selector = Expression.Lambda<Func<Ticket, TicketView>>(Expression.MemberInit(Expression.New(typeof(TicketView))), t);
+        var predicate = Expression.Lambda<Func<TicketView, bool>>(Expression.AndAlso(left, right), Expression.Parameter(typeof(TicketView)));
+
+        var bound = StoragePredicateBinder.Bind(predicate, selector);
+
+        ((BinaryExpression)bound.Body).NodeType.Should().Be(ExpressionType.AndAlso);
+        ((BinaryExpression)bound.Body).Left.Should().BeSameAs(left);
+        ((BinaryExpression)bound.Body).Right.Should().BeSameAs(right);
+    }
+
+    [Fact]
     public void SafeNavigationGuards_CollapseIntoTheProjectionGuards()
     {
         // Filter.Navigation = Safe: the path builder guards every segment on the view side
-        var bound = Bind(v => (v.Case == null ? null : v.Case.Reporter == null ? null : v.Case.Reporter.Email) == "x");
+        var bound = Bind(v => (v.Case == null ? null : v.Case.Reporter == null ? null : v.Case.Reporter.Email) == "ann");
 
-        bound.Body.ToString().Should().Be("(((t.Case != null) AndAlso (t.Case.Reporter != null)) AndAlso (t.Case.Reporter.Email == \"x\"))");
-        AssertSameRows(v => (v.Case == null ? null : v.Case.Reporter == null ? null : v.Case.Reporter.Email) == "x", bound);
+        bound.Body.ToString().Should().Be("(((t.Case != null) AndAlso (t.Case.Reporter != null)) AndAlso (t.Case.Reporter.Email == \"ann\"))");
+        AssertSameRows(v => (v.Case == null ? null : v.Case.Reporter == null ? null : v.Case.Reporter.Email) == "ann", bound);
     }
 
     [Fact]
@@ -149,7 +178,7 @@ public class StoragePredicateBinderTests
         // WithNullSafetyIfEnabled: accessor != null && accessor.StartsWith(...)
         Expression<Func<TicketView, bool>> view = v =>
             (v.Case == null ? null : v.Case.Reporter == null ? null : v.Case.Reporter.Email) != null
-            && (v.Case == null ? null : v.Case.Reporter == null ? null : v.Case.Reporter.Email)!.StartsWith("x");
+            && (v.Case == null ? null : v.Case.Reporter == null ? null : v.Case.Reporter.Email)!.StartsWith("an");
 
         var bound = Bind(view);
 

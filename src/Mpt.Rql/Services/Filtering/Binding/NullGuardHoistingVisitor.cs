@@ -18,10 +18,12 @@ namespace Mpt.Rql.Services.Filtering.Binding;
 /// </para>
 /// <para>
 /// Every rewrite preserves the C# meaning of the original expression: a failed guard yields <c>null</c>, and the
-/// rewrite spells out what the surrounding operator does with that <c>null</c> (equality, lifted comparisons,
-/// method calls). The result is therefore valid for LINQ-to-Objects as well. Shapes that are not recognised
-/// — a conditional with two non-null branches, a guard on both sides of an equality, static method calls other
-/// than the <see cref="Enumerable"/> ones used by RQL — are left untouched; they stay correct, only not simplified.
+/// rewrite spells out what the surrounding operator does with that <c>null</c> (equality, lifted comparisons);
+/// where the original would dereference that <c>null</c> (a method call, a member access) the rewrite yields
+/// <c>false</c> or <c>null</c> instead of throwing. The result is therefore valid for LINQ-to-Objects as well.
+/// Shapes that are not recognised — a conditional with two non-null branches, a guard on both sides of an
+/// equality, static method calls other than the <see cref="Enumerable"/> ones used by RQL — are kept as they
+/// are (apart from re-typing lifted operands); they stay correct, only not simplified.
 /// </para>
 /// </summary>
 internal sealed class NullGuardHoistingVisitor : ExpressionVisitor
@@ -128,7 +130,16 @@ internal sealed class NullGuardHoistingVisitor : ExpressionVisitor
             {
                 // list.Contains(g ? e : null)  =>  g && list.Contains(e)
                 case nameof(Enumerable.Contains) when arguments.Count == 2 && TryGetGuard(arguments[1], out var itemCondition, out var item):
-                    return And(itemCondition, Expression.Call(node.Method, arguments[0], item));
+                {
+                    // a value-type member reached through a guard was lifted on the way (see VisitMember); the list is of the plain type
+                    var elementType = node.Method.GetGenericArguments()[0];
+                    if (item.Type != elementType && item is UnaryExpression { NodeType: ExpressionType.Convert } lift && lift.Operand.Type == elementType)
+                        item = lift.Operand;
+
+                    return item.Type == elementType
+                        ? And(itemCondition, Expression.Call(node.Method, arguments[0], item))
+                        : node.Update(instance, arguments);
+                }
 
                 case nameof(Enumerable.Any) or nameof(Enumerable.All) when arguments.Count is 1 or 2:
                     return RewriteCollectionCall(node, arguments);
@@ -178,27 +189,32 @@ internal sealed class NullGuardHoistingVisitor : ExpressionVisitor
         if (leftIsGuard == rightIsGuard)
             return Rebuild(node, left, right);
 
-        var condition = leftIsGuard ? leftCondition : rightCondition;
-        var value = leftIsGuard ? leftValue : rightValue;
-        var other = leftIsGuard ? right : left;
+        var (condition, value, other) = leftIsGuard ? (leftCondition, leftValue, right) : (rightCondition, rightValue, left);
+        var comparison = leftIsGuard ? MakeComparison(node, value, other) : MakeComparison(node, other, value);
         var isEqual = node.NodeType == ExpressionType.Equal;
 
-        var comparison = leftIsGuard ? MakeComparison(node, value, other) : MakeComparison(node, other, value);
-
-        // (g ? e : null) == null  =>  !g || e == null        (g ? e : null) != null  =>  g && e != null
         if (IsNull(other))
-        {
-            if (isEqual)
-                return IsNeverNull(value) ? Negate(condition) : Expression.OrElse(Negate(condition), comparison);
-
-            return IsNeverNull(value) ? condition : Expression.AndAlso(condition, comparison);
-        }
+            return RewriteComparisonWithNull(isEqual, condition, value, comparison);
 
         // (g ? e : null) == v  =>  g && e == v               (g ? e : null) != v  =>  !g || e != v
         if (IsKnownNonNull(other))
             return isEqual ? And(condition, comparison) : Expression.OrElse(Negate(condition), comparison);
 
-        // v may itself be null at run time: when the guard fails the comparison is null == v / null != v.
+        return RewriteComparisonWithNullableOperand(isEqual, condition, other, comparison);
+    }
+
+    // (g ? e : null) == null  =>  !g || e == null        (g ? e : null) != null  =>  g && e != null
+    private static Expression RewriteComparisonWithNull(bool isEqual, Expression condition, Expression value, BinaryExpression comparison)
+    {
+        if (IsNeverNull(value))
+            return isEqual ? Negate(condition) : condition;
+
+        return isEqual ? Expression.OrElse(Negate(condition), comparison) : Expression.AndAlso(condition, comparison);
+    }
+
+    // v may itself be null at run time: when the guard fails the comparison is null == v / null != v.
+    private static Expression RewriteComparisonWithNullableOperand(bool isEqual, Expression condition, Expression other, BinaryExpression comparison)
+    {
         var otherLifted = NullableExpressionHelper.LiftToNullable(other);
         var otherNull = Expression.Constant(null, otherLifted.Type);
         var whenGuardFails = isEqual ? Expression.Equal(otherLifted, otherNull) : Expression.NotEqual(otherLifted, otherNull);
@@ -349,15 +365,15 @@ internal sealed class NullGuardHoistingVisitor : ExpressionVisitor
 
     /// <summary>
     /// <c>left &amp;&amp; right</c> without repeating a null check: the same guard reaches a comparison both from
-    /// the projection and from safe navigation on the view side. Only plain null checks (<c>x != null</c>,
-    /// <c>x == null</c> against a literal <c>null</c>) are de-duplicated, and by their printed form, which is
-    /// complete for them; any other term is kept, since RQL hosts filter values in closures whose printed form
-    /// does not show the value (<c>eq(id,1)</c> and <c>eq(id,2)</c> print alike).
+    /// the projection and from safe navigation on the view side. Only plain null checks on a member path of a
+    /// parameter (<c>p.A.B != null</c>, <c>p.A.B == null</c> against a literal <c>null</c>) are de-duplicated, keyed by
+    /// the parameter instance and the path; any other term is kept, since RQL hosts filter values in closures
+    /// that do not print their value (<c>eq(id,1)</c> and <c>eq(id,2)</c> print alike).
     /// </summary>
     private static Expression And(Expression left, Expression right)
     {
         var terms = new List<Expression>();
-        var nullChecks = new HashSet<string>();
+        var nullChecks = new HashSet<(ExpressionType, ParameterExpression, string)>();
         Collect(left);
         Collect(right);
 
@@ -370,15 +386,34 @@ internal sealed class NullGuardHoistingVisitor : ExpressionVisitor
                 Collect(and.Left);
                 Collect(and.Right);
             }
-            else if (!IsPlainNullCheck(expression) || nullChecks.Add(expression.ToString()))
+            else if (TryGetNullCheckKey(expression, out var key) ? nullChecks.Add(key) : true)
             {
                 terms.Add(expression);
             }
         }
     }
 
-    private static bool IsPlainNullCheck(Expression expression)
-        => expression is BinaryExpression { NodeType: ExpressionType.Equal or ExpressionType.NotEqual, Right: ConstantExpression { Value: null } };
+    /// <summary>Identifies <c>p.A.B == null</c> / <c>!= null</c> by operator, parameter instance and member path.</summary>
+    private static bool TryGetNullCheckKey(Expression expression, out (ExpressionType, ParameterExpression, string) key)
+    {
+        key = default;
+        if (expression is not BinaryExpression { NodeType: ExpressionType.Equal or ExpressionType.NotEqual, Right: ConstantExpression { Value: null } } check)
+            return false;
+
+        var path = new Stack<string>();
+        var current = check.Left;
+        while (current is MemberExpression member)
+        {
+            path.Push(member.Member.Name);
+            current = member.Expression!;
+        }
+
+        if (current is not ParameterExpression parameter)
+            return false;
+
+        key = (check.NodeType, parameter, string.Join('.', path));
+        return true;
+    }
 
     /// <summary>Negates a guard condition, keeping the result free of <c>Not</c> where the shape allows it.</summary>
     private static Expression Negate(Expression condition) => condition switch

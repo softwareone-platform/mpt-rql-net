@@ -38,6 +38,7 @@ public class SqlServerPredicateShapeTests
     [InlineData("like(supportCase.reporter.email,a*)", "[Email] LIKE @")]
     [InlineData("in(supportCase.reporter.email,(a@b.c,d@e.f))", "[Email] IN (")]
     [InlineData("gt(supportCase.id,7)", "[Id] > @")]
+    [InlineData("in(supportCase.id,(7,8))", "[Id] IN (")]
     [InlineData("eq(supportCase.status,Open)", "[Status] = @")]
     [InlineData("any(lines,eq(sku,ABC))", "[Sku] = @")]
     public void StorageBinding_FiltersOnPlainColumns(string filter, string expectedPredicate)

@@ -55,6 +55,8 @@ public sealed class SqliteParityTests : IDisposable
         { "in(supportCase.reporter.email,(ann@x.io,bob@x.io))", [1, 2] },
         { "out(supportCase.reporter.email,(ann@x.io,bob@x.io))", [3, 4] },
         { "gt(supportCase.id,15)", [2, 3] },
+        { "in(supportCase.id,(10,20))", [1, 2] },
+        { "out(supportCase.id,(10,20))", [3, 4] },
         { "le(supportCase.id,20)", [1, 2] },
         { "eq(supportCase.status,Open)", [1, 3] },
         { "and(eq(supportCase.status,Open),ne(supportCase.reporter.email,null()))", [1] },
