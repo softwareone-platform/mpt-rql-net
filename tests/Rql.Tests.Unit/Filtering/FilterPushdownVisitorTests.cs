@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Mpt.Rql;
+using Mpt.Rql.Abstractions.Configuration;
 using Mpt.Rql.Abstractions.Configuration.Filter;
 using Mpt.Rql.Services.Filtering;
 using System.Linq.Expressions;
@@ -126,12 +127,36 @@ public class FilterPushdownVisitorTests
     }
 
     [Fact]
-    public void Transform_BeforeProjection_FiltersTheSource()
+    public void Transform_Optimization_FiltersTheSource()
     {
         var query = Rql.Transform(new List<Order>().AsQueryable(), new RqlRequest { Filter = "eq(number,Q1)" },
-            options => options.Settings.Filter.Placement = FilterPlacement.BeforeProjection).Query;
+            options => options.Settings.Filter.Optimization = FilterOptimization.RemoveRedundantNullChecks).Query;
 
         CallsOf(query).Should().Equal(nameof(Queryable.Select), nameof(Queryable.Where));
+    }
+
+    [Fact]
+    public void Transform_OptimizationWithSafeFilterNavigation_FiltersTheProjectedView()
+    {
+        var query = Rql.Transform(new List<Order>().AsQueryable(), new RqlRequest { Filter = "eq(number,Q1)" }, options =>
+        {
+            options.Settings.Filter.Optimization = FilterOptimization.RemoveRedundantNullChecks;
+            options.Settings.Filter.Navigation = NavigationStrategy.Safe;
+        }).Query;
+
+        CallsOf(query).Should().Equal(nameof(Queryable.Where), nameof(Queryable.Select));
+    }
+
+    [Fact]
+    public void Transform_OptimizationWithSafeMappingNavigation_FiltersTheProjectedView()
+    {
+        var query = Rql.Transform(new List<Order>().AsQueryable(), new RqlRequest { Filter = "eq(number,Q1)" }, options =>
+        {
+            options.Settings.Filter.Optimization = FilterOptimization.RemoveRedundantNullChecks;
+            options.Settings.Mapping.Navigation = NavigationStrategy.Safe;
+        }).Query;
+
+        CallsOf(query).Should().Equal(nameof(Queryable.Where), nameof(Queryable.Select));
     }
 
     // the query operators from the outermost in

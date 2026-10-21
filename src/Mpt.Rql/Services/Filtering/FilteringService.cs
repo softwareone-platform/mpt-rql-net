@@ -57,12 +57,16 @@ internal sealed class FilteringService<TView> : RqlService, IFilteringService<TV
             return;
         }
 
+        // safe navigation puts its own null check on every member read, which the optimization does not remove,
+        // so with it the filter stays on the projected view
+        var optimize = _settings.Filter.Optimization == FilterOptimization.RemoveRedundantNullChecks
+            && _settings.Filter.Navigation != NavigationStrategy.Safe
+            && _settings.Mapping.Navigation != NavigationStrategy.Safe;
+
         _context.AddTransformation(q =>
         {
             var lambda = (Expression<Func<TView, bool>>)Expression.Lambda(expression.Value!, param);
-            return _settings.Filter.Placement == FilterPlacement.BeforeProjection
-                ? FilterPushdownVisitor.Apply(q, lambda)
-                : q.Where(lambda);
+            return optimize ? FilterPushdownVisitor.Apply(q, lambda) : q.Where(lambda);
         });
     }
 }

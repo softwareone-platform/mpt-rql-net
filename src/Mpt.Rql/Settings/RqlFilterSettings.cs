@@ -9,5 +9,5 @@ internal record RqlFilterSettings : IRqlFilterSettings
 
     public NavigationStrategy Navigation { get; set; } = NavigationStrategy.Default;
 
-    public FilterPlacement Placement { get; set; } = FilterPlacement.AfterProjection;
+    public FilterOptimization Optimization { get; set; } = FilterOptimization.None;
 }

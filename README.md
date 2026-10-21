@@ -167,7 +167,7 @@ public class UserQueryBuilder(IRqlQueryable<DbUser, User> rql)
 
 ## Additional features
 
-- [Filter placement](docs/filter-placement.md): apply the filter to the source, before the mapping projection
+- [Filter optimization](docs/filter-optimization.md): apply the filter to the source, before the mapping projection, without redundant null checks
 
 ## Contributing
 

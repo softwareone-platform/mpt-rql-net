@@ -13,7 +13,7 @@ public interface IRqlFilterSettings
     NavigationStrategy Navigation { get; set; }
 
     /// <summary>
-    /// Controls whether the filter is applied to the projected view (the default) or to the source, before the projection
+    /// Controls how the filter of a mapped query is optimized (not at all by default)
     /// </summary>
-    FilterPlacement Placement { get; set; }
+    FilterOptimization Optimization { get; set; }
 }

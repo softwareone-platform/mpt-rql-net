@@ -29,7 +29,7 @@ internal class RqlSettingsAccessor(IRqlGlobalSettings globalSettings) : IRqlSett
         _instance.Filter.Strings.Strategy = globalSettings.Filter.Strings.Strategy;
         _instance.Filter.Strings.Comparison = globalSettings.Filter.Strings.Comparison;
         _instance.Filter.Navigation = globalSettings.Filter.Navigation;
-        _instance.Filter.Placement = globalSettings.Filter.Placement;
+        _instance.Filter.Optimization = globalSettings.Filter.Optimization;
 
         // Deep copy Ordering settings
         _instance.Ordering.Navigation = globalSettings.Ordering.Navigation;

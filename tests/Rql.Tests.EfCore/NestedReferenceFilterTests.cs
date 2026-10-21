@@ -12,8 +12,8 @@ namespace Rql.Tests.EfCore;
 /// <summary>
 /// Filters through nullable nested references, translated and executed by EF Core (SQLite in memory). The projection
 /// guards every nullable reference (<c>x != null ? new T { ... } : null</c>); with
-/// <see cref="FilterPlacement.BeforeProjection"/> a filter through such references must reach the database as a plain
-/// column predicate, so it can use an index, and select the same rows as the default placement.
+/// <see cref="FilterOptimization.RemoveRedundantNullChecks"/> a filter through such references must reach the database as a
+/// plain column predicate, so it can use an index, and select the same rows as without the optimization.
 /// </summary>
 public sealed class NestedReferenceFilterTests : IDisposable
 {
@@ -76,24 +76,23 @@ public sealed class NestedReferenceFilterTests : IDisposable
 
     [Theory]
     [MemberData(nameof(Filters))]
-    public void Filter_SelectsExpectedRows_InEitherPlacement(string filter, int[] expected)
+    public void Filter_SelectsExpectedRows_WithAndWithoutOptimization(string filter, int[] expected)
     {
-        foreach (var placement in Enum.GetValues<FilterPlacement>())
-            Transform(_context.Orders, filter, placement: placement).Select(o => o.Id).ToList().Should().Equal(expected, "with {0}", placement);
+        foreach (var optimization in Enum.GetValues<FilterOptimization>())
+            Transform(_context.Orders, filter, optimization: optimization).Select(o => o.Id).ToList().Should().Equal(expected, "with {0}", optimization);
     }
 
-    // EF cannot translate safe navigation over a collection: the projection guards the list itself
-    public static IEnumerable<object[]> ReferenceFilters => Filters.Where(row => !((string)row[0]).StartsWith("any(", StringComparison.Ordinal));
-
     [Theory]
-    [MemberData(nameof(ReferenceFilters))]
-    public void Filter_WithSafeNavigation_SelectsTheRowsLinqToObjectsSelects(string filter, int[] _)
+    [InlineData("eq(customer.status,Active)")]
+    [InlineData("gt(customer.id,15)")]
+    [InlineData("out(customer.id,(10,20))")]
+    public void Filter_WithSafeNavigation_IsNotOptimized(string filter)
     {
-        // Safe navigation has its own null semantics, so the reference is the same request evaluated in memory, on the view.
-        var loaded = _context.Orders.Include(o => o.Customer!).ThenInclude(c => c.Contact!).ThenInclude(p => p.Employer).Include(o => o.Lines).AsNoTracking().ToList();
-        var expected = Transform(loaded.AsQueryable(), filter, NavigationStrategy.Safe, FilterPlacement.AfterProjection).Select(o => o.Id).ToList();
+        // safe navigation checks every member read, which the optimization does not remove, so the query stays as it is without it
+        var optimized = Transform(_context.Orders, filter, NavigationStrategy.Safe).ToQueryString();
+        var notOptimized = Transform(_context.Orders, filter, NavigationStrategy.Safe, FilterOptimization.None).ToQueryString();
 
-        Transform(_context.Orders, filter, NavigationStrategy.Safe).Select(o => o.Id).ToList().Should().Equal(expected);
+        optimized.Should().Be(notOptimized);
     }
 
     [Theory]
@@ -120,10 +119,10 @@ public sealed class NestedReferenceFilterTests : IDisposable
     }
 
     [Fact]
-    public void Filter_AfterProjection_LeavesTheNullGuardAroundTheColumn()
+    public void Filter_WithoutOptimization_LeavesTheNullGuardAroundTheColumn()
     {
-        // the default placement, as before: EF Core keeps the outer reference's guard as a CASE around the column
-        var sql = Transform(_context.Orders, "eq(customer.contact.email,ann@x.io)", placement: FilterPlacement.AfterProjection).ToQueryString();
+        // the default, as before: EF Core keeps the outer reference's guard as a CASE around the column
+        var sql = Transform(_context.Orders, "eq(customer.contact.email,ann@x.io)", optimization: FilterOptimization.None).ToQueryString();
 
         Where(sql).Should().Contain("CASE", sql);
     }
@@ -169,12 +168,12 @@ public sealed class NestedReferenceFilterTests : IDisposable
     }
 
     private static IQueryable<OrderView> Transform(IQueryable<Order> source, string? filter,
-        NavigationStrategy navigation = NavigationStrategy.Default, FilterPlacement placement = FilterPlacement.BeforeProjection)
+        NavigationStrategy navigation = NavigationStrategy.Default, FilterOptimization optimization = FilterOptimization.RemoveRedundantNullChecks)
     {
         var response = Rql.Transform(source, new RqlRequest { Filter = filter, Order = "id" }, options =>
         {
             options.Settings.Filter.Navigation = navigation;
-            options.Settings.Filter.Placement = placement;
+            options.Settings.Filter.Optimization = optimization;
             options.Settings.Mapping.Navigation = navigation;
         });
 
