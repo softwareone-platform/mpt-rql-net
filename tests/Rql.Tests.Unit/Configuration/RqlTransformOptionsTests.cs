@@ -54,4 +54,72 @@ public class RqlTransformOptionsTests
         // Assert
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
+    
+    [Fact]
+    public void ScopeCollection_CovariantElementType_ThrowsBeforeRegistration()
+    {
+        var act = () => _options.ScopeCollection<ScopeOwner, BaseElement>(
+            owner => owner.Elements,
+            element => element.IsVisible);
+
+        act.Should().Throw<ArgumentException>()
+            .WithParameterName("collection");
+
+        _options.CollectionScopes.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ScopeCollection_ExactElementType_RegistersScope()
+    {
+        _options.ScopeCollection<ScopeOwner, DerivedElement>(
+            owner => owner.Elements,
+            element => element.IsVisible);
+
+        _options.CollectionScopes.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void ValidateCollectionScopeSource_DifferentStorageType_Throws()
+    {
+        _options.ScopeCollection<ScopeOwner, DerivedElement>(
+            owner => owner.Elements,
+            element => element.IsVisible);
+
+        var act = () =>
+            _options.ValidateCollectionScopeSource(typeof(OtherScopeOwner));
+
+        act.Should().Throw<ArgumentException>()
+            .WithParameterName("configure");
+    }
+
+    [Fact]
+    public void ValidateCollectionScopeSource_MatchingStorageType_DoesNotThrow()
+    {
+        _options.ScopeCollection<ScopeOwner, DerivedElement>(
+            owner => owner.Elements,
+            element => element.IsVisible);
+
+        var act = () =>
+            _options.ValidateCollectionScopeSource(typeof(ScopeOwner));
+
+        act.Should().NotThrow();
+    }
+
+    public class BaseElement
+    {
+        public bool IsVisible { get; set; }
+    }
+
+    public sealed class DerivedElement : BaseElement
+    {
+    }
+
+    public sealed class ScopeOwner
+    {
+        public ICollection<DerivedElement> Elements { get; set; } = [];
+    }
+
+    public sealed class OtherScopeOwner
+    {
+    }
 }

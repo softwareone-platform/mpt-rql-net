@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+
 namespace Mpt.Rql.Abstractions.Configuration;
 
 public interface IRqlTransformOptions
@@ -13,4 +15,12 @@ public interface IRqlTransformOptions
     /// property are ignored, and the last call on a path wins.
     /// </summary>
     void SetVisibility(string path, RqlVisibility visibility);
+    
+    /// <summary>
+    /// Restricts a source collection for this transformation.
+    /// The restriction applies to filtering, ordering, and projection.
+    /// </summary>
+    void ScopeCollection<TStorage, TElement>(
+        Expression<Func<TStorage, IEnumerable<TElement>>> collection,
+        Expression<Func<TElement, bool>> predicate);
 }

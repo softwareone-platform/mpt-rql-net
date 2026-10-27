@@ -32,7 +32,13 @@ public class CaseSensitivityTests
         var contextSubstitute = new QueryContext<TView>(serviceAccessor);
         var graphBuilder = new Mock<IFilteringGraphBuilder<TView>>();
         var builder = ExpressionBuilderFactory.GetBinary(operatorInstance);
-        var sut = new FilteringService<TView>(contextSubstitute, graphBuilder.Object, builder, parserMock, settings);
+        var sut = new FilteringService<TView>(
+            contextSubstitute,
+            graphBuilder.Object,
+            builder,
+            parserMock,
+            settings,
+            new RqlTransformOptions(settings));
         return (sut, contextSubstitute);
     }
 

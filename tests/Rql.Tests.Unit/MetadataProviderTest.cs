@@ -107,4 +107,28 @@ public class MetadataProviderTest
         else
             Assert.NotEqual(RqlOperators.None, toCompare);
     }
+    
+    [Theory]
+    [InlineData(nameof(PrimitiveArrayEntity.RowVersion))]
+    [InlineData(nameof(PrimitiveArrayEntity.Tags))]
+    [InlineData(nameof(PrimitiveArrayEntity.Numbers))]
+    public void GetMetadata_PrimitiveArray_RemainsPrimitive(string propertyName)
+    {
+        IRqlMetadataProvider provider = new MetadataProvider(
+            new PropertyNameProvider(),
+            new MetadataFactory(new GlobalRqlSettings()));
+
+        var property = provider
+            .GetPropertiesByDeclaringType(typeof(PrimitiveArrayEntity))
+            .Single(metadata => metadata.Property!.Name == propertyName);
+
+        Assert.Equal(RqlPropertyType.Primitive, property.Type);
+    }
+
+    public sealed class PrimitiveArrayEntity
+    {
+        public byte[] RowVersion { get; set; } = [];
+        public string[] Tags { get; set; } = [];
+        public int[] Numbers { get; set; } = [];
+    }
 }

@@ -104,19 +104,13 @@ internal class MetadataFactory : IMetadataFactory
     private static Type? GetCollectionElementType(Type type)
     {
         if (type.IsArray)
-            return type.GetElementType()!;
+            return type.GetElementType();
 
-        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-            return type.GetGenericArguments()[0];
-
-        var enumType = type.GetInterfaces()
-            .Where(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-            .Select(t => t.GenericTypeArguments[0]).FirstOrDefault();
-
-        return enumType ?? default;
+        return CollectionQueryHelper
+            .GetEnumerableElementTypes(type)
+            .FirstOrDefault();
     }
-
-
+    
     private static RqlPropertyType GetRqlPropertyType(PropertyInfo property)
     {
         var type = property.PropertyType;

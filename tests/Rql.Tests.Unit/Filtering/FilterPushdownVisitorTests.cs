@@ -127,6 +127,96 @@ public class FilterPushdownVisitorTests
     }
 
     [Fact]
+    public void Transform_CollectionQuantifierWithScopeWithoutOptimization_NormalizesThePredicate()
+    {
+        var source = new List<Order>().AsQueryable();
+        var request = new RqlRequest
+        {
+            Filter = "any(lines,eq(sku,A))"
+        };
+
+        var response = Rql.Transform(
+            source,
+            request,
+            options =>
+            {
+                options.Settings.Mapping.Transparent = false;
+                options.Settings.Filter.Optimization = FilterOptimization.None;
+                options.Settings.Filter.Navigation = NavigationStrategy.Default;
+                options.Settings.Mapping.Navigation = NavigationStrategy.Default;
+
+                options.ScopeCollection<Order, Line>(
+                    order => order.Lines,
+                    line => line.Sku == "A");
+            });
+
+        response.IsSuccess.Should().BeTrue();
+
+        CallsOf(response.Query)
+            .Should()
+            .Equal(
+                nameof(Queryable.Select),
+                nameof(Queryable.Where),
+                nameof(Queryable.Select));
+
+        var resultSelect =
+            (MethodCallExpression)response.Query.Expression;
+        var where =
+            (MethodCallExpression)resultSelect.Arguments[0];
+        var predicate =
+            (LambdaExpression)((UnaryExpression)where.Arguments[1]).Operand;
+
+        predicate.Parameters.Should().ContainSingle()
+            .Which.Type.Should().Be(
+                typeof(CollectionPredicateRow<Order, OrderView>));
+
+        predicate.Body.ToString()
+            .Should().Contain("row.Source.Lines")
+            .And.NotContain("row.View")
+            .And.NotContain("ToList")
+            .And.NotContain("Select(");
+    }
+
+    [Theory]
+    [InlineData("any(lines,eq(sku,A))")]
+    [InlineData("all(lines,eq(sku,A))")]
+    [InlineData("and(eq(number,Q1),any(lines,eq(sku,A)))")]
+    public void Transform_CollectionFilterWithoutScopes_KeepsTheProjectedFilter(
+        string filter)
+    {
+        var source = new List<Order>().AsQueryable();
+        var request = new RqlRequest
+        {
+            Filter = filter
+        };
+
+        var response = Rql.Transform(
+            source,
+            request,
+            options =>
+            {
+                options.Settings.Mapping.Transparent = false;
+                options.Settings.Filter.Optimization = FilterOptimization.None;
+                options.Settings.Filter.Navigation = NavigationStrategy.Default;
+                options.Settings.Mapping.Navigation = NavigationStrategy.Default;
+            });
+
+        response.IsSuccess.Should().BeTrue(
+            string.Join("; ", response.Errors.Select(error => error.Message)));
+
+        CallsOf(response.Query)
+            .Should()
+            .Equal(nameof(Queryable.Where), nameof(Queryable.Select));
+
+        var where = (MethodCallExpression)response.Query.Expression;
+        var predicate =
+            (LambdaExpression)((UnaryExpression)where.Arguments[1]).Operand;
+
+        predicate.Parameters.Should().ContainSingle()
+            .Which.Type.Should().Be(typeof(OrderView));
+    }
+
+    [Fact]
     public void Transform_Optimization_FiltersTheSource()
     {
         var query = Rql.Transform(new List<Order>().AsQueryable(), new RqlRequest { Filter = "eq(number,Q1)" },
@@ -157,6 +247,257 @@ public class FilterPushdownVisitorTests
         }).Query;
 
         CallsOf(query).Should().Equal(nameof(Queryable.Where), nameof(Queryable.Select));
+    }
+
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData("A", true)]
+    [InlineData("B", false)]
+    public void ToSourceFilter_WhenGuardRemovalIsDisabled_PreservesSafeReferenceFilter(
+        string? name,
+        bool expected)
+    {
+        Expression<Func<OrderView, bool>> filter =
+            view => view.Customer != null && view.Customer.Code == "A";
+
+        var source = new Order
+        {
+            Customer = new Customer { Name = name }
+        };
+
+        var rewritten = (Expression<Func<Order, bool>>)
+            FilterPushdownVisitor.ToSourceFilter(
+                filter,
+                Projection,
+                removeRedundantNullChecks: false);
+
+        var result = rewritten.Compile()(source);
+
+        result.Should().Be(expected);
+        rewritten.Compile()(new Order()).Should().BeFalse();
+        rewritten.Body.ToString().Should().Contain("IIF");
+    }
+
+    [Theory]
+    [InlineData(
+        FilterOptimization.None,
+        NavigationStrategy.Default,
+        NavigationStrategy.Default)]
+    [InlineData(
+        FilterOptimization.None,
+        NavigationStrategy.Safe,
+        NavigationStrategy.Default)]
+    [InlineData(
+        FilterOptimization.None,
+        NavigationStrategy.Default,
+        NavigationStrategy.Safe)]
+    [InlineData(
+        FilterOptimization.None,
+        NavigationStrategy.Safe,
+        NavigationStrategy.Safe)]
+    [InlineData(
+        FilterOptimization.RemoveRedundantNullChecks,
+        NavigationStrategy.Safe,
+        NavigationStrategy.Default)]
+    [InlineData(
+        FilterOptimization.RemoveRedundantNullChecks,
+        NavigationStrategy.Default,
+        NavigationStrategy.Safe)]
+    [InlineData(
+        FilterOptimization.RemoveRedundantNullChecks,
+        NavigationStrategy.Safe,
+        NavigationStrategy.Safe)]
+    public void Transform_ScalarFilterWithScope_FiltersTheProjectedView(
+        FilterOptimization optimization,
+        NavigationStrategy filterNavigation,
+        NavigationStrategy mappingNavigation)
+    {
+        using var services = new ServiceCollection()
+            .AddRql(options =>
+            {
+                options.Settings.Mapping.Transparent = false;
+                options.Settings.Select.Implicit = RqlSelectModes.All;
+                options.Settings.Select.Explicit = RqlSelectModes.All;
+            })
+            .BuildServiceProvider();
+
+        var rql = services.GetRequiredService<
+            IRqlQueryable<Order, OrderView>>();
+
+        var source = new List<Order>
+        {
+            new()
+            {
+                Number = "Q1",
+                Lines =
+                [
+                    new Line { Sku = "A" },
+                    new Line { Sku = "B" }
+                ]
+            },
+            new()
+            {
+                Number = "Q2",
+                Lines = [new Line { Sku = "A" }]
+            }
+        }.AsQueryable();
+
+        var request = new RqlRequest
+        {
+            Filter = "eq(number,Q1)"
+        };
+
+        var response = rql.Transform(
+            source,
+            request,
+            options =>
+            {
+                options.Settings.Filter.Optimization = optimization;
+                options.Settings.Filter.Navigation = filterNavigation;
+                options.Settings.Mapping.Navigation = mappingNavigation;
+
+                options.ScopeCollection<Order, Line>(
+                    order => order.Lines,
+                    line => line.Sku == "A");
+            });
+
+        response.IsSuccess.Should().BeTrue(
+            string.Join("; ", response.Errors.Select(error => error.Message)));
+
+        var result = response.Query.ToList();
+
+        CallsOf(response.Query)
+            .Should()
+            .Equal(nameof(Queryable.Where), nameof(Queryable.Select));
+
+        result.Should().ContainSingle()
+            .Which.Number.Should().Be("Q1");
+
+        result[0].Lines.Should().ContainSingle()
+            .Which.Sku.Should().Be("A");
+    }
+
+    [Fact]
+    public void Transform_ScalarFilterWithScopeAndOptimization_FiltersTheSource()
+    {
+        using var services = new ServiceCollection()
+            .AddRql(options =>
+            {
+                options.Settings.Mapping.Transparent = false;
+            })
+            .BuildServiceProvider();
+
+        var rql = services.GetRequiredService<
+            IRqlQueryable<Order, OrderView>>();
+
+        var source = new List<Order>().AsQueryable();
+        var request = new RqlRequest
+        {
+            Filter = "eq(number,Q1)"
+        };
+
+        var response = rql.Transform(
+            source,
+            request,
+            options =>
+            {
+                options.Settings.Filter.Optimization =
+                    FilterOptimization.RemoveRedundantNullChecks;
+                options.Settings.Filter.Navigation = NavigationStrategy.Default;
+                options.Settings.Mapping.Navigation = NavigationStrategy.Default;
+
+                options.ScopeCollection<Order, Line>(
+                    order => order.Lines,
+                    line => line.Sku == "A");
+            });
+
+        response.IsSuccess.Should().BeTrue(
+            string.Join("; ", response.Errors.Select(error => error.Message)));
+
+        CallsOf(response.Query)
+            .Should()
+            .Equal(nameof(Queryable.Select), nameof(Queryable.Where));
+    }
+
+    [Theory]
+    [InlineData(
+        "and(eq(number,Q1),any(lines,eq(sku,A)))",
+        new string[] { "Q1" })]
+    [InlineData(
+        "or(eq(number,Q1),any(lines,eq(sku,A)))",
+        new string[] { "Q1", "Q1", "Q2" })]
+    public void Transform_MixedFilterWithScope_KeepsScalarPredicateOnTheView(
+        string filter,
+        string[] expectedNumbers)
+    {
+        var source = new List<Order>
+        {
+            new()
+            {
+                Number = "Q1",
+                Lines = [new Line { Sku = "A" }]
+            },
+            new()
+            {
+                Number = "Q1",
+                Lines = [new Line { Sku = "B" }]
+            },
+            new()
+            {
+                Number = "Q2",
+                Lines = [new Line { Sku = "A" }]
+            }
+        }.AsQueryable();
+
+        var request = new RqlRequest
+        {
+            Filter = filter
+        };
+
+        var response = Rql.Transform(
+            source,
+            request,
+            options =>
+            {
+                options.Settings.Mapping.Transparent = false;
+                options.Settings.Filter.Optimization = FilterOptimization.None;
+                options.Settings.Filter.Navigation = NavigationStrategy.Default;
+                options.Settings.Mapping.Navigation = NavigationStrategy.Default;
+
+                options.ScopeCollection<Order, Line>(
+                    order => order.Lines,
+                    line => line.Sku == "A");
+            });
+
+        response.IsSuccess.Should().BeTrue(
+            string.Join("; ", response.Errors.Select(error => error.Message)));
+
+        var result = response.Query.ToList();
+
+        CallsOf(response.Query)
+            .Should()
+            .Equal(
+                nameof(Queryable.Select),
+                nameof(Queryable.Where),
+                nameof(Queryable.Select));
+
+        var resultSelect =
+            (MethodCallExpression)response.Query.Expression;
+        var where =
+            (MethodCallExpression)resultSelect.Arguments[0];
+        var predicate =
+            (LambdaExpression)((UnaryExpression)where.Arguments[1]).Operand;
+
+        predicate.Body.ToString()
+            .Should().Contain("row.View.Number")
+            .And.Contain("row.Source.Lines")
+            .And.NotContain("row.Source.Number")
+            .And.NotContain("row.View.Lines")
+            .And.NotContain("ToList")
+            .And.NotContain("Select(");
+
+        result.Select(order => order.Number)
+            .Should().Equal(expectedNumbers);
     }
 
     // the query operators from the outermost in

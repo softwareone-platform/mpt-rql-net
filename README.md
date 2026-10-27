@@ -82,6 +82,7 @@ var response = rql.Transform(sourceQuery, request, options =>
     options.SetVisibility("reference.name", RqlVisibility.Hidden);   // neither selected, filtered nor ordered by
 });
 ```
+To restrict the elements of a collection rather than the visibility of a property, use [`ScopeCollection`](docs/collection-scopes.md).
 
 ### Ordering by a collection value with `first()`
 
@@ -168,6 +169,7 @@ public class UserQueryBuilder(IRqlQueryable<DbUser, User> rql)
 ## Additional features
 
 - [Filter optimization](docs/filter-optimization.md): apply the filter to the source, before the mapping projection, without redundant null checks
+- [Collection scopes](docs/collection-scopes.md): restrict collection elements per transformation so filters and result mapping use the same subset
 
 ## Contributing
 

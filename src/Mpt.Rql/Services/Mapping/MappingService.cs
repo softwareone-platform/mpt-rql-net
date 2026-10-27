@@ -5,20 +5,37 @@ using System.Collections;
 using Mpt.Rql.Core.Expressions;
 using System.Linq.Expressions;
 using System.Reflection;
+using Mpt.Rql.Core;
+using Mpt.Rql.Services.Filtering;
+using Mpt.Rql.Settings;
 
 namespace Mpt.Rql.Services.Mapping;
 
-internal class MappingService<TStorage, TView>(IQueryContext<TView> queryContext, IEntityMapCache mapCache, IRqlSettings settings) : IMappingService<TStorage, TView>
+internal class MappingService<TStorage, TView>(
+    IQueryContext<TView> queryContext,
+    IEntityMapCache mapCache,
+    IRqlSettings settings,
+    RqlTransformOptions options)
+    : IMappingService<TStorage, TView>
 {
-    private readonly bool _useSafeNavigation = settings.Mapping.Navigation == NavigationStrategy.Safe;
+    private readonly bool _useSafeNavigation =
+        settings.Mapping.Navigation == NavigationStrategy.Safe;
 
+    private readonly ParameterExpression _sourceParameter =
+        Expression.Parameter(typeof(TStorage), "source");
     public IQueryable<TView> Apply(IQueryable<TStorage> query)
     {
-        var param = Expression.Parameter(typeof(TStorage));
+        var initExpression = MakeInitExpression(
+            _sourceParameter,
+            queryContext.Graph,
+            typeof(TStorage),
+            typeof(TView));
 
-        var initExpression = MakeInitExpression(param, queryContext.Graph, typeof(TStorage), typeof(TView));
-        var selector = Expression.Lambda(initExpression!, param);
-        return query.Select((Expression<Func<TStorage, TView>>)selector);
+        var selector = Expression.Lambda<Func<TStorage, TView>>(
+            initExpression,
+            _sourceParameter);
+
+        return query.Select(selector);
     }
 
     private MemberInitExpression MakeInitExpression(Expression param, IRqlNode rqlNode, Type typeFrom, Type typeTo)
@@ -62,6 +79,12 @@ internal class MappingService<TStorage, TView>(IQueryContext<TView> queryContext
             var replaceParamVisitor = new ReplaceParameterVisitor(condition.If.Parameters[0], param);
             var ifExpression = replaceParamVisitor.Visit(condition.If.Body);
 
+            CollectionScopeMappingValidator.Validate(
+                ifExpression,
+                _sourceParameter,
+                options.CollectionScopes,
+                $"{rqlNode.Property.Property.Name} (condition)");
+            
             conditionalExpr = Expression.Condition(ifExpression, MakeBindExpression(param, rqlNode, condition.Entry), conditionalExpr);
         }
 
@@ -90,6 +113,19 @@ internal class MappingService<TStorage, TView>(IQueryContext<TView> queryContext
         var replaceParamVisitor = new ReplaceParameterVisitor(sourceExpression.Parameters[0], param);
         var fromExpression = replaceParamVisitor.Visit(ExpressionHelper.UnwrapCastExpression(sourceExpression.Body));
 
+        CollectionScopeMappingValidator.Validate(
+            fromExpression,
+            _sourceParameter,
+            options.CollectionScopes,
+            node.Property.Property.Name,
+            allowDirectCollection:
+            node.Property.Type == RqlPropertyType.Collection ||
+            hint == ExpressionFactoryHint.TakeFirst,
+            allowReferenceTraversal:
+            map.IsDynamic &&
+            node.Property.Type == RqlPropertyType.Reference &&
+            hint == ExpressionFactoryHint.None);
+        
         fromExpression = hint switch
         {
             ExpressionFactoryHint.TakeFirst => MakeTakeFirstAccess(fromExpression, node, map),
@@ -110,12 +146,28 @@ internal class MappingService<TStorage, TView>(IQueryContext<TView> queryContext
         return fromExpression;
     }
 
-    private Expression MakeTakeFirstAccess(Expression fromExpression, IRqlNode node, RqlMapEntry map)
+    private Expression MakeTakeFirstAccess(
+        Expression fromExpression,
+        IRqlNode node,
+        RqlMapEntry map)
     {
-        if (!fromExpression.Type.IsGenericType || fromExpression.Type.GenericTypeArguments.Length == 0)
-            throw new RqlMappingException($"Expression factory with TakeFirst hint for property '{node.Property.Property.Name}' must return a collection expression.");
+        if (fromExpression.Type == typeof(string) ||
+            CollectionQueryHelper
+                .GetEnumerableElementTypes(fromExpression.Type)
+                .Length != 1)
+        {
+            throw new RqlMappingException(
+                $"TakeFirst requires a collection expression for property " +
+                $"'{node.Property.Property.Name}'. " +
+                $"Expression type: '{fromExpression.Type}'.");
+        }
 
-        return MakeCollectionInitCore(fromExpression, node, map, f => f.GetFirstOrDefault(), applyToPrimitives: true);
+        return MakeCollectionInitCore(
+            fromExpression,
+            node,
+            map,
+            functions => functions.GetFirstOrDefault(),
+            applyToPrimitives: true);
     }
 
     private Expression MakeReferenceInit(Expression fromExpression, IRqlNode node, RqlMapEntry map)
@@ -142,54 +194,115 @@ internal class MappingService<TStorage, TView>(IQueryContext<TView> queryContext
     private Expression MakeDirectPropertyAccess(Expression fromExpression)
         => _useSafeNavigation ? ApplyNullPropagation(fromExpression) : fromExpression;
 
-    private Expression MakeCollectionInit(Expression fromExpression, IRqlNode node, RqlMapEntry map, Func<IProjectionFunctions, MethodInfo> finalFunctionSelector)
+    private Expression MakeCollectionInit(
+        Expression fromExpression,
+        IRqlNode node,
+        RqlMapEntry map,
+        Func<IProjectionFunctions, MethodInfo> finalFunctionSelector)
     {
         if (!map.IsDynamic)
-            return MakeDirectPropertyAccess(fromExpression);
+        {
+            var scopedSource = ApplyCollectionScopes(fromExpression);
 
-        // Temporarily only support List
-        if (!typeof(IList).IsAssignableFrom(node.Property.Property.PropertyType))
+            if (ReferenceEquals(scopedSource, fromExpression))
+                return MakeDirectPropertyAccess(fromExpression);
+
+            var elementType = GetCollectionElementType(fromExpression.Type);
+
+            var materialized = MaterializeCollection(
+                scopedSource,
+                elementType,
+                node.Property.Property.PropertyType);
+
+            return GuardCollectionSource(fromExpression, materialized);
+        }
+        
+        if (!typeof(IList).IsAssignableFrom(
+                node.Property.Property.PropertyType))
+        {
             throw new NotSupportedException($"Cannot map property '{node.Property.Property.Name}' of type {node.Property.Property.DeclaringType!.Name}. Rql temporarily support only list coollections.");
-
-        return MakeCollectionInitCore(fromExpression, node, map, finalFunctionSelector);
+        }
+        
+        return MakeCollectionInitCore(
+            fromExpression,
+            node,
+            map,
+            finalFunctionSelector);
     }
 
-    private Expression MakeCollectionInitCore(Expression fromExpression, IRqlNode node, RqlMapEntry map, Func<IProjectionFunctions, MethodInfo> finalFunctionSelector, bool applyToPrimitives = false)
+    private Expression MakeCollectionInitCore(
+        Expression fromExpression,
+        IRqlNode node,
+        RqlMapEntry map,
+        Func<IProjectionFunctions, MethodInfo> finalFunctionSelector,
+        bool applyToPrimitives = false)
     {
-        var srcItemType = fromExpression.Type.GenericTypeArguments[0];
+        var sourceElementType = GetCollectionElementType(fromExpression.Type);
+        var scopedSource = ApplyCollectionScopes(fromExpression);
 
-        Expression finalExpression;
-
-        if (!TypeHelper.IsUserComplexType(srcItemType))
+        if (!applyToPrimitives &&
+            !TypeHelper.IsUserComplexType(sourceElementType) &&
+            ReferenceEquals(scopedSource, fromExpression))
         {
-            finalExpression = fromExpression;
-            if (applyToPrimitives)
-            {
-                var primitiveFunctions = (IProjectionFunctions)Activator.CreateInstance(typeof(ProjectionFunctions<>).MakeGenericType(srcItemType))!;
-                finalExpression = Expression.Call(null, finalFunctionSelector(primitiveFunctions), fromExpression);
-            }
+            return GuardCollectionSource(fromExpression, fromExpression);
+        }
+        
+        Expression projectedSource;
+        Type resultElementType;
+
+        if (!TypeHelper.IsUserComplexType(sourceElementType))
+        {
+            projectedSource = scopedSource;
+            resultElementType = sourceElementType;
         }
         else
         {
-            var innerMap = GetInnerMapFromEntry(srcItemType, map);
-            var innerParam = Expression.Parameter(srcItemType);
-            var subInit = MakeInitExpression(innerParam, node, map.TargetType, innerMap);
-            var selectLambda = Expression.Lambda(subInit, innerParam);
-            var functions = (IProjectionFunctions)Activator.CreateInstance(typeof(ProjectionFunctions<,>).MakeGenericType(srcItemType, map.TargetType))!;
-            var selectCall = Expression.Call(null, functions.GetSelect(), fromExpression, selectLambda);
-            finalExpression = Expression.Call(null, finalFunctionSelector(functions), selectCall);
+            var innerMap = GetInnerMapFromEntry(sourceElementType, map);
+            var innerParameter = Expression.Parameter(sourceElementType);
+
+            var initializer = MakeInitExpression(
+                innerParameter,
+                node,
+                map.TargetType,
+                innerMap);
+
+            var selector = Expression.Lambda(initializer, innerParameter);
+
+            var functions = (IProjectionFunctions)Activator.CreateInstance(
+                typeof(ProjectionFunctions<,>).MakeGenericType(
+                    sourceElementType,
+                    map.TargetType))!;
+
+            projectedSource = Expression.Call(
+                null,
+                functions.GetSelect(),
+                scopedSource,
+                selector);
+
+            resultElementType = map.TargetType;
         }
 
-        // Add null check for the collection if safe navigation is enabled
-        if (_useSafeNavigation)
+        Expression finalExpression;
+
+        if (applyToPrimitives)
         {
-            return Expression.Condition(
-                Expression.NotEqual(fromExpression, Expression.Constant(null, fromExpression.Type)),
-                finalExpression,
-                Expression.Constant(null, finalExpression.Type));
+            var functions = (IProjectionFunctions)Activator.CreateInstance(
+                typeof(ProjectionFunctions<>).MakeGenericType(resultElementType))!;
+
+            finalExpression = Expression.Call(
+                null,
+                finalFunctionSelector(functions),
+                projectedSource);
+        }
+        else
+        {
+            finalExpression = MaterializeCollection(
+                projectedSource,
+                resultElementType,
+                node.Property.Property.PropertyType);
         }
 
-        return finalExpression;
+        return GuardCollectionSource(fromExpression, finalExpression);
     }
 
     private IReadOnlyDictionary<string, RqlMapEntry> GetInnerMapFromEntry(Type typeFrom, RqlMapEntry map)
@@ -286,5 +399,91 @@ internal class MappingService<TStorage, TView>(IQueryContext<TView> queryContext
         }
 
         return false;
+    }
+    
+    private Expression ApplyCollectionScopes(Expression source)
+    {
+        return CollectionScopeExpressionBuilder.Apply(
+            source,
+            _sourceParameter,
+            options.CollectionScopes);
+    }
+
+    private static Type GetCollectionElementType(Type collectionType)
+    {
+        if (collectionType == typeof(string))
+        {
+            throw new NotSupportedException(
+                "A string cannot be used as a collection source.");
+        }
+
+        var elementTypes =
+            CollectionQueryHelper.GetEnumerableElementTypes(collectionType);
+
+        if (elementTypes.Length != 1)
+        {
+            throw new NotSupportedException(
+                $"Collection type '{collectionType.Name}' must expose one IEnumerable<T> element type.");
+        }
+
+        return elementTypes[0];
+    }
+
+    private static Expression MaterializeCollection(
+        Expression source,
+        Type elementType,
+        Type targetType)
+    {
+        var listType = typeof(List<>).MakeGenericType(elementType);
+
+        if (targetType.IsAssignableFrom(listType))
+        {
+            var functions = (IProjectionFunctions)Activator.CreateInstance(
+                typeof(ProjectionFunctions<>).MakeGenericType(elementType))!;
+
+            return Expression.Call(
+                null,
+                functions.GetToList(),
+                source);
+        }
+
+        if (targetType.IsSZArray &&
+            targetType.GetElementType() == elementType)
+        {
+            var toArrayMethod =
+                ((Func<IEnumerable<object>, object[]>)Enumerable.ToArray)
+                .Method
+                .GetGenericMethodDefinition()
+                .MakeGenericMethod(elementType);
+
+            return Expression.Call(null, toArrayMethod, source);
+        }
+
+        throw new NotSupportedException(
+            $"Cannot materialize collection elements of type '{elementType.Name}' " +
+            $"into '{targetType.Name}'.");
+    }
+
+    private Expression GuardCollectionSource(
+        Expression originalSource,
+        Expression result)
+    {
+        if (!_useSafeNavigation)
+            return result;
+
+        var guardedSource = ApplyNullPropagation(originalSource);
+
+        if (guardedSource.Type.IsValueType &&
+            Nullable.GetUnderlyingType(guardedSource.Type) is null)
+        {
+            return result;
+        }
+
+        return Expression.Condition(
+            Expression.NotEqual(
+                guardedSource,
+                Expression.Constant(null, guardedSource.Type)),
+            result,
+            Expression.Default(result.Type));
     }
 }

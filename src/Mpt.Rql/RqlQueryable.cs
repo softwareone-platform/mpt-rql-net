@@ -39,7 +39,10 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
     {
         using var scope = _serviceProvider.CreateScope();
         var settingsAccessor = GetService<IRqlSettingsAccessor>();
-        configure(GetService<RqlTransformOptions>());
+        var options = GetService<RqlTransformOptions>();
+
+        configure(options);
+        options.ValidateCollectionScopeSource(typeof(TStorage));
 
         GetService<IExternalServiceAccessor>().SetServiceProvider(_serviceProvider);
 
@@ -55,10 +58,21 @@ internal class RqlQueryableLinq<TStorage, TView> : IRqlQueryable<TStorage, TView
         IQueryable<TView>? query = null;
         if (!skipTransformStage)
         {
-            if (settingsAccessor.Current.Mapping.Transparent && typeof(TView) == typeof(TStorage))
+            if (settingsAccessor.Current.Mapping.Transparent &&
+                typeof(TView) == typeof(TStorage))
+            {
+                if (GetService<RqlTransformOptions>().CollectionScopes.Count > 0)
+                {
+                    throw new NotSupportedException(
+                        "Collection scopes are not supported with transparent mapping.");
+                }
+
                 query = (IQueryable<TView>)source;
+            }
             else
+            {
                 query = GetService<IMappingService<TStorage, TView>>().Apply(source);
+            }
 
             query = context.ApplyTransformations(query);
         }

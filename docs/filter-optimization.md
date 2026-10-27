@@ -1,12 +1,25 @@
 # Filter optimization
 
-When RQL maps the source to a view, `Filter.Optimization` decides how the filter is applied: as it is, to the projected view (the default), or with `RemoveRedundantNullChecks`, to the source, before the projection, without the null checks that make no difference.
+`Filter.Optimization` controls optional full-filter pushdown.
+By default, scalar predicates remain on the mapped view.
+`RemoveRedundantNullChecks` enables full-filter pushdown when both navigation
+strategies are `Default`.
 
-The examples below filter orders by the email of the customer's contact person, `eq(customer.contact.email,ann@x.io)`, where both the customer and the contact are optional.
+When collection scopes are registered, Any/All predicates and their associated
+collection guards are normalized through mapping projections independently
+of this setting. Applicable scope predicates are retained, while unrelated
+scalar predicates remain on the mapped view unless full-filter pushdown
+is enabled.
+
+Without collection scopes, the new collection normalizer is not applied.
+Registering scopes alone does not enable full-filter pushdown.
+
+See [Collection scopes](collection-scopes.md), including
+[null handling](collection-scopes.md#null-handling).
 
 ## Without optimization (default)
 
-The filter is applied to the projected view, after the mapping `Select`. The projection puts a null check around every nullable nested reference (`x != null ? new T { ... } : null`). A provider that translates the query, such as EF Core, can keep that check around the compared column, which stops the database from using an index on it:
+Scalar predicates are applied to the projected view, after the mapping Select.
 
 ```sql
 WHERE CASE WHEN [c].[Id] IS NOT NULL THEN [p].[Email] ELSE NULL END = @__Value_0
@@ -29,6 +42,16 @@ Null checks that do make a difference, such as the one around a computed member 
 
 ## When to use it
 
-Use it with providers that translate the query, not with in-memory sources, where reading a member of a missing reference throws.
+Collection scopes do not, by themselves, enable filter pushdown.
 
-It applies with the default navigation only. With `Filter.Navigation` or `Mapping.Navigation` set to `Safe`, every member read gets its own null check (`a == null ? null : a.b`), which the optimization does not remove, so RQL keeps the filter on the projected view, exactly as without the optimization. To get the plain column predicate, keep both at `Default` and declare nested view references as nullable (for example `ContactView? Contact`), so the projection checks only the references.
+When redundant-null-check optimization is disabled, scalar predicates remain
+on the mapped view. If collection scopes are registered, Any/All predicates
+and their associated collection guards are normalized through the mapping
+projection. Without scopes, collection filters remain on the projected view.
+
+Full-filter pushdown is performed only when RemoveRedundantNullChecks is
+enabled and both navigation strategies are Default.
+
+To obtain plain column predicates through nullable references using
+`RemoveRedundantNullChecks`, keep both navigation strategies at `Default`
+and declare nested view references as nullable.
