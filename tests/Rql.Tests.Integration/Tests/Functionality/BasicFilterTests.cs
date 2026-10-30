@@ -945,4 +945,124 @@ public class BasicFilterTests
         Assert.False(result.IsSuccess);
         Assert.Contains("Invalid property path.", result.Errors.First().Message);
     }
+
+    [Theory]
+    [InlineData("eq(name,'it''s \"quoted\"')")]
+    [InlineData("eq(name,\"it's \"\"quoted\"\"\")")]
+    [InlineData("name='it''s \"quoted\"'")]
+    [InlineData("in(name,('it''s \"quoted\"'))")]
+    [InlineData("ilike(name,'*it''s \"q*')")]
+    public void Quoted_Name_DoubledDelimiterEscape_MatchesLiteralQuotes(string query)
+    {
+        // Arrange
+        var testData = GetTestData();
+        AddProduct(testData, 9, "it's \"quoted\"");
+        AddProduct(testData, 10, "it's");
+
+        // Act
+        var result = _rql.Transform(testData.AsQueryable(), new RqlRequest { Filter = query });
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var products = result.Query.ToList();
+        Assert.Single(products);
+        Assert.Equal("it's \"quoted\"", products[0].Name);
+    }
+
+    [Theory]
+    [InlineData("ne(name,'it''s \"quoted\"')")]
+    [InlineData("out(name,('it''s \"quoted\"'))")]
+    public void Quoted_Name_DoubledDelimiterEscape_ExcludesLiteralQuotes(string query)
+    {
+        // Arrange
+        var testData = GetTestData();
+        AddProduct(testData, 9, "it's \"quoted\"");
+        AddProduct(testData, 10, "it's");
+
+        // Act
+        var result = _rql.Transform(testData.AsQueryable(), new RqlRequest { Filter = query });
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var products = result.Query.ToList();
+        Assert.Equal(testData.Count - 1, products.Count);
+        Assert.DoesNotContain(products, p => p.Name == "it's \"quoted\"");
+        Assert.Contains(products, p => p.Name == "it's");
+    }
+
+    [Theory]
+    [InlineData("ilike(name,'*''*')")]
+    public void Ilike_Name_DoubledDelimiterOnly_MatchesNamesWithApostrophe(string query)
+    {
+        // Arrange
+        var testData = GetTestData();
+        AddProduct(testData, 9, "it's \"quoted\"");
+        AddProduct(testData, 10, "it's");
+
+        // Act
+        var result = _rql.Transform(testData.AsQueryable(), new RqlRequest { Filter = query });
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var products = result.Query.ToList();
+        Assert.Equal(2, products.Count);
+        Assert.Contains(products, p => p.Id == 9);
+        Assert.Contains(products, p => p.Id == 10);
+    }
+
+    [Theory]
+    [InlineData("and(eq(name,'x''),eq(id,1))")]
+    [InlineData("eq(name,'it''s")]
+    [InlineData("eq(name,'x''")]
+    public void Quoted_Name_UnterminatedAfterDoubledDelimiter_IsMalformed(string query)
+    {
+        // Arrange
+        var testData = GetTestData();
+
+        // Act
+        var result = _rql.Transform(testData.AsQueryable(), new RqlRequest { Filter = query });
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Contains(result.Errors, e => e.Code == "query:malformed");
+    }
+
+    [Theory]
+    [InlineData(@"eq(name,'ends\')", @"ends\")]
+    [InlineData(@"eq(name,'two\\slash')", @"two\\slash")]
+    [InlineData(@"like(name,'\*lit')", "*lit")]
+    [InlineData(@"ilike(name,""The\**"")", @"The\*x")]
+    public void Quoted_Name_Backslash_KeepsExistingMeaning(string query, string expectedName)
+    {
+        // Arrange
+        var testData = GetTestData();
+        AddProduct(testData, 9, @"ends\");
+        AddProduct(testData, 10, @"two\\slash");
+        AddProduct(testData, 11, "*lit");
+        AddProduct(testData, 12, @"The\*x");
+        AddProduct(testData, 13, "The*x");
+
+        // Act
+        var result = _rql.Transform(testData.AsQueryable(), new RqlRequest { Filter = query });
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var products = result.Query.ToList();
+        Assert.Single(products);
+        Assert.Equal(expectedName, products[0].Name);
+    }
+
+    private static void AddProduct(List<Product> testData, int id, string name)
+    {
+        var product = new Product
+        {
+            Id = id, Name = name, Category = "Activity", Price = 1M, SellPrice = 1M, ListDate = DateTime.Now,
+            Desc = $"Desc{id}", Orders = [], OrdersIds = []
+        };
+        // mirrors the self-referencing wiring GetTestData applies to every product
+        product.Reference = product;
+        product.Collection = [product, product];
+        product.Tags = [new Tag { Value = $"Tag{product.Id}" }];
+        testData.Add(product);
+    }
 }
