@@ -46,7 +46,7 @@ public class RqlParser : IRqlParser
             }
             else if (word.QuoteSymbol != null)
             {
-                HandleQuoteEnd(currentSymbol, currentIndex, ref word);
+                HandleQuoteEnd(querySpan, currentSymbol, ref currentIndex, ref word);
             }
             else if (_textDelimiters.Contains(currentSymbol))
             {
@@ -147,12 +147,21 @@ public class RqlParser : IRqlParser
         word.WordLength++;
     }
 
-    private static void HandleQuoteEnd(char currentSymbol, int currentIndex, ref Word word)
+    private static void HandleQuoteEnd(ReadOnlySpan<char> query, char currentSymbol, ref int currentIndex, ref Word word)
     {
         if (currentSymbol == word.QuoteSymbol)
         {
-            word.QuoteEnd = currentIndex;
-            word.QuoteSymbol = null;
+            // a doubled delimiter inside a quoted value is one literal delimiter, so the value goes on past the pair
+            if (currentIndex + 1 < query.Length && query[currentIndex + 1] == currentSymbol)
+            {
+                currentIndex++;
+                word.WordLength++;
+            }
+            else
+            {
+                word.QuoteEnd = currentIndex;
+                word.QuoteSymbol = null;
+            }
         }
         word.WordLength++;
     }
