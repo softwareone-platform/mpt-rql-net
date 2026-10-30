@@ -40,4 +40,24 @@ public class ValueConverterTests
         { new DateTime(2023, 08, 16, 1, 10, 15), "2023-08-16T01:10:15.0000000"},
         { new DateTimeOffset(2023, 08, 16, 1, 10, 15, new TimeSpan(0, 2, 0, 0)), "2023-08-16T01:10:15.0000000+02:00"},
     };
+
+    [Theory]
+    [MemberData(nameof(GetSingleQuoteData))]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "xUnit1045:Avoid using TheoryData type arguments that might not be serializable", Justification = "test for various data types")]
+    public void WhenValueContainsSingleQuote_ThenQuoteIsDoubled(object value, string expected)
+    {
+        // Act
+        var result = ValueConverter.Convert(value);
+
+        // Assert
+        result.Should().Be(expected);
+    }
+
+    // expected values follow the RQL quoting rule: inside a '…' value, each ' is written as ''
+    public static TheoryData<object, string> GetSingleQuoteData() => new()
+    {
+        { "it's", "'it''s'"},
+        { "it's \"q\"", "'it''s \"q\"'"},
+        { '\'', "''''"},
+    };
 }
