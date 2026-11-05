@@ -15,6 +15,10 @@ namespace Rql.Tests.Unit.Services;
 
 public class ProjectionGraphBuilderDependencyTests
 {
+    // a cycle test runs the build on a worker so that xUnit fails it at this timeout rather than letting it hang,
+    // as xUnit enforces Timeout only once the test method yields
+    private const int CycleTimeoutMilliseconds = 5000;
+
     private readonly ProjectionGraphBuilder<View> _projectionBuilder;
     private readonly IQueryContext<View> _queryContext;
     private readonly RqlParser _rqlParser;
@@ -180,20 +184,66 @@ public class ProjectionGraphBuilderDependencyTests
         total.IsIncluded.Should().BeFalse();
     }
 
-    [Fact]
-    public void BuildDefaults_WhenDependenciesFormCycle_TerminatesAndIncludesBoth()
+    [Fact(Timeout = CycleTimeoutMilliseconds)]
+    public async Task BuildDefaults_WhenDependenciesFormCycle_TerminatesAndIncludesBoth()
     {
         // Act
-        Build("-*,cycleA");
+        var graph = await Task.Run(() => BuildGraph<TwoNodeCycleView>("-*,cycleA"));
 
         // Assert
-        var cycleA = GetNode(_queryContext.Graph, "cycleA");
+        var cycleA = GetNode(graph, "cycleA");
         cycleA.IncludeReason.Should().HaveFlag(IncludeReasons.Select);
         cycleA.IsIncluded.Should().BeTrue();
 
-        var cycleB = GetNode(_queryContext.Graph, "cycleB");
+        var cycleB = GetNode(graph, "cycleB");
         (cycleB.IncludeReason, cycleB.ExcludeReason).Should().Be((IncludeReasons.Default | IncludeReasons.Dependency, ExcludeReasons.Unselected));
         cycleB.IsIncluded.Should().BeTrue();
+    }
+
+    [Fact(Timeout = CycleTimeoutMilliseconds)]
+    public async Task BuildDefaults_WhenDependenciesFormThreeNodeCycle_TerminatesAndIncludesAll()
+    {
+        // Act
+        var graph = await Task.Run(() => BuildGraph<ThreeNodeCycleView>("-*,a"));
+
+        // Assert
+        var a = GetNode(graph, "a");
+        a.IncludeReason.Should().HaveFlag(IncludeReasons.Select);
+        a.IsIncluded.Should().BeTrue();
+
+        // a declares b, b declares c, and c declares a
+        var b = GetNode(graph, "b");
+        (b.IncludeReason, b.ExcludeReason).Should().Be((IncludeReasons.Default | IncludeReasons.Dependency, ExcludeReasons.Unselected));
+        b.IsIncluded.Should().BeTrue();
+
+        var c = GetNode(graph, "c");
+        (c.IncludeReason, c.ExcludeReason).Should().Be((IncludeReasons.Default | IncludeReasons.Dependency, ExcludeReasons.Unselected));
+        c.IsIncluded.Should().BeTrue();
+    }
+
+    [Fact(Timeout = CycleTimeoutMilliseconds)]
+    public async Task BuildDefaults_WhenDependencyCycleHasBranch_TerminatesAndIncludesBranch()
+    {
+        // Act
+        var graph = await Task.Run(() => BuildGraph<BranchedCycleView>("-*,a"));
+
+        // Assert
+        var a = GetNode(graph, "a");
+        a.IncludeReason.Should().HaveFlag(IncludeReasons.Select);
+        a.IsIncluded.Should().BeTrue();
+
+        // a declares b and c, b declares a back, and c declares d, which declares nothing
+        var b = GetNode(graph, "b");
+        (b.IncludeReason, b.ExcludeReason).Should().Be((IncludeReasons.Default | IncludeReasons.Dependency, ExcludeReasons.Unselected));
+        b.IsIncluded.Should().BeTrue();
+
+        var c = GetNode(graph, "c");
+        (c.IncludeReason, c.ExcludeReason).Should().Be((IncludeReasons.Default | IncludeReasons.Dependency, ExcludeReasons.Unselected));
+        c.IsIncluded.Should().BeTrue();
+
+        var d = GetNode(graph, "d");
+        (d.IncludeReason, d.ExcludeReason).Should().Be((IncludeReasons.Default | IncludeReasons.Dependency, ExcludeReasons.Unselected));
+        d.IsIncluded.Should().BeTrue();
     }
 
     [Fact]
@@ -378,12 +428,6 @@ public class ProjectionGraphBuilderDependencyTests
 
         public decimal Amount { get; set; }
 
-        [RqlProperty(DependsOn = new[] { nameof(CycleB) })]
-        public string CycleA { get; set; } = null!;
-
-        [RqlProperty(DependsOn = new[] { nameof(CycleA) })]
-        public string CycleB { get; set; } = null!;
-
         public Parameter Parameter { get; set; } = null!;
 
         public List<Parameter> Parameters { get; set; } = null!;
@@ -403,6 +447,41 @@ public class ProjectionGraphBuilderDependencyTests
 
         [RqlProperty(Actions = RqlActions.None)]
         public string Format { get; set; } = null!;
+    }
+
+    private class TwoNodeCycleView
+    {
+        [RqlProperty(DependsOn = new[] { nameof(CycleB) })]
+        public string CycleA { get; set; } = null!;
+
+        [RqlProperty(DependsOn = new[] { nameof(CycleA) })]
+        public string CycleB { get; set; } = null!;
+    }
+
+    private class ThreeNodeCycleView
+    {
+        [RqlProperty(DependsOn = new[] { nameof(B) })]
+        public string A { get; set; } = null!;
+
+        [RqlProperty(DependsOn = new[] { nameof(C) })]
+        public string B { get; set; } = null!;
+
+        [RqlProperty(DependsOn = new[] { nameof(A) })]
+        public string C { get; set; } = null!;
+    }
+
+    private class BranchedCycleView
+    {
+        [RqlProperty(DependsOn = new[] { nameof(B), nameof(C) })]
+        public string A { get; set; } = null!;
+
+        [RqlProperty(DependsOn = new[] { nameof(A) })]
+        public string B { get; set; } = null!;
+
+        [RqlProperty(DependsOn = new[] { nameof(D) })]
+        public string C { get; set; } = null!;
+
+        public string D { get; set; } = null!;
     }
 
     private class ContainerView

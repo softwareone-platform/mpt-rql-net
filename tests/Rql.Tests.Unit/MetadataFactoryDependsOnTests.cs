@@ -43,6 +43,38 @@ public class MetadataFactoryDependsOnTests
             .WithMessage("*SelfDependent cannot depend on itself*");
     }
 
+    [Theory]
+    [InlineData(nameof(InvalidModel.SelfLastAmongOthers))]
+    [InlineData(nameof(InvalidModel.SelfFirstAmongOthers))]
+    public void MakeRqlPropertyInfo_DependsOnItselfAmongValidNames_ThrowsInvalidDependencyException(string propertyName)
+    {
+        // Arrange
+        var factory = CreateSut();
+        var property = typeof(InvalidModel).GetProperty(propertyName)!;
+
+        // Act
+        var act = () => factory.MakeRqlPropertyInfo(propertyName, property);
+
+        // Assert
+        act.Should().Throw<RqlInvalidDependencyException>()
+            .WithMessage($"*{propertyName} cannot depend on itself*");
+    }
+
+    [Fact]
+    public void MakeRqlPropertyInfo_DependsOnItselfInDifferentCase_ThrowsInvalidDependencyException()
+    {
+        // Arrange
+        var factory = CreateSut();
+        var property = typeof(InvalidModel).GetProperty(nameof(InvalidModel.SelfDependentLower))!;
+
+        // Act
+        var act = () => factory.MakeRqlPropertyInfo("selfDependentLower", property);
+
+        // Assert — the attribute names the property itself with a lowercase first letter
+        act.Should().Throw<RqlInvalidDependencyException>()
+            .WithMessage("*depends on 'selfDependentLower', which is not a property of its type*");
+    }
+
     [Fact]
     public void MakeRqlPropertyInfo_DependsOnUnknownName_ThrowsInvalidDependencyException()
     {
@@ -56,6 +88,56 @@ public class MetadataFactoryDependsOnTests
         // Assert
         act.Should().Throw<RqlInvalidDependencyException>()
             .WithMessage("*depends on 'Missing', which is not a property of its type*");
+    }
+
+    [Theory]
+    [InlineData(nameof(InvalidModel.DependsOnEmptyName), "")]
+    // the message interpolates a null name as an empty string
+    [InlineData(nameof(InvalidModel.DependsOnNullName), "")]
+    [InlineData(nameof(InvalidModel.DependsOnOtherTypeProperty), nameof(ValidModel.First))]
+    public void MakeRqlPropertyInfo_DependsOnNameNotOnType_ThrowsInvalidDependencyException(string declaringName, string dependencyName)
+    {
+        // Arrange
+        var factory = CreateSut();
+        var property = typeof(InvalidModel).GetProperty(declaringName)!;
+
+        // Act
+        var act = () => factory.MakeRqlPropertyInfo(declaringName, property);
+
+        // Assert
+        act.Should().Throw<RqlInvalidDependencyException>()
+            .WithMessage($"*depends on '{dependencyName}', which is not a property of its type*");
+    }
+
+    [Theory]
+    [InlineData(nameof(MemberKindModel.DependsOnField), nameof(MemberKindModel.PublicField))]
+    [InlineData(nameof(MemberKindModel.DependsOnPrivateProperty), "PrivateValue")]
+    public void MakeRqlPropertyInfo_DependsOnMemberNotListedAsPublicProperty_ThrowsInvalidDependencyException(string declaringName, string dependencyName)
+    {
+        // Arrange
+        var factory = CreateSut();
+        var property = typeof(MemberKindModel).GetProperty(declaringName)!;
+
+        // Act
+        var act = () => factory.MakeRqlPropertyInfo(declaringName, property);
+
+        // Assert
+        act.Should().Throw<RqlInvalidDependencyException>()
+            .WithMessage($"*depends on '{dependencyName}', which is not a property of its type*");
+    }
+
+    [Fact]
+    public void MakeRqlPropertyInfo_DependsOnPublicStaticProperty_DoesNotThrowAndStoresDependency()
+    {
+        // Arrange
+        var factory = CreateSut();
+        var property = typeof(MemberKindModel).GetProperty(nameof(MemberKindModel.DependsOnStaticProperty))!;
+
+        // Act
+        var act = () => factory.MakeRqlPropertyInfo("dependsOnStaticProperty", property);
+
+        // Assert
+        act.Should().NotThrow().Which.DependsOn.Should().Equal(nameof(MemberKindModel.StaticValue));
     }
 
     [Fact]
@@ -174,8 +256,26 @@ public class MetadataFactoryDependsOnTests
         [RqlProperty(DependsOn = new[] { nameof(SelfDependent) })]
         public string SelfDependent => Name;
 
+        [RqlProperty(DependsOn = new[] { nameof(Name), nameof(SelfLastAmongOthers) })]
+        public string SelfLastAmongOthers => Name;
+
+        [RqlProperty(DependsOn = new[] { nameof(SelfFirstAmongOthers), nameof(Name) })]
+        public string SelfFirstAmongOthers => Name;
+
+        [RqlProperty(DependsOn = new[] { "selfDependentLower" })]
+        public string SelfDependentLower => Name;
+
         [RqlProperty(DependsOn = new[] { "Missing" })]
         public string DependsOnMissing => Name;
+
+        [RqlProperty(DependsOn = new[] { "" })]
+        public string DependsOnEmptyName => Name;
+
+        [RqlProperty(DependsOn = new string[] { null! })]
+        public string DependsOnNullName => Name;
+
+        [RqlProperty(DependsOn = new[] { nameof(ValidModel.First) })]
+        public string DependsOnOtherTypeProperty => Name;
 
         [RqlProperty(DependsOn = new[] { nameof(Hidden) })]
         public string DependsOnIgnored => Hidden;
@@ -201,6 +301,24 @@ public class MetadataFactoryDependsOnTests
 
         [RqlProperty(DependsOn = new string[0])]
         public string EmptyDependsOn => First;
+    }
+
+    private class MemberKindModel
+    {
+        public string PublicField = string.Empty;
+
+        private string PrivateValue { get; set; } = string.Empty;
+
+        public static string StaticValue { get; set; } = string.Empty;
+
+        [RqlProperty(DependsOn = new[] { nameof(PublicField) })]
+        public string DependsOnField => PublicField;
+
+        [RqlProperty(DependsOn = new[] { nameof(PrivateValue) })]
+        public string DependsOnPrivateProperty => PrivateValue;
+
+        [RqlProperty(DependsOn = new[] { nameof(StaticValue) })]
+        public string DependsOnStaticProperty => StaticValue;
     }
 
     private class BaseModel
