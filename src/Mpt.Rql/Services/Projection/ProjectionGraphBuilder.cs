@@ -82,6 +82,54 @@ internal class ProjectionGraphBuilder<TView> : GraphBuilder<TView>, IProjectionG
     {
         BuildDefaultsForType(_context.Graph, typeof(TView), _settings.Select.Explicit);
         BuildShown();
+
+        // last, as a property can still be projected by the defaults, and only then are its dependencies known
+        BuildDependencies(_context.Graph);
+    }
+
+    /// <summary>
+    /// Brings into the projection the same-type properties that a projected property declares in <c>DependsOn</c>,
+    /// so its getter has values to read.
+    /// A dependency that was left out, deselected or is not selectable is projected all the same,
+    /// under the <see cref="IncludeReasons.Dependency"/> include reason alone.
+    /// </summary>
+    private void BuildDependencies(RqlNode node)
+    {
+        if (node.Count == 0)
+        {
+            return;
+        }
+
+        // a dependency can declare dependencies of its own, so expand until nothing new is added
+        var pending = new Queue<RqlNode>(node.Children.Cast<RqlNode>().Where(t => t.IsIncluded));
+        var expanded = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+        while (pending.Count > 0)
+        {
+            var child = pending.Dequeue();
+            if (!expanded.Add(child.Name) || child.Property is not RqlPropertyInfo { DependsOn: { } dependsOn } computed)
+            {
+                continue;
+            }
+
+            // MetadataProvider.GetCache builds each type's metadata from that type's GetProperties(),
+            // so the property's ReflectedType is the type whose metadata holds its siblings,
+            // whichever type the node above resolves its children from
+            var siblings = _metadataProvider.GetPropertiesByDeclaringType(computed.Property.ReflectedType!);
+
+            foreach (var name in dependsOn)
+            {
+                var dependency = siblings.FirstOrDefault(t => t.Property?.Name == name);
+                if (dependency != null)
+                {
+                    pending.Enqueue(node.IncludeChild(dependency, IncludeReasons.Dependency));
+                }
+            }
+        }
+
+        foreach (var child in node.Children.Cast<RqlNode>().Where(t => t.IsIncluded).ToList())
+        {
+            BuildDependencies(child);
+        }
     }
 
     /// <summary>

@@ -19,5 +19,10 @@ internal class RqlPropertyInfo : IRqlPropertyInfo
     public Type? ElementType { get; internal set; }
     public bool IsNullable { get; internal set; }
 
+    // CLR names of the same-type properties projected along with this one,
+    // kept off the public IRqlPropertyInfo, which a custom resolver implements to return its properties
+    // and where a new member would break it.
+    internal IReadOnlyList<string>? DependsOn { get; set; }
+
     public static RqlPropertyInfo Root { get; } = new RqlPropertyInfo { Type = RqlPropertyType.Root, Actions = RqlActions.All, Operators = RqlOperators.AllOperators };
 }
