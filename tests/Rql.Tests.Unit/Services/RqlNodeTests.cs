@@ -141,4 +141,66 @@ public class RqlNodeTests
         // Assert
         included.Should().BeTrue();
     }
+
+    [Fact]
+    public void IsIncluded_IncludeDependency_IsTrue()
+    {
+        // Arrange
+        var root = RqlNode.MakeRoot();
+        var child = root.IncludeChild(MakeProp("p"), IncludeReasons.Dependency);
+
+        // Act
+        var included = child.IsIncluded;
+
+        // Assert
+        included.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsIncluded_IncludeDependency_ExcludeUnselected_IsTrue()
+    {
+        // Arrange
+        var root = RqlNode.MakeRoot();
+        var child = root.IncludeChild(MakeProp("p"), IncludeReasons.Dependency);
+        child.AddExcludeReason(ExcludeReasons.Unselected);
+
+        // Act
+        var included = child.IsIncluded;
+
+        // Assert
+        included.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsIncluded_IncludeDependency_ExcludeInvisible_IsTrue()
+    {
+        // Arrange
+        var root = RqlNode.MakeRoot();
+        var child = root.IncludeChild(MakeProp("p"), IncludeReasons.Dependency);
+        child.AddExcludeReason(ExcludeReasons.Invisible);
+
+        // Act
+        var included = child.IsIncluded;
+
+        // Assert
+        included.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Print_IncludeDependency_ChildLineShowsDependencyReason()
+    {
+        // Arrange
+        var root = RqlNode.MakeRoot();
+        root.IncludeChild(MakeProp("dep"), IncludeReasons.Dependency);
+
+        // Act
+        var output = root.Print();
+
+        // Assert
+        var childLine = output
+            .Split(Environment.NewLine)
+            .Single(line => line.Contains("└─dep"));
+        childLine.Should().Contain("yes");
+        childLine.Should().Contain(nameof(IncludeReasons.Dependency));
+    }
 }
