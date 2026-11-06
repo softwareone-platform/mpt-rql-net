@@ -364,6 +364,24 @@ public class ProjectionGraphBuilderDependencyTests
         raw.IsIncluded.Should().BeTrue();
     }
 
+    [Fact]
+    public void BuildDefaults_WhenIgnoredComputedPropertySelected_DoesNotIncludeDependencies()
+    {
+        // Act
+        var graph = BuildGraph<IgnoredComputedView>("-*,hidden");
+
+        // Assert
+        // precondition: the explicit select still adds a node for the ignored property
+        var hidden = GetNode(graph, "hidden");
+        hidden.IncludeReason.Should().HaveFlag(IncludeReasons.Select);
+        hidden.IsIncluded.Should().BeTrue();
+
+        // raw is the dependency hidden declares with Mode = Ignored, and raw itself declares Actions = None
+        var raw = GetNode(graph, "raw");
+        (raw.IncludeReason, raw.ExcludeReason).Should().Be((IncludeReasons.None, ExcludeReasons.Invisible));
+        raw.IsIncluded.Should().BeFalse();
+    }
+
     private void Build(string select)
     {
         _projectionBuilder.BuildDecisions();
@@ -529,5 +547,14 @@ public class ProjectionGraphBuilderDependencyTests
     private class DerivedItem : BaseItem
     {
         public string Id { get; set; } = null!;
+    }
+
+    private class IgnoredComputedView
+    {
+        [RqlProperty(Mode = RqlPropertyMode.Ignored, DependsOn = new[] { nameof(Raw) })]
+        public string Hidden => Raw;
+
+        [RqlProperty(Actions = RqlActions.None)]
+        public string Raw { get; set; } = null!;
     }
 }

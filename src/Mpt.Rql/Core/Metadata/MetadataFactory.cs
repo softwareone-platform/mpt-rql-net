@@ -91,12 +91,6 @@ internal class MetadataFactory : IMetadataFactory
     {
         var owner = $"({property.DeclaringType!.FullName}).{property.Name}";
 
-        // an ignored property is excluded from projection by its contract, so nothing should bring its dependencies in
-        if (mode == RqlPropertyMode.Ignored)
-        {
-            throw new RqlInvalidDependencyException($"Property {owner} is ignored and cannot declare dependencies.");
-        }
-
         // GetProperty(name) throws when a property hidden with new changes its type, as both are then listed
         var siblings = property.ReflectedType!.GetProperties();
 
@@ -121,6 +115,13 @@ internal class MetadataFactory : IMetadataFactory
             {
                 throw new RqlInvalidDependencyException($"Property {owner} depends on '{name}', which is not a primitive property.");
             }
+        }
+
+        // an ignored property is excluded from projection by its contract,
+        // so its declaration is still checked but nothing is expanded from it
+        if (mode == RqlPropertyMode.Ignored)
+        {
+            return Array.Empty<string>();
         }
 
         return dependsOn.Distinct().ToArray();

@@ -32,9 +32,10 @@ public class Parameter
 
 `DependsOn` takes the CLR names of properties declared on, or inherited by, the same type. The metadata of the type is rejected with `RqlInvalidDependencyException` when it is first built, which is the first time a request uses the type, if:
 
-- the declaring property is `RqlPropertyMode.Ignored`, which is excluded from projection by its contract;
 - a name is the declaring property itself, or is not a property of the type;
 - a name is an ignored property, which the mapping never binds;
 - a name is a reference or collection property, as a dependency is projected without the defaults beneath it.
+
+A declaration on a property that is itself `RqlPropertyMode.Ignored` is checked by the same rules, but nothing is expanded from it, since an ignored property is excluded from projection by its contract.
 
 A dependency is bound by the mapping like any other property, so it needs a source: a storage property of the same name, or an explicit mapping. A dependency without one is projected but stays at its default value.
