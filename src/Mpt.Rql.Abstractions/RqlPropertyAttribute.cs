@@ -135,10 +135,11 @@ public class RqlPropertyAttribute : Attribute
     /// and a property projected for this reason alone carries only the <see cref="IncludeReasons.Dependency"/> include reason,
     /// so a response writer can leave it out.
     /// Filtering and ordering are not affected.
+    /// On a property declared <see cref="RqlPropertyMode.Ignored"/> the names are still checked, but nothing is expanded from them.
     /// </summary>
     /// <exception cref="RqlInvalidDependencyException">
-    /// Thrown when the type's metadata is first built, if this property is ignored,
-    /// or a name is this property itself, is not a property of the type, names an ignored property or one that is not primitive.
+    /// Thrown when the type's metadata is first built,
+    /// if a name is this property itself, is not a property of the type, names an ignored property or one that is not primitive.
     /// </exception>
     public string[]? DependsOn { get; set; }
 }

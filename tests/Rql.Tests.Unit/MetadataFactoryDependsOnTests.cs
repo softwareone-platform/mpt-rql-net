@@ -14,18 +14,17 @@ public class MetadataFactoryDependsOnTests
     private static MetadataFactory CreateSut() => new(RqlSettingsFactory.Default());
 
     [Fact]
-    public void MakeRqlPropertyInfo_IgnoredPropertyDeclaresDependencies_ThrowsInvalidDependencyException()
+    public void MakeRqlPropertyInfo_IgnoredPropertyDeclaresValidDependencies_StoresEmptyDependsOn()
     {
         // Arrange
         var factory = CreateSut();
-        var property = typeof(InvalidModel).GetProperty(nameof(InvalidModel.IgnoredComputed))!;
+        var property = typeof(ValidModel).GetProperty(nameof(ValidModel.IgnoredComputed))!;
 
         // Act
         var act = () => factory.MakeRqlPropertyInfo("ignoredComputed", property);
 
-        // Assert
-        act.Should().Throw<RqlInvalidDependencyException>()
-            .WithMessage("*IgnoredComputed is ignored and cannot declare dependencies*");
+        // Assert — empty rather than the null stored when no dependencies are declared
+        act.Should().NotThrow().Which.DependsOn.Should().NotBeNull().And.BeEmpty();
     }
 
     [Fact]
@@ -172,6 +171,25 @@ public class MetadataFactoryDependsOnTests
             .WithMessage($"*depends on '{dependencyName}', which is not a primitive property*");
     }
 
+    [Theory]
+    [InlineData(nameof(InvalidModel.IgnoredDependsOnMissing), "*depends on 'Missing', which is not a property of its type*")]
+    [InlineData(nameof(InvalidModel.IgnoredSelfDependent), $"*{nameof(InvalidModel.IgnoredSelfDependent)} cannot depend on itself*")]
+    [InlineData(nameof(InvalidModel.IgnoredDependsOnIgnored), $"*depends on '{nameof(InvalidModel.Hidden)}', which is ignored*")]
+    [InlineData(nameof(InvalidModel.IgnoredDependsOnReference), $"*depends on '{nameof(InvalidModel.Reference)}', which is not a primitive property*")]
+    public void MakeRqlPropertyInfo_IgnoredPropertyDeclaresInvalidDependency_ThrowsInvalidDependencyException(string declaringName, string expectedMessage)
+    {
+        // Arrange — each property is declared Ignored and names one invalid dependency in its attribute
+        var factory = CreateSut();
+        var property = typeof(InvalidModel).GetProperty(declaringName)!;
+
+        // Act
+        var act = () => factory.MakeRqlPropertyInfo(declaringName, property);
+
+        // Assert
+        act.Should().Throw<RqlInvalidDependencyException>()
+            .WithMessage(expectedMessage);
+    }
+
     [Fact]
     public void MakeRqlPropertyInfo_ValidDependenciesWithDuplicate_StoresDistinctNames()
     {
@@ -250,9 +268,6 @@ public class MetadataFactoryDependsOnTests
 
         public List<int> Items { get; set; } = new();
 
-        [RqlProperty(Mode = RqlPropertyMode.Ignored, DependsOn = new[] { nameof(Name) })]
-        public string IgnoredComputed => Name;
-
         [RqlProperty(DependsOn = new[] { nameof(SelfDependent) })]
         public string SelfDependent => Name;
 
@@ -285,6 +300,18 @@ public class MetadataFactoryDependsOnTests
 
         [RqlProperty(DependsOn = new[] { nameof(Items) })]
         public int DependsOnCollection => Items.Count;
+
+        [RqlProperty(Mode = RqlPropertyMode.Ignored, DependsOn = new[] { "Missing" })]
+        public string IgnoredDependsOnMissing => Name;
+
+        [RqlProperty(Mode = RqlPropertyMode.Ignored, DependsOn = new[] { nameof(IgnoredSelfDependent) })]
+        public string IgnoredSelfDependent => Name;
+
+        [RqlProperty(Mode = RqlPropertyMode.Ignored, DependsOn = new[] { nameof(Hidden) })]
+        public string IgnoredDependsOnIgnored => Hidden;
+
+        [RqlProperty(Mode = RqlPropertyMode.Ignored, DependsOn = new[] { nameof(Reference) })]
+        public int IgnoredDependsOnReference => Reference.Id;
     }
 
     private class ValidModel
@@ -301,6 +328,9 @@ public class MetadataFactoryDependsOnTests
 
         [RqlProperty(DependsOn = new string[0])]
         public string EmptyDependsOn => First;
+
+        [RqlProperty(Mode = RqlPropertyMode.Ignored, DependsOn = new[] { nameof(First) })]
+        public string IgnoredComputed => First;
     }
 
     private class MemberKindModel
