@@ -32,7 +32,10 @@ public enum IncludeReasons
     Forced = 1 << 5,
 
     /// <summary>Shown by <see cref="Abstractions.Configuration.IRqlTransformOptions.SetVisibility"/>; selected once it also has <see cref="Default"/>.</summary>
-    Override = 1 << 6
+    Override = 1 << 6,
+
+    /// <summary>Projected because a projected sibling declares it in <see cref="RqlPropertyAttribute.DependsOn"/>.</summary>
+    Dependency = 1 << 7
 }
 
 [Flags]

@@ -25,8 +25,8 @@ internal static class ValueConverter
         {
             null => NullConst,
             string v when string.IsNullOrWhiteSpace(v) => EmptyConst,
-            string v => $"'{v}'",
-            char v => $"'{v}'",
+            string v => $"'{v.Replace("'", "''")}'",
+            char v => v == '\'' ? "''''" : $"'{v}'",
             var v when _numericTypes
                 .Contains(v.GetType()) => ((IConvertible)v)
                 .ToString(CultureInfo.InvariantCulture),

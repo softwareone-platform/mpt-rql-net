@@ -70,6 +70,11 @@ internal class MetadataFactory : IMetadataFactory
 
             if (attribute.IsNullableSet)
                 propertyInfo.IsNullable = attribute.IsNullable;
+
+            if (attribute.DependsOn is { Length: > 0 } dependsOn)
+            {
+                propertyInfo.DependsOn = ValidateDependencies(property, attribute.Mode, dependsOn);
+            }
         }
 
         propertyInfo.Operators &= propertyInfo.Type switch
@@ -80,6 +85,46 @@ internal class MetadataFactory : IMetadataFactory
         };
 
         return propertyInfo;
+    }
+
+    private static IReadOnlyList<string> ValidateDependencies(PropertyInfo property, RqlPropertyMode mode, string[] dependsOn)
+    {
+        var owner = $"({property.DeclaringType!.FullName}).{property.Name}";
+
+        // GetProperty(name) throws when a property hidden with new changes its type, as both are then listed
+        var siblings = property.ReflectedType!.GetProperties();
+
+        foreach (var name in dependsOn)
+        {
+            if (name == property.Name)
+            {
+                throw new RqlInvalidDependencyException($"Property {owner} cannot depend on itself.");
+            }
+
+            var dependency = siblings.FirstOrDefault(t => t.Name == name)
+                ?? throw new RqlInvalidDependencyException($"Property {owner} depends on '{name}', which is not a property of its type.");
+
+            // auto-mapping never binds an ignored property, so the getter would read nothing
+            if (dependency.GetCustomAttributes<RqlPropertyAttribute>(true).FirstOrDefault()?.Mode == RqlPropertyMode.Ignored)
+            {
+                throw new RqlInvalidDependencyException($"Property {owner} depends on '{name}', which is ignored.");
+            }
+
+            // a dependency is projected without the defaults beneath it, which only a primitive does not need
+            if (GetRqlPropertyType(dependency) != RqlPropertyType.Primitive)
+            {
+                throw new RqlInvalidDependencyException($"Property {owner} depends on '{name}', which is not a primitive property.");
+            }
+        }
+
+        // an ignored property is excluded from projection by its contract,
+        // so its declaration is still checked but nothing is expanded from it
+        if (mode == RqlPropertyMode.Ignored)
+        {
+            return Array.Empty<string>();
+        }
+
+        return dependsOn.Distinct().ToArray();
     }
 
     private static RqlOperators GetOperatorsForSimpleProperty(RqlPropertyInfo propertyInfo)

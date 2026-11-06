@@ -6,6 +6,7 @@ using Mpt.Rql.Abstractions.Collection;
 using Mpt.Rql.Abstractions.Exception;
 using Mpt.Rql.Abstractions.Group;
 using Mpt.Rql.Abstractions.Unary;
+using Mpt.Rql.Client.Core;
 using Mpt.Rql.Parsers.Linear.Services;
 using Xunit;
 
@@ -579,6 +580,145 @@ public class RqlParserTests
         Assert.Equal("id", inner.Value);
         var constant = Assert.IsType<RqlConstant>(eq.Right);
         Assert.Equal("3", constant.Value);
+    }
+
+    [Theory]
+    [InlineData(@"eq(name,'it''s ""quoted""')", @"it's ""quoted""")]
+    [InlineData(@"eq(name,""it's """"quoted"""""")", @"it's ""quoted""")]
+    [InlineData("eq(name,'''')", "'")]
+    [InlineData(@"eq(name,'a""""b')", @"a""""b")]
+    [InlineData("eq(name,'')", "")]
+    [InlineData("name='it''s'", "it's")]
+    public void Parse_WithDoubledQuoteInQuotedValue_ReturnsUnescapedValue(string query, string expected)
+    {
+        // Act
+        var actualResult = _sut.Parse(query);
+
+        // Assert
+        var eq = Assert.IsType<RqlEqual>(actualResult.Items![0]);
+        Assert.Equal("name", Assert.IsType<RqlConstant>(eq.Left).Value);
+        Assert.Equal(expected, Assert.IsType<RqlConstant>(eq.Right).Value);
+    }
+
+    [Fact]
+    public void Parse_WithDoubledQuoteInArrayValues_ReturnsUnescapedValues()
+    {
+        // Act
+        var actualResult = _sut.Parse(@"in(name,('it''s','say ""hi""'))");
+
+        // Assert
+        var op = Assert.IsType<RqlListIn>(actualResult.Items![0]);
+        Assert.Equal("name", Assert.IsType<RqlConstant>(op.Left).Value);
+        var list = Assert.IsAssignableFrom<RqlGroup>(op.Right).Items!;
+        Assert.Equal(2, list.Count);
+        Assert.Equal("it's", Assert.IsType<RqlConstant>(list[0]).Value);
+        Assert.Equal(@"say ""hi""", Assert.IsType<RqlConstant>(list[1]).Value);
+    }
+
+    [Fact]
+    public void Parse_WithDoubledQuoteInILikeValue_ReturnsUnescapedValue()
+    {
+        // Act
+        var actualResult = _sut.Parse(@"ilike(name,'*it''s ""q""*')");
+
+        // Assert
+        var op = Assert.IsType<RqlLikeCaseInsensitive>(actualResult.Items![0]);
+        Assert.Equal("name", Assert.IsType<RqlConstant>(op.Left).Value);
+        Assert.Equal(@"*it's ""q""*", Assert.IsType<RqlConstant>(op.Right).Value);
+    }
+
+    [Fact]
+    public void Parse_WithEmptyQuotedValueInArray_ReturnsEmptyAndNextValue()
+    {
+        // Act
+        var actualResult = _sut.Parse("in(name,('',a))");
+
+        // Assert
+        var op = Assert.IsType<RqlListIn>(actualResult.Items![0]);
+        Assert.Equal("name", Assert.IsType<RqlConstant>(op.Left).Value);
+        var list = Assert.IsAssignableFrom<RqlGroup>(op.Right).Items!;
+        Assert.Equal(2, list.Count);
+        Assert.Equal("", Assert.IsType<RqlConstant>(list[0]).Value);
+        Assert.Equal("a", Assert.IsType<RqlConstant>(list[1]).Value);
+    }
+
+    [Theory]
+    [InlineData("and(eq(name,''),eq(id,a))")]
+    [InlineData("name=''&id=a")]
+    public void Parse_WithEmptyQuotedValueFollowedByAnd_ReturnsAndOfBothComparisons(string query)
+    {
+        // Act
+        var actualResult = _sut.Parse(query);
+
+        // Assert
+        var and = Assert.IsType<RqlAnd>(actualResult);
+        Assert.Equal(2, and.Items!.Count);
+        CheckListOfConstantComparisons<RqlEqual>(and.Items!, 0, "name", "");
+        CheckListOfConstantComparisons<RqlEqual>(and.Items!, 1, "id", "a");
+    }
+
+    [Fact]
+    public void Parse_WithEmptyQuotedValueClosingNestedGroups_ReturnsOrWithNestedAnd()
+    {
+        // Act
+        var actualResult = _sut.Parse("or(eq(id,a),and(eq(id,b),eq(name,'')))");
+
+        // Assert
+        var or = Assert.IsType<RqlOr>(actualResult);
+        Assert.Equal(2, or.Items!.Count);
+        CheckListOfConstantComparisons<RqlEqual>(or.Items!, 0, "id", "a");
+        var and = Assert.IsType<RqlAnd>(or.Items![1]);
+        Assert.Equal(2, and.Items!.Count);
+        CheckListOfConstantComparisons<RqlEqual>(and.Items!, 0, "id", "b");
+        CheckListOfConstantComparisons<RqlEqual>(and.Items!, 1, "name", "");
+    }
+
+    [Fact]
+    public void Parse_WithDoubledQuoteBeforeClosingQuoteInArray_ReturnsUnescapedValueAndNextValue()
+    {
+        // Act
+        var actualResult = _sut.Parse("in(name,('it''','b'))");
+
+        // Assert
+        var op = Assert.IsType<RqlListIn>(actualResult.Items![0]);
+        Assert.Equal("name", Assert.IsType<RqlConstant>(op.Left).Value);
+        var list = Assert.IsAssignableFrom<RqlGroup>(op.Right).Items!;
+        Assert.Equal(2, list.Count);
+        Assert.Equal("it'", Assert.IsType<RqlConstant>(list[0]).Value);
+        Assert.Equal("b", Assert.IsType<RqlConstant>(list[1]).Value);
+    }
+
+    [Fact]
+    public void Parse_WithDoubledQuoteBeforeClosingQuoteFollowedByAnd_ReturnsAndOfBothComparisons()
+    {
+        // Act
+        var actualResult = _sut.Parse("and(eq(name,'x'''),eq(id,a))");
+
+        // Assert
+        var and = Assert.IsType<RqlAnd>(actualResult);
+        Assert.Equal(2, and.Items!.Count);
+        CheckListOfConstantComparisons<RqlEqual>(and.Items!, 0, "name", "x'");
+        CheckListOfConstantComparisons<RqlEqual>(and.Items!, 1, "id", "a");
+    }
+
+    [Theory]
+    [InlineData(@"it's ""quoted""")]
+    [InlineData("''")]
+    [InlineData("'")]
+    [InlineData("a,b)")]
+    [InlineData("x(y")]
+    [InlineData(@"back\slash")]
+    [InlineData("*lit")]
+    [InlineData(@"say ""hi"", it's (done)")]
+    public void Parse_WithValueFromValueConverter_ReturnsOriginalValue(string value)
+    {
+        // Act
+        var actualResult = _sut.Parse($"eq(x,{ValueConverter.Convert(value)})");
+
+        // Assert
+        var eq = Assert.IsType<RqlEqual>(actualResult.Items![0]);
+        Assert.Equal("x", Assert.IsType<RqlConstant>(eq.Left).Value);
+        Assert.Equal(value, Assert.IsType<RqlConstant>(eq.Right).Value);
     }
 
     private static void CheckListOfConstantComparisons<TComparison>(IReadOnlyList<RqlExpression> items, int index, string prop, string value)

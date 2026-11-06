@@ -125,4 +125,21 @@ public class RqlPropertyAttribute : Attribute
     /// </summary>
     /// <exception cref="RqlInvalidCustomResolverException">Thrown when provided type does not implement <see cref="IRqlCustomPropertyResolver"/>.</exception>
     public Type? CustomResolver { get; set; }
+
+    /// <summary>
+    /// Names of the properties of the same type that this property reads, such as the inputs of a computed getter.
+    /// Use <c>nameof</c>.
+    /// Whenever this property is projected, they are projected with it,
+    /// whatever their own select settings and actions say, so the getter has values to read.
+    /// They are not projected on their own account,
+    /// and a property projected for this reason alone carries only the <see cref="IncludeReasons.Dependency"/> include reason,
+    /// so a response writer can leave it out.
+    /// Filtering and ordering are not affected.
+    /// On a property declared <see cref="RqlPropertyMode.Ignored"/> the names are still checked, but nothing is expanded from them.
+    /// </summary>
+    /// <exception cref="RqlInvalidDependencyException">
+    /// Thrown when the type's metadata is first built,
+    /// if a name is this property itself, is not a property of the type, names an ignored property or one that is not primitive.
+    /// </exception>
+    public string[]? DependsOn { get; set; }
 }
