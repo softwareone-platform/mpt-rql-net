@@ -91,7 +91,8 @@ internal sealed class FirstOrderingFunction : IOrderingFunction
 
         // Struct enumerables (e.g. ImmutableArray<T>) are not reference-assignable to IEnumerable<T>,
         // so Expression.Call would throw; reject them as validation errors instead.
-        if ((collectionInfo.TypeOverride ?? collectionInfo.Type) != RqlPropertyType.Collection || collectionInfo.ElementType is null || collectionExpression.Type.IsValueType)
+        // TreatAs (TypeOverride) is ignored here and below: it only steers default selection, not what the value is.
+        if (collectionInfo.Type != RqlPropertyType.Collection || collectionInfo.ElementType is null || collectionExpression.Type.IsValueType)
             return Error.Validation(
                 $"'{collectionArg.Value}' is not a collection property.",
                 OrderingErrorCodes.NotCollection,
@@ -124,7 +125,7 @@ internal sealed class FirstOrderingFunction : IOrderingFunction
                 return selector.Errors;
 
             var selectorInfo = selector.Value!.PropertyInfo;
-            if ((selectorInfo.TypeOverride ?? selectorInfo.Type) != RqlPropertyType.Primitive)
+            if (selectorInfo.Type != RqlPropertyType.Primitive)
                 return Error.Validation(
                     $"'{FunctionName}': path must resolve to a primitive property.",
                     OrderingErrorCodes.NotPrimitive,
