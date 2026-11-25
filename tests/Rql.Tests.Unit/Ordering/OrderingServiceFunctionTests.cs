@@ -143,6 +143,45 @@ public class OrderingServiceFunctionTests
         // "-(id)" is a plain list of order terms (the group sign is ignored, as before this feature), not a function call
         => Run("-(id)").Should().Equal(1, 2, 3, 4);
 
+    [Theory]
+    [InlineData("+coreCategory", "coreCategory")]
+    [InlineData("-coreCategory", "coreCategory")]
+    [InlineData("items", "items")]
+    public void NonPrimitivePath_ReportsNotPrimitiveCode(string order, string path)
+    {
+        _service.Process(order);
+
+        var error = _queryContext.GetErrors().Single();
+        error.Code.Should().Be(OrderingErrorCodes.NotPrimitive);
+        error.Message.Should().Be("Ordering is only permitted on primitive properties.");
+        error.Path.Should().Be(path);
+    }
+
+    [Fact]
+    public void NonPrimitivePath_DoesNotStopOtherItems()
+    {
+        _service.Process("+coreCategory,-id");
+
+        _queryContext.GetErrors().Should().ContainSingle(e => e.Code == OrderingErrorCodes.NotPrimitive);
+        _queryContext.ApplyTransformations(Data()).Select(p => p.Id).Should().Equal(4, 3, 2, 1);
+    }
+
+    [Fact]
+    public void PrimitiveBehindReference_StillWorks()
+    {
+        var data = new List<Product>
+        {
+            new() { Id = 1, CoreCategory = new Category { Id = 20 } },
+            new() { Id = 2, CoreCategory = new Category { Id = 30 } },
+            new() { Id = 3, CoreCategory = new Category { Id = 10 } },
+        }.AsQueryable();
+
+        _service.Process("-coreCategory.id");
+
+        _queryContext.HasErrors.Should().BeFalse(string.Join("; ", _queryContext.GetErrors()));
+        _queryContext.ApplyTransformations(data).Select(p => p.Id).Should().Equal(2, 1, 3);
+    }
+
     [Fact]
     public void MalformedOrder_ReportsValidationErrorInsteadOfThrowing()
     {
