@@ -105,8 +105,9 @@ internal sealed class OrderingService<TView> : RqlService, IOrderingService<TVie
 
         // An object or collection key cannot be compared, and a query provider fails to translate it at execution
         // time instead of here. Checked on the resolved member only: the segments leading to it may be references.
+        // TreatAs (TypeOverride) is ignored: it only steers default selection, not what the value is.
         var propertyInfo = member.Value!.PropertyInfo;
-        if ((propertyInfo.TypeOverride ?? propertyInfo.Type) != RqlPropertyType.Primitive)
+        if (propertyInfo.Type != RqlPropertyType.Primitive)
         {
             _context.AddError(Error.Validation(
                 "Ordering is only permitted on primitive properties.",
